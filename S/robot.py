@@ -5,12 +5,12 @@ import rospy
 def turn(degrees, side, speed, currentspeed):
     wheelturngoal = (robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER) * 360
     multiplier = 1
-    if side == 1:
+    if side == 0:
         multiplier = -1
     wheelturngoal = wheelturngoal * multiplier
     lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
-    if side == 0:
+    if side == 1:
         robot.set_left_wheel_speed(currentspeed + speed)
         robot.set_right_wheel_speed(currentspeed - speed)
         while lencgoal > robot.get_left_wheel_encoder():
