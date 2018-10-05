@@ -3,7 +3,7 @@ import rospy
 
 
 def turn(degrees, side, speed, currentspeed):
-    wheelturngoal = robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER * 360
+    wheelturngoal = (robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER) * 360
     multiplier = 1
     if side == 1:
         multiplier = -1
@@ -38,7 +38,7 @@ while distance_from_object > 0.18:
 robot.set_wheels_speed(0)
 
 turn(90, 0, 17, 0)
-
+"""
 lenc = robot.get_left_wheel_encoder()
 robot.set_wheels_speed(-30)
 distance_wall = robot.get_front_right_ir()
@@ -46,7 +46,7 @@ while distance_wall < 80:
     distance_wall = robot.get_front_right_ir()
     rospy.sleep(0.05)
 robot.set_wheels_speed(0)
-
+"""
 
 # Stop the robot when done
 robot.set_wheels_speed(0)
