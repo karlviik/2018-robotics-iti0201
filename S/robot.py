@@ -10,7 +10,7 @@ def turn(degrees, side, speed, currentspeed):
     wheelturngoal = wheelturngoal * multiplier
     lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
-    if not multiplier:
+    if multiplier == 0:
         robot.set_left_wheel_speed(currentspeed + speed)
         robot.set_right_wheel_speed(currentspeed - speed)
         while lencgoal > robot.get_left_wheel_encoder():
@@ -38,7 +38,6 @@ while distance_from_object > 0.18:
 robot.set_wheels_speed(0)
 
 turn(90, 0, 17, 0)
-rospy.sleep(2)
 
 lenc = robot.get_left_wheel_encoder()
 robot.set_wheels_speed(-30)
@@ -47,43 +46,6 @@ while distance_wall < 80:
     distance_wall = robot.get_front_right_ir()
     rospy.sleep(0.05)
 robot.set_wheels_speed(0)
-
-lenc = robot.get_left_wheel_encoder - lenc
-turn(90, 0, 17, 0)
-rospy.sleep(2)
-
-robot.set_wheels_speed(-30)
-distance_wall = robot.get_front_right_ir()
-while distance_wall < 80:
-    distance_wall = robot.get_front_right_ir()
-    rospy.sleep(0.05)
-robot.set_wheels_speed(0)
-
-robot.set_wheels_speed(-30)
-distance_wall = robot.get_front_right_ir()
-while distance_wall < 80:
-    distance_wall = robot.get_front_right_ir()
-    rospy.sleep(0.05)
-robot.set_wheels_speed(0)
-
-turn(90, 0, 17, 0)
-rospy.sleep(2)
-
-robot.set_wheels_speed(-30)
-distance_wall = robot.get_front_right_ir()
-while distance_wall < 80:
-    distance_wall = robot.get_front_right_ir()
-    rospy.sleep(0.05)
-robot.set_wheels_speed(0)
-
-robot.set_wheels_speed(-30)
-distance_wall = robot.get_front_right_ir()
-lenc = lenc + robot.get_left_wheel_encoder
-while distance_wall < 80 and lenc > robot.get_left_wheel_encoder:
-    distance_wall = robot.get_front_right_ir()
-    rospy.sleep(0.05)
-robot.set_wheels_speed(0)
-
 
 
 # Stop the robot when done
