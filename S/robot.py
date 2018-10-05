@@ -2,17 +2,26 @@ from PiBot import PiBot
 import rospy
 
 
-def turn(degrees, side):
+def turn(degrees, side, speed, currentspeed):
     wheelturngoal = robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER * 360
-    if side == 0:
-        wheelturngoal = wheelturngoal * -1
+    multiplier = 1
+    if side == 1:
+        multiplier = -1
+    wheelturngoal = wheelturngoal * multiplier
     lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
-    robot.set_left_wheel_speed(17)
-    robot.set_right_wheel_speed(-17)
-    while lencgoal > robot.get_left_wheel_encoder():
-        rospy.sleep(0.05)
-    robot.set_wheels_speed(0)
+    if multiplier:
+        robot.set_left_wheel_speed(currentspeed + speed)
+        robot.set_right_wheel_speed(currentspeed - speed)
+        while lencgoal > robot.get_left_wheel_encoder():
+            rospy.sleep(0.05)
+    else:
+        robot.set_left_wheel_speed(currentspeed - speed)
+        robot.set_right_wheel_speed(currentspeed + speed)
+        while lencgoal < robot.get_left_wheel_encoder():
+            rospy.sleep(0.05)
+    robot.set_wheels_speed(currentspeed)
+
 
 # Create a robot instance
 robot = PiBot()
@@ -29,7 +38,7 @@ while distance_from_object > 0.18:
 robot.set_wheels_speed(0)
 
 
-turn(90, 0)
+turn(90, 0, 17, 0)
 
 
 # Stop the robot when done
