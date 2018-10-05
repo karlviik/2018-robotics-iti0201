@@ -26,6 +26,8 @@ while distance_from_object > 0.18:
     distance_from_object = robot.get_front_middle_ir()
     print(distance_from_object)
     rospy.sleep(0.05)
+robot.set_wheels_speed(0)
+
 
 turn(90, 0)
 
