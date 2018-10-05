@@ -10,7 +10,7 @@ def turn(degrees, side, speed, currentspeed):
     wheelturngoal = wheelturngoal * multiplier
     lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
-    if multiplier:
+    if not multiplier:
         robot.set_left_wheel_speed(currentspeed + speed)
         robot.set_right_wheel_speed(currentspeed - speed)
         while lencgoal > robot.get_left_wheel_encoder():
@@ -28,6 +28,8 @@ robot = PiBot()
 
 # Get distance from object using the front middle IR sensor
 distance_from_object = robot.get_front_middle_ir()
+temp = robot.get_rear_left_side_ir()
+print(temp)
 
 # Drive towards object
 robot.set_wheels_speed(30)
@@ -37,8 +39,8 @@ while distance_from_object > 0.18:
     rospy.sleep(0.05)
 robot.set_wheels_speed(0)
 
-
 turn(90, 0, 17, 0)
+
 
 
 # Stop the robot when done
