@@ -38,6 +38,7 @@ while distance_from_object > 0.18:
 robot.set_wheels_speed(0)
 
 turn(90, 0, 17, 0)
+rospy.sleep(2)
 
 lenc = robot.get_left_wheel_encoder()
 robot.set_wheels_speed(-30)
@@ -49,6 +50,7 @@ robot.set_wheels_speed(0)
 
 lenc = robot.get_left_wheel_encoder - lenc
 turn(90, 0, 17, 0)
+rospy.sleep(2)
 
 robot.set_wheels_speed(-30)
 distance_wall = robot.get_front_right_ir()
@@ -65,6 +67,7 @@ while distance_wall < 80:
 robot.set_wheels_speed(0)
 
 turn(90, 0, 17, 0)
+rospy.sleep(2)
 
 robot.set_wheels_speed(-30)
 distance_wall = robot.get_front_right_ir()
