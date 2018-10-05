@@ -1,5 +1,6 @@
 from PiBot import PiBot
 import rospy
+import math
 
 # Create a robot instance
 robot = PiBot()
@@ -13,6 +14,18 @@ while distance_from_object > 0.18:
     distance_from_object = robot.get_front_middle_ir()
     print(distance_from_object)
     rospy.sleep(0.05)
+
+lenc = robot.get_left_wheel_encoder
+wheelturngoal = robot.AXIS_LENGTH / 4 / robot.WHEEL_DIAMETER * 360
+lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
+
+robot.set_left_wheel_speed(17)
+robot.set_right_wheel_speed(-17)
+while lencgoal > robot.get_left_wheel_encoder()
+    rospy.sleep(0.05)
+robot.set_wheels_speed(0)
+print(robot.get_left_wheel_encoder() - lenc)
+
 
 # Stop the robot when done
 robot.set_wheels_speed(0)
