@@ -28,8 +28,6 @@ robot = PiBot()
 
 # Get distance from object using the front middle IR sensor
 distance_from_object = robot.get_front_middle_ir()
-temp = robot.get_rear_left_side_ir()
-print(temp)
 
 # Drive towards object
 robot.set_wheels_speed(30)
@@ -40,6 +38,48 @@ while distance_from_object > 0.18:
 robot.set_wheels_speed(0)
 
 turn(90, 0, 17, 0)
+
+lenc = robot.get_left_wheel_encoder()
+robot.set_wheels_speed(-30)
+distance_wall = robot.get_front_right_ir()
+while distance_wall < 80:
+    distance_wall = robot.get_front_right_ir()
+    rospy.sleep(0.05)
+robot.set_wheels_speed(0)
+
+lenc = robot.get_left_wheel_encoder - lenc
+turn(90, 0, 17, 0)
+
+robot.set_wheels_speed(-30)
+distance_wall = robot.get_front_right_ir()
+while distance_wall < 80:
+    distance_wall = robot.get_front_right_ir()
+    rospy.sleep(0.05)
+robot.set_wheels_speed(0)
+
+robot.set_wheels_speed(-30)
+distance_wall = robot.get_front_right_ir()
+while distance_wall < 80:
+    distance_wall = robot.get_front_right_ir()
+    rospy.sleep(0.05)
+robot.set_wheels_speed(0)
+
+turn(90, 0, 17, 0)
+
+robot.set_wheels_speed(-30)
+distance_wall = robot.get_front_right_ir()
+while distance_wall < 80:
+    distance_wall = robot.get_front_right_ir()
+    rospy.sleep(0.05)
+robot.set_wheels_speed(0)
+
+robot.set_wheels_speed(-30)
+distance_wall = robot.get_front_right_ir()
+lenc = lenc + robot.get_left_wheel_encoder
+while distance_wall < 80 and lenc > robot.get_left_wheel_encoder:
+    distance_wall = robot.get_front_right_ir()
+    rospy.sleep(0.05)
+robot.set_wheels_speed(0)
 
 
 
