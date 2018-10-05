@@ -1,6 +1,5 @@
 from PiBot import PiBot
 import rospy
-import math
 
 # Create a robot instance
 robot = PiBot()
@@ -21,7 +20,7 @@ lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
 robot.set_left_wheel_speed(17)
 robot.set_right_wheel_speed(-17)
-while lencgoal > robot.get_left_wheel_encoder()
+while lencgoal > robot.get_left_wheel_encoder():
     rospy.sleep(0.05)
 robot.set_wheels_speed(0)
 print(robot.get_left_wheel_encoder() - lenc)
