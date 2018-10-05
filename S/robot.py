@@ -10,7 +10,7 @@ def turn(degrees, side, speed, currentspeed):
     wheelturngoal = wheelturngoal * multiplier
     lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
-    if multiplier == 0:
+    if not side:
         robot.set_left_wheel_speed(currentspeed + speed)
         robot.set_right_wheel_speed(currentspeed - speed)
         while lencgoal > robot.get_left_wheel_encoder():
