@@ -31,7 +31,7 @@ def turn(perc):  # negative speed turns left, positive right
 
 
 def waitblack(side):  # waits for black to go under corresponding sensor
-    while liner3() > 700 and linel3 > 700:
+    while liner3() > 700 and linel3() > 700:
             rospy.sleep(0.025)
 
 
