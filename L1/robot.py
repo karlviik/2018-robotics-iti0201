@@ -30,39 +30,28 @@ def turn(perc):  # negative speed turns left, positive right
     speedl(perc)
 
 
-def waitblack(side):  # waits for black to go under corresponding sensor
-    while liner3() > 700 and linel3() > 700:
-            rospy.sleep(0.025)
-
-
 lastside = 1
 while True:
     speed(20)
     while linel3() < 300 and liner3() < 300:
         rospy.sleep(0.025)
-    if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks
+    if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
         speed(0)
         if linel2() < 300 or linel1() < 300:
             turn(-20)
             lastside = 0
-            #waitblack(1)
         elif liner2() < 300 or liner1() < 300:
             turn(20)
             lastside = 1
-            #waitblack(0)
         else:
             if lastside:
                 turn(20)
-                #waitblack(0)
             else:
                 turn(-20)
-                #waitblack(1)
-    elif linel3() > 700:  # these can't really use while loops
+    elif linel3() > 700:  # these can't really use while loops anyways
         speedr(15)
         lastside = 1
-        rospy.sleep(0.025)
     elif liner3() > 700:
         speedl(15)
         lastside = 0
-        rospy.sleep(0.025)
     rospy.sleep(0.025)
