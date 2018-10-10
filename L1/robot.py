@@ -51,7 +51,7 @@ while True:
         rospy.sleep(0.05)
     if linel3() > 700 and liner3() > 700:
         speed(0)
-        if linel2 < 300 or linel1 < 300:
+        if int(linel2) < 300 or int(linel1) < 300:
             speedl(-20)
             speedr(20)
         if liner2 < 300 or liner1 < 300:
