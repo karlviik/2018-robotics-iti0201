@@ -8,12 +8,19 @@ linel3 = robot.get_third_line_sensor_from_right
 liner1 = robot.get_leftmost_line_sensor
 liner2 = robot.get_second_line_sensor_from_left
 liner3 = robot.get_third_line_sensor_from_left
+
+
 def speed(perc):
     robot.set_wheels_speed(-perc)
+
+
 def speedl(perc):
     robot.set_right_wheel_speed(-perc)
+
+
 def speedr(perc):
     robot.set_left_wheel_speed(-perc)
+
 
 left_second = robot.get_second_line_sensor_from_left()
 """
@@ -45,8 +52,9 @@ while True:
                     robot.set_left_wheel_speed(15)
                     robot.set_right_wheel_speed(-15)
 """
+lastside = 1
 while True:
-    speed(30)
+    speed(20)
     while linel3() < 300 and liner3() < 300:
         rospy.sleep(0.05)
     if linel3() > 700 and liner3() > 700:
@@ -54,11 +62,22 @@ while True:
         if linel2() < 300 or linel1() < 300:
             speedl(-20)
             speedr(20)
-        if liner2() < 300 or liner1() < 300:
+            lastside = 0
+        elif liner2() < 300 or liner1() < 300:
             speedl(20)
             speedr(-20)
+            lastside = 1
+        else:
+            if lastside:
+                speedl(20)
+                speedr(-20)
+            else:
+                speedl(-20)
+                speedr(20)
     elif linel3() > 700:
         speedr(20)
+        lastside = 0
     elif liner3() > 700:
         speedl(20)
+        lastside = 1
     rospy.sleep(0.05)
