@@ -1,3 +1,4 @@
+"""Take a shot at following the line. White is lava."""
 from PiBot import PiBot
 import rospy
 
@@ -14,18 +15,42 @@ liner3 = robot.get_third_line_sensor_from_left
 
 
 def speed(perc):
+    """
+    Set wheel speeds, but treats backwards as forwards and vice versa. Mostly for shorter typing.
+
+    :param perc: percentage
+    :return: nada
+    """
     robot.set_wheels_speed(-perc)
 
 
 def speedl(perc):
+    """
+    Set right wheel speed as negative of perc(entage) because treating back as front.
+
+    :param perc: percentage
+    :return: nada
+    """
     robot.set_right_wheel_speed(-perc)
 
 
 def speedr(perc):
+    """
+    Set left wheel speed as negative or perc(entage) because treating back as front.
+
+    :param perc: percentage
+    :return: nada
+    """
     robot.set_left_wheel_speed(-perc)
 
 
 def turn(perc):  # negative speed turns left, positive right
+    """
+    Make the robot turn in a stationary position. Positive input turns right and negative left when treating front as back.
+
+    :param perc: percentage
+    :return: nada
+    """
     speedr(-perc)
     speedl(perc)
 
