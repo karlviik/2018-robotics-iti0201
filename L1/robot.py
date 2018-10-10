@@ -75,9 +75,9 @@ while True:
                 speedl(-20)
                 speedr(20)
     elif linel3() > 700:
-        speedr(20)
+        speedr(15)
         lastside = 0
     elif liner3() > 700:
-        speedl(20)
+        speedl(15)
         lastside = 1
     rospy.sleep(0.05)
