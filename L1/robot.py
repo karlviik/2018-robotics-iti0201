@@ -45,18 +45,18 @@ while True:
         if linel2() < 300 or linel1() < 300:
             turn(-20)
             lastside = 0
-            waitblack(1)
+            #waitblack(1)
         elif liner2() < 300 or liner1() < 300:
             turn(20)
             lastside = 1
-            waitblack(0)
+            #waitblack(0)
         else:
             if lastside:
                 turn(20)
-                waitblack(0)
+                #waitblack(0)
             else:
                 turn(-20)
-                waitblack(1)
+                #waitblack(1)
     elif linel3() > 700:  # these can't really use while loops
         speedr(15)
         lastside = 1
@@ -65,3 +65,4 @@ while True:
         speedl(15)
         lastside = 0
         rospy.sleep(0.025)
+    rospy.sleep(0.025)
