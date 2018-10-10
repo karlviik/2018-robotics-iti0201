@@ -56,7 +56,7 @@ lastside = 1
 while True:
     speed(20)
     while linel3() < 300 and liner3() < 300:
-        rospy.sleep(0.05)
+        rospy.sleep(0.025)
     if linel3() > 700 and liner3() > 700:
         speed(0)
         if linel2() < 300 or linel1() < 300:
@@ -76,8 +76,8 @@ while True:
                 speedr(20)
     elif linel3() > 700:
         speedr(15)
-        lastside = 0
+        lastside = 1
     elif liner3() > 700:
         speedl(15)
-        lastside = 1
-    rospy.sleep(0.05)
+        lastside = 0
+    rospy.sleep(0.025)
