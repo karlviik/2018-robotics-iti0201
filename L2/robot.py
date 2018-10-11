@@ -79,9 +79,9 @@ def preciseturn(degrees, side, speed, currentspeed):
 def crossing(crosscount):
     if crosscount % 3 == 0:
         preciseturn(90, 1, 17, 0)
-    if crosscount % 3 == 1:
+    #if crosscount % 3 == 1:
         # make the bot ignore everything and move straight
-    if crosscount % 3 == 2:
+    elif crosscount % 3 == 2:
         preciseturn(90, 0, 17, 0)# make the bot turn 90 degrees RIGHT
     return crosscount + 1
 
