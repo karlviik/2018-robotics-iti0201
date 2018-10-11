@@ -14,7 +14,7 @@ liner2 = robot.get_second_line_sensor_from_left
 liner3 = robot.get_third_line_sensor_from_left
 
 
-def speed(perc):
+def setspeed(perc):
     """
     Set wheel speeds, but treats backwards as forwards and vice versa. Mostly for shorter typing.
 
@@ -24,7 +24,7 @@ def speed(perc):
     robot.set_wheels_speed(-perc)
 
 
-def speedl(perc):
+def setspeedl(perc):
     """
     Set right wheel speed as negative of perc(entage) because treating back as front.
 
@@ -34,7 +34,7 @@ def speedl(perc):
     robot.set_right_wheel_speed(-perc)
 
 
-def speedr(perc):
+def setspeedr(perc):
     """
     Set left wheel speed as negative or perc(entage) because treating back as front.
 
@@ -51,8 +51,8 @@ def turn(perc):  # negative speed turns left, positive right
     :param perc: percentage
     :return: nada
     """
-    speedr(-perc)
-    speedl(perc)
+    setspeedr(-perc)
+    setspeedl(perc)
 
 
 def preciseturn(degrees, side, speed, currentspeed):
@@ -65,17 +65,17 @@ def preciseturn(degrees, side, speed, currentspeed):
     lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
     if side == 1:
-        speedr(currentspeed + speed)
-        speedl(currentspeed - speed)
+        setspeedr(currentspeed + speed)
+        setspeedl(currentspeed - speed)
         while lencgoal > robot.get_left_wheel_encoder():
             rospy.sleep(0.05)
     else:
-        speedr(currentspeed - speed)
-        speedl(currentspeed + speed)
+        setspeedr(currentspeed - speed)
+        setspeedl(currentspeed + speed)
         while lencgoal < robot.get_left_wheel_encoder():
             rospy.sleep(0.05)
     print("bot used preciseturn")
-    speed(25)
+    setspeed(25)
 
 
 def crossing(crosscount):
@@ -91,20 +91,20 @@ def crossing(crosscount):
 counter = 0
 lastside = 1
 while True:
-    speed(25)
+    setspeed(25)
     while linel3() < 300 or liner3() < 300:
         if linel1() < 300 or liner1() < 300:
             counter = crossing(counter)
         elif linel3() > 700:  # these can't really use while loops anyways
-            speedr(20)
+            setspeedr(20)
             lastside = 1
         elif liner3() > 700:
-            speedl(20)
+            setspeedl(20)
             lastside = 0
 
         rospy.sleep(0.025)
     if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
-        speed(0)
+        setspeed(0)
         if linel2() < 300 or linel1() < 300:
             turn(-20)
             lastside = 0
