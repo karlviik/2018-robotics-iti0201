@@ -94,6 +94,12 @@ while True:
     while linel3() < 300 or liner3() < 300:
         if linel1() < 300 or liner1() < 300:
             counter = crossing(counter)
+        elif linel3() > 700:  # these can't really use while loops anyways
+            speedr(20)
+            lastside = 1
+        elif liner3() > 700:
+            speedl(20)
+            lastside = 0
 
         rospy.sleep(0.025)
     if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
@@ -109,10 +115,4 @@ while True:
                 turn(20)
             else:
                 turn(-20)
-    elif linel3() > 700:  # these can't really use while loops anyways
-        speedr(20)
-        lastside = 1
-    elif liner3() > 700:
-        speedl(20)
-        lastside = 0
     rospy.sleep(0.025)
