@@ -78,17 +78,17 @@ def preciseturn(degrees, side, speed, currentspeed):
 
 def crossing(crosscount):
     if crosscount % 3 == 0:
-        preciseturn(90, 1, 17, 0)
+        preciseturn(90, 1, 10, 10)
     #if crosscount % 3 == 1:
         # make the bot ignore everything and move straight
     elif crosscount % 3 == 2:
-        preciseturn(90, 0, 17, 0)# make the bot turn 90 degrees RIGHT
+        preciseturn(90, 0, 10, 10)# make the bot turn 90 degrees RIGHT
     return crosscount + 1
 
 counter = 0
 lastside = 1
 while True:
-    speed(20)
+    speed(25)
     while linel3() < 300 or liner3() < 300:
         if linel1() < 300 or liner1() < 300:
             counter = crossing(counter)
@@ -108,9 +108,9 @@ while True:
             else:
                 turn(-20)
     elif linel3() > 700:  # these can't really use while loops anyways
-        speedr(15)
+        speedr(20)
         lastside = 1
     elif liner3() > 700:
-        speedl(15)
+        speedl(20)
         lastside = 0
     rospy.sleep(0.025)
