@@ -110,10 +110,10 @@ while True:
     print(lines)
     while lines[2] < 511.9 and lines[3] < 511.9:
         if lines[1] < 511.9 and lines[0] > 512:
-            setspeedl(20)
+            setspeedl(17)
             lastside = 0
         elif lines[4] < 511.9 and lines[5] > 512:
-            setspeedr(20)
+            setspeedr(17)
             lastside = 1
         elif lines[0] < 511.9 or lines[5] < 511.9:
             counter = crossing(counter)
@@ -124,7 +124,7 @@ while True:
         lines = updatelines()
     while lines[2] > 512 and lines[3] < 511.9:
         if lines[0] > 512 and lines[5] > 512:
-            setspeedr(20)
+            setspeedr(17)
             lastside = 1
         if lines[0] < 511.9 or lines[5] < 511.9:
             counter = crossing(counter)
@@ -133,7 +133,7 @@ while True:
         lines = updatelines()
     while lines[2] < 511.9 and lines[3] > 512:
         if lines[0] > 512 and lines[5] > 512:
-            setspeedl(20)
+            setspeedl(17)
             lastside = 0
         if lines[0] < 511.9 or lines[5] < 511.9:
             counter = crossing(counter)
