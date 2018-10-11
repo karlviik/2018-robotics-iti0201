@@ -141,6 +141,7 @@ while True:
         rospy.sleep(0.01)
         lines = updatelines()
     while lines[2] > 512 and lines[3] > 512:
+        setspeed(0)
         if lastside:
             turn(20)
         else:
