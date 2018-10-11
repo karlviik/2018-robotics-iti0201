@@ -124,6 +124,8 @@ while True:
             turnstat(-20)
     elif (linel3() < 300 or liner3() < 300) and (linel1() < 300 or liner1() < 300):
         counter = crossing(counter)
+    else:
+        print("aofhaowhfoasghfoawgofgaowfwh")
 
     """
     if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
