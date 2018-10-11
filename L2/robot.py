@@ -55,10 +55,44 @@ def turn(perc):  # negative speed turns left, positive right
     speedl(perc)
 
 
+def preciseturn(degrees, side, speed, currentspeed):
+    wheelturngoal = (robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER) * 360
+    multiplier = 1
+    if side == 0:
+        multiplier = -1
+    wheelturngoal = wheelturngoal * multiplier
+    lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
+
+    if side == 1:
+        robot.set_left_wheel_speed(currentspeed + speed)
+        robot.set_right_wheel_speed(currentspeed - speed)
+        while lencgoal > robot.get_left_wheel_encoder():
+            rospy.sleep(0.05)
+    else:
+        robot.set_left_wheel_speed(currentspeed - speed)
+        robot.set_right_wheel_speed(currentspeed + speed)
+        while lencgoal < robot.get_left_wheel_encoder():
+            rospy.sleep(0.05)
+    robot.set_wheels_speed(currentspeed)
+
+
+def crossing(crosscount):
+    if crosscount % 3 == 0:
+        preciseturn(90, 1, 17, 0)
+    if crosscount % 3 == 1:
+        # make the bot ignore everything and move straight
+    if crosscount % 3 == 2:
+        preciseturn(90, 0, 17, 0)# make the bot turn 90 degrees RIGHT
+    return crosscount + 1
+
+counter = 0
 lastside = 1
 while True:
     speed(20)
     while linel3() < 300 and liner3() < 300:
+        if linel1() < 300 or liner1() < 300:
+            counter = crossing(counter)
+
         rospy.sleep(0.025)
     if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
         speed(0)
