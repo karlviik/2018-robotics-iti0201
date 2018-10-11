@@ -89,7 +89,7 @@ counter = 0
 lastside = 1
 while True:
     speed(20)
-    while linel3() < 300 and liner3() < 300:
+    while linel3() < 300 or liner3() < 300:
         if linel1() < 300 or liner1() < 300:
             counter = crossing(counter)
 
