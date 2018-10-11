@@ -103,7 +103,37 @@ counter = 0
 lastside = 1
 while True:
     setspeed(25)
-
+    l1 = linel1()
+    l3 = linel3()
+    r1 = liner1()
+    r3 = liner3()
+    while l3 < 300 and r3 < 300:
+        l1 = linel1()
+        l3 = linel3()
+        r1 = liner1()
+        r3 = liner3()
+        if l1 < 300 or r1 < 300:
+            counter = crossing(counter)
+        rospy.sleep(0.025)
+    l1 = linel1()
+    l3 = linel3()
+    r1 = liner1()
+    r3 = liner3()
+    if l3 > 700 and l1 > 700 and r1 > 700 and r3 < 300:
+        setspeedr(20)
+        lastside = 1
+    elif l3 < 300 and l1 > 700 and r1 > 700 and r3 > 700:
+        setspeedl(20)
+        lastside = 0
+    elif l3 > 700 and r3 > 700:
+        setspeed(0)
+        if lastside or r1 < 300 and l1 > 700:
+            turnstat(20)
+        else:
+            turnstat(-20)
+    elif (l3 < 300 or r3 < 300) and (l1 < 300 or r1 < 300):
+        counter = crossing(counter)
+    """
     # this part moves forward while middle 2 sensors are on a black, but crossing if also l1 or r1 also black
     while linel3() < 300 and liner3() < 300:
         if linel1() < 300 or liner1() < 300:
@@ -118,7 +148,7 @@ while True:
         lastside = 0
     elif linel3() > 700 and liner3() > 700:
         setspeed(0)
-        if lastside:
+        if lastside or liner1() < 300 and linel1() > 700:
             turnstat(20)
         else:
             turnstat(-20)
@@ -126,7 +156,7 @@ while True:
         counter = crossing(counter)
     else:
         print("aofhaowhfoasghfoawgofgaowfwh")
-
+    """
     """
     if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
         setspeed(0)
