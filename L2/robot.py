@@ -108,44 +108,45 @@ while True:
     setspeed(25)
     lines = updatelines()
     print(lines)
-    while lines[2] < 300 and lines[3] < 300:
-        if lines[1] < 300 and lines[0] > 700:
+    while lines[2] < 511.9 and lines[3] < 511.9:
+        if lines[1] < 511.9 and lines[0] > 512:
             setspeedl(20)
             lastside = 0
-        elif lines[4] < 300 and lines[5] > 700:
+        elif lines[4] < 511.9 and lines[5] > 512:
             setspeedr(20)
             lastside = 1
-        elif lines[0] < 300 or lines[5] < 300:
+        elif lines[0] < 511.9 or lines[5] < 511.9:
             counter = crossing(counter)
-            print("middles are on, l0 or l5 is 300")
+            print("middles are on, l0 or l5 is 511.9")
         else:
             setspeed(25)
         rospy.sleep(0.01)
         lines = updatelines()
-    while lines[2] > 700 and lines[3] < 300:
-        if lines[0] > 700 and lines[5] > 700:
+    while lines[2] > 512 and lines[3] < 511.9:
+        if lines[0] > 512 and lines[5] > 512:
             setspeedr(20)
             lastside = 1
-        if lines[0] < 300 or lines[5] < 300:
+        if lines[0] < 511.9 or lines[5] < 511.9:
             counter = crossing(counter)
-            print("l2 is 700 and l3 is 300, l0 or l5 is 300")
+            print("l2 is 512 and l3 is 511.9, l0 or l5 is 511.9")
         rospy.sleep(0.01)
         lines = updatelines()
-    while lines[2] < 300 and lines[3] > 700:
-        if lines[0] > 700 and lines[5] > 700:
+    while lines[2] < 511.9 and lines[3] > 512:
+        if lines[0] > 512 and lines[5] > 512:
             setspeedl(20)
             lastside = 0
-        if lines[0] < 300 or lines[5] < 300:
+        if lines[0] < 511.9 or lines[5] < 511.9:
             counter = crossing(counter)
-            print("l2 is 300 and l3 is 700, l0 or l5 is 300")
+            print("l2 is 511.9 and l3 is 512, l0 or l5 is 511.9")
         rospy.sleep(0.01)
         lines = updatelines()
-    while lines[2] > 700 and lines[3] > 700:
+    while lines[2] > 512 and lines[3] > 512:
         if lastside:
             turn(20)
         else:
             turn(-20)
         rospy.sleep(0.01)
         lines = updatelines()
+
     rospy.sleep(0.01)
     lines = updatelines()
