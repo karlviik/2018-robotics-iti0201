@@ -66,6 +66,7 @@ def turnstat(perc):  # negative speed turns left, positive right
 
 
 def preciseturn(degrees, side, speed, currentspeed):
+    print("this is where turn would happen")
     rospy.sleep(0.1)
     wheelturngoal = (robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER) * 360
     multiplier = 1
@@ -94,7 +95,7 @@ def crossing(crosscount):
     #if crosscount % 3 == 1:
         # make the bot ignore everything and move straight
     elif crosscount % 3 == 2:
-        preciseturn(90, 0, 10, 10)# make the bot turn 90 degrees RIGHT
+        preciseturn(90, 0, 10, 10) # make the bot turn 90 degrees RIGHT
     return crosscount + 1
 
 
@@ -102,12 +103,29 @@ counter = 0
 lastside = 1
 while True:
     setspeed(25)
+
+    # this part moves forward while middle 2 sensors are on a black, but crossing if also l1 or r1 also black
     while linel3() < 300 and liner3() < 300:
         if linel1() < 300 or liner1() < 300:
             counter = crossing(counter)
-
-
         rospy.sleep(0.025)
+
+    if linel3() > 700 and linel1() > 700 and liner1() > 700 and liner3() < 300:
+        setspeedr(20)
+        lastside = 1
+    elif linel3() < 300 and linel1() > 700 and liner1() > 700 and liner3() > 700:
+        setspeedl(20)
+        lastside = 0
+    elif linel3() > 700 and liner3() > 700:
+        setspeed(0)
+        if lastside:
+            turnstat(20)
+        else:
+            turnstat(-20)
+    elif (linel3() < 300 or liner3() < 300) and (linel1() < 300 or liner1() < 300):
+        counter = crossing(counter)
+
+    """
     if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
         setspeed(0)
         if linel2() < 300 or linel1() < 300:
@@ -121,10 +139,11 @@ while True:
                 turnstat(20)
             else:
                 turnstat(-20)
-    elif linel3() > 700:  # these can't really use while loops anyways
-        setspeedr(20)
-        lastside = 1
-    elif liner3() > 700:
-        setspeedl(20)
-        lastside = 0
+    """
+    #elif linel3() > 700:  # these can't really use while loops anyways
+    #    setspeedr(20)
+    #    lastside = 1
+    #elif liner3() > 700:
+    #    setspeedl(20)
+    #    lastside = 0
     rospy.sleep(0.025)
