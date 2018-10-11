@@ -1,6 +1,6 @@
 """Take a shot at following the line. White is lava."""
-import rospy
 from PiBot import PiBot
+import rospy
 
 robot = PiBot()
 # This whole section is just to make writing stuff easier, means linel1() is same as robot.get_rightmost_toomuchtext()
@@ -58,7 +58,7 @@ def turn(perc):  # negative speed turns left, positive right
 lastside = 1
 while True:
     speed(20)
-    while linel3() < 300 and liner3() < 300 aaaaaaaaaaaaaaaaaaaa ezpz:
+    while linel3() < 300 and liner3() < 300:
         rospy.sleep(0.025)
     if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
         speed(0)
