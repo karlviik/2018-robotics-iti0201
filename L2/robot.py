@@ -2,6 +2,7 @@
 from PiBot import PiBot
 import rospy
 
+
 robot = PiBot()
 # This whole section is just to make writing stuff easier, means linel1() is same as robot.get_rightmost_toomuchtext()
 # To note is that left and right sides are switched as in this task robot always moves backwards, so might aswell
@@ -57,9 +58,11 @@ def turn(perc):  # negative speed turns left, positive right
     else:
         print("turned left")
         setspeedr(perc)
-    #pass
-    #setspeedr(-perc)
-    #setspeedl(perc)
+
+
+def turnstat(perc):  # negative speed turns left, positive right
+    setspeedr(-perc)
+    setspeedl(perc)
 
 
 def preciseturn(degrees, side, speed, currentspeed):
@@ -115,9 +118,9 @@ while True:
             lastside = 1
         else:
             if lastside:
-                turn(20)
+                turnstat(20)
             else:
-                turn(-20)
+                turnstat(-20)
     elif linel3() > 700:  # these can't really use while loops anyways
         setspeedr(20)
         lastside = 1
