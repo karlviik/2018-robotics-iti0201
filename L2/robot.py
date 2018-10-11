@@ -59,22 +59,22 @@ def preciseturn(degrees, side, speed, currentspeed):
     rospy.sleep(0.1)
     wheelturngoal = (robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER) * 360
     multiplier = 1
-    if side == 0:
+    if side == 1:
         multiplier = -1
     wheelturngoal = wheelturngoal * multiplier
     lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
     if side == 1:
-        robot.set_left_wheel_speed(currentspeed + speed)
-        robot.set_right_wheel_speed(currentspeed - speed)
+        speedr(currentspeed + speed)
+        speedl(currentspeed - speed)
         while lencgoal > robot.get_left_wheel_encoder():
             rospy.sleep(0.05)
     else:
-        robot.set_left_wheel_speed(currentspeed - speed)
-        robot.set_right_wheel_speed(currentspeed + speed)
+        speedr(currentspeed - speed)
+        speedl(currentspeed + speed)
         while lencgoal < robot.get_left_wheel_encoder():
             rospy.sleep(0.05)
-    robot.set_wheels_speed(currentspeed)
+    speed(currentspeed)
 
 
 def crossing(crosscount):
