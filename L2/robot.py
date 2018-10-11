@@ -7,12 +7,12 @@ robot = PiBot()
 # This whole section is just to make writing stuff easier, means linel1() is same as robot.get_rightmost_toomuchtext()
 # To note is that left and right sides are switched as in this task robot always moves backwards, so might aswell
 # treat robot's back as its front.
-linel1 = robot.get_rightmost_line_sensor
-linel2 = robot.get_second_line_sensor_from_right
-linel3 = robot.get_third_line_sensor_from_right
-liner1 = robot.get_leftmost_line_sensor
-liner2 = robot.get_second_line_sensor_from_left
-liner3 = robot.get_third_line_sensor_from_left
+getlinel1 = robot.get_rightmost_line_sensor
+getlinel2 = robot.get_second_line_sensor_from_right
+getlinel3 = robot.get_third_line_sensor_from_right
+getliner1 = robot.get_leftmost_line_sensor
+getliner2 = robot.get_second_line_sensor_from_left
+getliner3 = robot.get_third_line_sensor_from_left
 
 
 def setspeed(perc):
@@ -65,9 +65,34 @@ def turnstat(perc):  # negative speed turns left, positive right
     setspeedl(perc)
 
 
-def preciseturn(degrees, side, speed, currentspeed):
-    print("this is where turn would happen")
-    rospy.sleep(0.1)
+def preciseturn(degrees, mode, speed):  # negative degrees left, positive right. Mode 0 is both wheels, mode 1 is 1 wheel
+    wheelturngoal = (robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER) * 360
+    if mode:
+        wheelturngoal = wheelturngoal * 2
+    if degrees > 0:
+        lencgoal = robot.get_right_wheel_encoder - wheelturngoal
+        setspeedl(speed)
+        if not mode:
+            setspeedr(-speed)
+        clenc = robot.get_right_wheel_encoder
+        while clenc > lencgoal:
+            rospy.sleep(0.005)
+            clenc = robot.get_right_wheel_encoder
+    else:
+        rencgoal = robot.get_left_wheel_encoder - wheelturngoal
+        setspeedr(speed)
+        if not mode:
+            setspeedl(-speed)
+        crenc = robot.get_left_wheel_encoder
+        while crenc > rencgoal:
+            rospy.sleep(0.005)
+            crenc = robot.get_left_wheel_encoder
+    setspeed(25)
+
+
+
+
+    """
     wheelturngoal = (robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER) * 360
     multiplier = 1
     if side == 1:
@@ -87,104 +112,66 @@ def preciseturn(degrees, side, speed, currentspeed):
             rospy.sleep(0.05)
     print("bot used preciseturn")
     setspeed(25)
+    """
 
 
 def crossing(crosscount):
     if crosscount % 3 == 0:
-        preciseturn(90, 1, 10, 10)
-    #if crosscount % 3 == 1:
+        preciseturn(90, 1, 20)
+    # if crosscount % 3 == 1:
         # make the bot ignore everything and move straight
     elif crosscount % 3 == 2:
-        preciseturn(90, 0, 10, 10) # make the bot turn 90 degrees RIGHT
+        preciseturn(90, 1, 20) # make the bot turn 90 degrees RIGHT
     return crosscount + 1
+
+
+def updatelines():
+    return [getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()]
 
 
 counter = 0
 lastside = 1
 while True:
     setspeed(25)
-    l1 = linel1()
-    l3 = linel3()
-    r1 = liner1()
-    r3 = liner3()
-    while l3 < 300 and r3 < 300:
-        l1 = linel1()
-        r1 = liner1()
-        if l1 < 300 or r1 < 300:
-            counter = crossing(counter)
-        rospy.sleep(0.025)
-        l3 = linel3()
-        r3 = liner3()
-    l1 = linel1()
-    l3 = linel3()
-    r1 = liner1()
-    r3 = liner3()
-    if l3 > 700 and l1 > 700 and r1 > 700 and r3 < 300:
-        setspeedr(17)
-        lastside = 1
-    elif l3 < 300 and l1 > 700 and r1 > 700 and r3 > 700:
-        setspeedl(17)
-        lastside = 0
-    elif l3 > 700 and r3 > 700:
-        setspeed(0)
-        if lastside or r1 < 300 and l1 > 700:
-            turnstat(20)
-        else:
-            turnstat(-20)
-    elif (l3 < 300 or r3 < 300) and (l1 < 300 or r1 < 300):
-        counter = crossing(counter)
-    elif linel2() < 300:
-        turnstat(-20)
-        lastside = 0
-    elif liner2() < 300:
-        turnstat(20)
-        lastside = 1
-    else:
-        print("afoiahofihaofhoahfaosfhoa fuck")
-        print(linel1(), linel3(), liner3(), liner1())
-    """
-    # this part moves forward while middle 2 sensors are on a black, but crossing if also l1 or r1 also black
-    while linel3() < 300 and liner3() < 300:
-        if linel1() < 300 or liner1() < 300:
-            counter = crossing(counter)
-        rospy.sleep(0.025)
-
-    if linel3() > 700 and linel1() > 700 and liner1() > 700 and liner3() < 300:
-        setspeedr(20)
-        lastside = 1
-    elif linel3() < 300 and linel1() > 700 and liner1() > 700 and liner3() > 700:
-        setspeedl(20)
-        lastside = 0
-    elif linel3() > 700 and liner3() > 700:
-        setspeed(0)
-        if lastside or liner1() < 300 and linel1() > 700:
-            turnstat(20)
-        else:
-            turnstat(-20)
-    elif (linel3() < 300 or liner3() < 300) and (linel1() < 300 or liner1() < 300):
-        counter = crossing(counter)
-    else:
-        print("aofhaowhfoasghfoawgofgaowfwh")
-    """
-    """
-    if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
-        setspeed(0)
-        if linel2() < 300 or linel1() < 300:
-            turn(-20)
+    lines = updatelines()
+    while lines[2] < 300 and lines[3] < 300:
+        if lines[1] < 300 and lines[0] > 700:
+            setspeedl(20)
             lastside = 0
-        elif liner2() < 300 or liner1() < 300:
-            turn(20)
+        elif lines[4] < 300 and lines[5] > 700:
+            setspeedr(20)
             lastside = 1
+        elif lines[0] < 300 or lines[5] < 300:
+            counter = crossing(counter)
+            print("middles are on, l0 or l5 is 300")
         else:
-            if lastside:
-                turnstat(20)
-            else:
-                turnstat(-20)
-    """
-    #elif linel3() > 700:  # these can't really use while loops anyways
-    #    setspeedr(20)
-    #    lastside = 1
-    #elif liner3() > 700:
-    #    setspeedl(20)
-    #    lastside = 0
-    rospy.sleep(0.025)
+            setspeed(25)
+        rospy.sleep(0.005)
+        lines = updatelines()
+    while lines[2] > 700 and lines[3] < 300:
+        if lines[0] > 700 and lines[5] > 700:
+            setspeedr(20)
+            lastside = 1
+        if lines[0] < 300 or lines[5] < 300:
+            counter = crossing(counter)
+            print("l2 is 700 and l3 is 300, l0 or l5 is 300")
+        rospy.sleep(0.005)
+        lines = updatelines()
+    while lines[2] < 300 and lines[3] > 700:
+        if lines[0] > 700 and lines[5] > 700:
+            setspeedl(20)
+            lastside = 0
+        if lines[0] < 300 or lines[5] < 300:
+            counter = crossing(counter)
+            print("l2 is 300 and l3 is 700, l0 or l5 is 300")
+        rospy.sleep(0.005)
+        lines = updatelines()
+    while lines[2] > 700 and lines[3] > 700:
+        if lastside:
+            turn(20)
+        else:
+            turn(-20)
+        rospy.sleep(0.005)
+        lines = updatelines()
+    rospy.sleep(0.005)
+    lines = updatelines()
