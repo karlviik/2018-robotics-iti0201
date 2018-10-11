@@ -133,6 +133,12 @@ while True:
             turnstat(-20)
     elif (l3 < 300 or r3 < 300) and (l1 < 300 or r1 < 300):
         counter = crossing(counter)
+    elif linel2() < 300:
+        turnstat(-20)
+        lastside = 0
+    elif liner2() < 300:
+        turnstat(20)
+        lastside = 1
     else:
         print("afoiahofihaofhoahfaosfhoa fuck")
         print(linel1(), linel3(), liner3(), liner1())
