@@ -51,6 +51,11 @@ def turn(perc):  # negative speed turns left, positive right
     :param perc: percentage
     :return: nada
     """
+    if perc > 0:
+        setspeedl(perc)
+    else:
+        setspeedr(perc)
+    pass
     setspeedr(-perc)
     setspeedl(perc)
 
