@@ -57,9 +57,9 @@ def turn(perc):  # negative speed turns left, positive right
     else:
         print("turned left")
         setspeedr(perc)
-    pass
-    setspeedr(-perc)
-    setspeedl(perc)
+    #pass
+    #setspeedr(-perc)
+    #setspeedl(perc)
 
 
 def preciseturn(degrees, side, speed, currentspeed):
