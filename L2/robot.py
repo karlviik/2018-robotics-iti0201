@@ -52,8 +52,10 @@ def turn(perc):  # negative speed turns left, positive right
     :return: nada
     """
     if perc > 0:
+        print("turned right")
         setspeedl(perc)
     else:
+        print("turned left")
         setspeedr(perc)
     pass
     setspeedr(-perc)
@@ -97,7 +99,7 @@ counter = 0
 lastside = 1
 while True:
     setspeed(25)
-    while linel3() < 300 or liner3() < 300:
+    while linel3() < 300 and liner3() < 300:
         if linel1() < 300 or liner1() < 300:
             counter = crossing(counter)
         elif linel3() > 700:  # these can't really use while loops anyways
