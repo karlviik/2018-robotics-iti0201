@@ -74,7 +74,8 @@ def preciseturn(degrees, side, speed, currentspeed):
         speedl(currentspeed + speed)
         while lencgoal < robot.get_left_wheel_encoder():
             rospy.sleep(0.05)
-    speed(currentspeed)
+    print("bot used preciseturn")
+    speed(25)
 
 
 def crossing(crosscount):
