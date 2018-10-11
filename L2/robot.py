@@ -56,6 +56,7 @@ def turn(perc):  # negative speed turns left, positive right
 
 
 def preciseturn(degrees, side, speed, currentspeed):
+    rospy.sleep(0.1)
     wheelturngoal = (robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER) * 360
     multiplier = 1
     if side == 0:
@@ -84,6 +85,7 @@ def crossing(crosscount):
     elif crosscount % 3 == 2:
         preciseturn(90, 1, 10, 10)# make the bot turn 90 degrees RIGHT
     return crosscount + 1
+
 
 counter = 0
 lastside = 1
