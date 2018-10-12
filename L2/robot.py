@@ -105,14 +105,14 @@ lastside = 1
 while True:
     setspeed(30)
     while getlinel3() < 300 and getliner3() < 300:
-        rospy.sleep(0.025)
+        rospy.sleep(0.01)
     if getlinel3() > 700 and getliner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
         setspeed(0)
         if getlinel2() < 300 or getlinel1() < 300:
-            turnstat(-30)
+            turnstat(-25)
             lastside = 0
         elif getliner2() < 300 or getliner1() < 300:
-            turnstat(30)
+            turnstat(25)
             lastside = 1
         else:
             if lastside:
@@ -120,9 +120,9 @@ while True:
             else:
                 turnstat(-30)
     elif getlinel3() > 700:  # these can't really use while loops anyways
-        setspeedr(23)
+        setspeedr(20)
         lastside = 1
     elif getliner3() > 700:
-        setspeedl(23)
+        setspeedl(20)
         lastside = 0
-    rospy.sleep(0.025)
+    rospy.sleep(0.01)
