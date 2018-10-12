@@ -134,9 +134,15 @@ while True:
             counter = crossing(counter)
         else:
             if lastside:
-                turn(25)
+                turnstat(25)
+                while lines[2] > 512 and lines[3] > 512:
+                    rospy.sleep(0.01)
+                    lines = updatelines()
             else:
-                turn(-25)
+                turnstat(-25)
+                while lines[2] > 512 and lines[3] > 512:
+                    rospy.sleep(0.01)
+                    lines = updatelines()
             while lines[2] > 512 and lines[3] > 512 and not (
                     lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[
                 5] < 512):
