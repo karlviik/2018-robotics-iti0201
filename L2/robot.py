@@ -101,73 +101,28 @@ def updatelines():
     return [getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()]
 
 
-counter = 0
 lastside = 1
 while True:
     setspeed(30)
-    lines = updatelines()
-    if lines[2] < 512 and lines[3] < 512:
-        while lines[2] < 512 and lines[3] < 512:  # while 2 and 3 are on black
-            if 512 > lines[0] or 512 > lines[5]:  # if 0 or 5 gets black, activate crossing code.
-                print("crossing", lines)
-                counter = crossing(counter)
-            rospy.sleep(0.005)
-            lines = updatelines()
-    if lines[3] < 512 < lines[2]:
-        setspeedr(20)
-        lastside = 1
-        while lines[3] < 512 < lines[2]:  # if only 1 of them are on black
-            if lines[0] < 512:
-                print("crossing", lines)
-                counter = crossing(counter)
-            rospy.sleep(0.005)
-            lines = updatelines()
-    if lines[2] < 512 < lines[3]:
-        setspeedl(20)
-        lastside = 0
-        while lines[2] < 512 < lines[3]:
-            if lines[5] < 512:
-                print("crossing", lines)
-                counter = crossing(counter)
-            rospy.sleep(0.005)
-            lines = updatelines()
-    if lines[2] > 512 and lines[3] > 512:
-        if lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512:
-            print("crossing", lines)
-            counter = crossing(counter)
-        else:
-            if lastside and not (lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512):
-                turnstat(25)
-                while lines[2] > 512 and lines[3] > 512 and not (lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512):
-                    rospy.sleep(0.005)
-                    lines = updatelines()
-            elif not (lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512):
-                turnstat(-25)
-                while lines[2] > 512 and lines[3] > 512 and not (lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512):
-                    rospy.sleep(0.005)
-                    lines = updatelines()
-            #while lines[2] > 512 and lines[3] > 512 and not (lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512):
-            #    rospy.sleep(0.005)
-            #    lines = updatelines()
-
-    """           
-    while lines[2] < 511.9 and lines[3] > 512:
-        if lines[0] > 512 and lines[5] > 512:
-            setspeedl(17)
-            lastside = 0
-        if lines[0] < 511.9 or lines[5] < 511.9:
-            counter = crossing(counter)
-            print("l2 is 511.9 and l3 is 512, l0 or l5 is 511.9")
-        rospy.sleep(0.01)
-        lines = updatelines()
-    while lines[2] > 512 and lines[3] > 512:
+    while linel3() < 300 and liner3() < 300:
+        rospy.sleep(0.025)
+    if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
         setspeed(0)
-        if lastside:
-            turn(20)
+        if linel2() < 300 or linel1() < 300:
+            turnstat(-30)
+            lastside = 0
+        elif liner2() < 300 or liner1() < 300:
+            turnstat(30)
+            lastside = 1
         else:
-            turn(-20)
-        rospy.sleep(0.01)
-        lines = updatelines()
-    """
-    rospy.sleep(0.005)
-    lines = updatelines()
+            if lastside:
+                turnstat(30)
+            else:
+                turnstat(-30)
+    elif linel3() > 700:  # these can't really use while loops anyways
+        setspeedr(23)
+        lastside = 1
+    elif liner3() > 700:
+        setspeedl(23)
+        lastside = 0
+    rospy.sleep(0.025)
