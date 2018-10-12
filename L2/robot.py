@@ -107,10 +107,10 @@ lastside = 1
 while True:
     setspeed(30)
     lines = updatelines()
-    print(lines)
     if lines[2] < 512 and lines[3] < 512:
         while lines[2] < 512 and lines[3] < 512:  # while 2 and 3 are on black
             if 512 < lines[0] or 512 < lines[5]:  # if 0 or 5 gets black, activate crossing code.
+                print(lines)
                 counter = crossing(counter)
             rospy.sleep(0.01)
             lines = updatelines()
@@ -119,6 +119,7 @@ while True:
         lastside = 1
         while lines[3] < 512 < lines[2]:  # if only 1 of them are on black
             if lines[0] < 512:
+                print(lines)
                 counter = crossing(counter)
             rospy.sleep(0.01)
             lines = updatelines()
@@ -127,11 +128,13 @@ while True:
         lastside = 0
         while lines[2] < 512 < lines[3]:
             if lines[5] < 512:
+                print(lines)
                 counter = crossing(counter)
             rospy.sleep(0.01)
             lines = updatelines()
     if lines[2] > 512 and lines[3] > 512:
         if lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512:
+            print(lines)
             counter = crossing(counter)
         else:
             if lastside:
