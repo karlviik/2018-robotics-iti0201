@@ -75,7 +75,6 @@ def preciseturn(degrees, mode, speed):  # negative degrees left, positive right.
         while clenc > lencgoal:
             rospy.sleep(0.01)
             clenc = robot.get_right_wheel_encoder()
-            print("stuck1")
     else:
         rencgoal = robot.get_left_wheel_encoder() + wheelturngoal
         setspeedr(speed)
@@ -85,11 +84,11 @@ def preciseturn(degrees, mode, speed):  # negative degrees left, positive right.
         while crenc > rencgoal:
             rospy.sleep(0.01)
             crenc = robot.get_left_wheel_encoder()
-            print("stuck2")
     setspeed(30)
 
 
 def crossing(crosscount):
+    print("crossing")
     if crosscount % 3 == 0:
         preciseturn(-90, 1, 20)
     # if crosscount % 3 == 1:
@@ -119,7 +118,7 @@ while True:
         setspeedr(20)
         lastside = 1
         while lines[3] < 512 < lines[2]:  # if only 1 of them are on black
-            if lines[0] < 512 or lines[1] < 512:
+            if lines[0] < 512:
                 counter = crossing(counter)
             rospy.sleep(0.01)
             lines = updatelines()
@@ -127,7 +126,7 @@ while True:
         setspeedl(20)
         lastside = 0
         while lines[2] < 512 < lines[3]:
-            if lines[4] < 512 or lines[5] < 512:
+            if lines[5] < 512:
                 counter = crossing(counter)
             rospy.sleep(0.01)
             lines = updatelines()
