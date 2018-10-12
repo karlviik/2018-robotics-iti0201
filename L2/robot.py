@@ -88,7 +88,6 @@ def preciseturn(degrees, mode, speed):  # negative degrees left, positive right.
 
 
 def crossing(crosscount):
-    print("crossing")
     if crosscount % 3 == 0:
         preciseturn(-90, 1, 20)
     # if crosscount % 3 == 1:
@@ -110,48 +109,46 @@ while True:
     if lines[2] < 512 and lines[3] < 512:
         while lines[2] < 512 and lines[3] < 512:  # while 2 and 3 are on black
             if 512 > lines[0] or 512 > lines[5]:  # if 0 or 5 gets black, activate crossing code.
-                print(lines)
+                print("crossing", lines)
                 counter = crossing(counter)
-            rospy.sleep(0.01)
+            rospy.sleep(0.005)
             lines = updatelines()
     if lines[3] < 512 < lines[2]:
         setspeedr(20)
         lastside = 1
         while lines[3] < 512 < lines[2]:  # if only 1 of them are on black
             if lines[0] < 512:
-                print(lines)
+                print("crossing", lines)
                 counter = crossing(counter)
-            rospy.sleep(0.01)
+            rospy.sleep(0.005)
             lines = updatelines()
     if lines[2] < 512 < lines[3]:
         setspeedl(20)
         lastside = 0
         while lines[2] < 512 < lines[3]:
             if lines[5] < 512:
-                print(lines)
+                print("crossing", lines)
                 counter = crossing(counter)
-            rospy.sleep(0.01)
+            rospy.sleep(0.005)
             lines = updatelines()
     if lines[2] > 512 and lines[3] > 512:
         if lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512:
-            print(lines)
+            print("crossing", lines)
             counter = crossing(counter)
         else:
-            if lastside:
+            if lastside and not (lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512):
                 turnstat(25)
-                while lines[2] > 512 and lines[3] > 512:
-                    rospy.sleep(0.01)
+                while lines[2] > 512 and lines[3] > 512 and not (lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512):
+                    rospy.sleep(0.005)
                     lines = updatelines()
-            else:
+            elif not (lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512):
                 turnstat(-25)
-                while lines[2] > 512 and lines[3] > 512:
-                    rospy.sleep(0.01)
+                while lines[2] > 512 and lines[3] > 512 and not (lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512):
+                    rospy.sleep(0.005)
                     lines = updatelines()
-            while lines[2] > 512 and lines[3] > 512 and not (
-                    lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[
-                5] < 512):
-                rospy.sleep(0.01)
-                lines = updatelines()
+            #while lines[2] > 512 and lines[3] > 512 and not (lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512):
+            #    rospy.sleep(0.005)
+            #    lines = updatelines()
 
     """           
     while lines[2] < 511.9 and lines[3] > 512:
@@ -172,5 +169,5 @@ while True:
         rospy.sleep(0.01)
         lines = updatelines()
     """
-    rospy.sleep(0.01)
+    rospy.sleep(0.005)
     lines = updatelines()
