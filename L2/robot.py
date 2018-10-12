@@ -1,6 +1,7 @@
 """Take a shot at following the line. White is lava."""
 import rospy
 from PiBot import PiBot
+from math import floor
 
 robot = PiBot()
 # This whole section is just to make writing stuff easier, means linel1() is same as robot.get_rightmost_toomuchtext()
@@ -15,42 +16,18 @@ getliner3 = robot.get_third_line_sensor_from_left
 
 
 def setspeed(perc):
-    """
-    Set wheel speeds, but treats backwards as forwards and vice versa. Mostly for shorter typing.
-
-    :param perc: percentage
-    :return: nada
-    """
     robot.set_wheels_speed(-perc)
 
 
 def setspeedl(perc):
-    """
-    Set right wheel speed as negative of perc(entage) because treating back as front.
-
-    :param perc: percentage
-    :return: nada
-    """
     robot.set_right_wheel_speed(-perc)
 
 
 def setspeedr(perc):
-    """
-    Set left wheel speed as negative or perc(entage) because treating back as front.
-
-    :param perc: percentage
-    :return: nada
-    """
     robot.set_left_wheel_speed(-perc)
 
 
 def turn(perc):  # negative speed turns left, positive right
-    """
-    Make the robot turn in a stationary position. Positive input turns right and negative left when treating front as back.
-
-    :param perc: percentage
-    :return: nada
-    """
     if perc > 0:
         setspeedl(perc)
     else:
@@ -98,7 +75,7 @@ def crossing(crosscount):
 
 
 def updatelines():
-    return [getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()]
+    return [floor(getlinel1() / 512), floor(getlinel2() / 512), floor(getlinel3() / 512), floor(getliner3() / 512), floor(getliner2() / 512), floor(getliner1() / 512)]
 
 
 lastside = 1
@@ -109,20 +86,32 @@ while True:
     if getlinel3() > 700 and getliner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
         setspeed(0)
         if getlinel2() < 300 or getlinel1() < 300:
-            turnstat(-25)
+            turnstat(-20)
             lastside = 0
+            while getlinel3() > 700 and getliner3() > 700:
+                rospy.sleep(0.01)
         elif getliner2() < 300 or getliner1() < 300:
-            turnstat(25)
+            turnstat(20)
             lastside = 1
+            while getlinel3() > 700 and getliner3() > 700:
+                rospy.sleep(0.01)
         else:
             if lastside:
                 turnstat(30)
+                while getlinel3() > 700 and getliner3() > 700:
+                    rospy.sleep(0.01)
             else:
                 turnstat(-30)
+                while getlinel3() > 700 and getliner3() > 700:
+                    rospy.sleep(0.01)
     elif getlinel3() > 700:  # these can't really use while loops anyways
         setspeedr(20)
         lastside = 1
+        while getlinel3() > 700 and getliner3() < 300:
+            rospy.sleep(0.01)
     elif getliner3() > 700:
         setspeedl(20)
         lastside = 0
+        while getliner3() > 700 and getlinel3() < 300:
+            rospy.sleep(0.01)
     rospy.sleep(0.01)
