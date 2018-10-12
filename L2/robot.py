@@ -75,6 +75,7 @@ def preciseturn(degrees, mode, speed):  # negative degrees left, positive right.
         while clenc > lencgoal:
             rospy.sleep(0.01)
             clenc = robot.get_right_wheel_encoder()
+            print("stuck1")
     else:
         rencgoal = robot.get_left_wheel_encoder() + wheelturngoal
         setspeedr(speed)
@@ -84,6 +85,7 @@ def preciseturn(degrees, mode, speed):  # negative degrees left, positive right.
         while crenc > rencgoal:
             rospy.sleep(0.01)
             crenc = robot.get_left_wheel_encoder()
+            print("stuck2")
     setspeed(30)
 
 
