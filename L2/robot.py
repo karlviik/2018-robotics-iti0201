@@ -96,6 +96,10 @@ while True:
             while getlinel3() > 700 and getliner3() > 700:
                 rospy.sleep(0.01)
         else:
+            if getlinel1() < 300 or getlinel2() < 300 or getlinel3() < 300:
+                lastside = 0
+            if getliner1() < 300 or getliner2() < 300 or getliner3() < 300:
+                lastside = 1
             if lastside:
                 turnstat(30)
                 while getlinel3() > 700 and getliner3() > 700:
