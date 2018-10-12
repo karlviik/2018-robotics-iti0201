@@ -1,7 +1,6 @@
 """Take a shot at following the line. White is lava."""
-from PiBot import PiBot
 import rospy
-
+from PiBot import PiBot
 
 robot = PiBot()
 # This whole section is just to make writing stuff easier, means linel1() is same as robot.get_rightmost_toomuchtext()
@@ -85,12 +84,12 @@ def preciseturn(degrees, mode, speed):  # negative degrees left, positive right.
         while crenc > rencgoal:
             rospy.sleep(0.01)
             crenc = robot.get_left_wheel_encoder()
-    setspeed(25)
+    setspeed(30)
 
 
 def crossing(crosscount):
     if crosscount % 3 == 0:
-        preciseturn(90, 1, 20)
+        preciseturn(-90, 1, 20)
     # if crosscount % 3 == 1:
         # make the bot ignore everything and move straight
     elif crosscount % 3 == 2:
@@ -105,32 +104,46 @@ def updatelines():
 counter = 0
 lastside = 1
 while True:
-    setspeed(25)
+    setspeed(30)
     lines = updatelines()
     print(lines)
-    while lines[2] < 511.9 and lines[3] < 511.9:
-        if lines[1] < 511.9 and lines[0] > 512:
-            setspeedl(17)
-            lastside = 0
-        elif lines[4] < 511.9 and lines[5] > 512:
-            setspeedr(17)
-            lastside = 1
-        elif lines[0] < 511.9 or lines[5] < 511.9:
+    if lines[2] < 512 and lines[3] < 512:
+        while lines[2] < 512 and lines[3] < 512:  # while 2 and 3 are on black
+            if 512 < lines[0] or 512 < lines[5]:  # if 0 or 5 gets black, activate crossing code.
+                counter = crossing(counter)
+            rospy.sleep(0.01)
+            lines = updatelines()
+    if lines[3] < 512 < lines[2]:
+        setspeedr(20)
+        lastside = 1
+        while lines[3] < 512 < lines[2]:  # if only 1 of them are on black
+            if lines[0] < 512 or lines[1] < 512:
+                counter = crossing(counter)
+            rospy.sleep(0.01)
+            lines = updatelines()
+    if lines[2] < 512 < lines[3]:
+        setspeedl(20)
+        lastside = 0
+        while lines[2] < 512 < lines[3]:
+            if lines[4] < 512 or lines[5] < 512:
+                counter = crossing(counter)
+            rospy.sleep(0.01)
+            lines = updatelines()
+    if lines[2] > 512 and lines[3] > 512:
+        if lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[5] < 512:
             counter = crossing(counter)
-            print("middles are on, l0 or l5 is 511.9")
         else:
-            setspeed(25)
-        rospy.sleep(0.01)
-        lines = updatelines()
-    while lines[2] > 512 and lines[3] < 511.9:
-        if lines[0] > 512 and lines[5] > 512:
-            setspeedr(17)
-            lastside = 1
-        if lines[0] < 511.9 or lines[5] < 511.9:
-            counter = crossing(counter)
-            print("l2 is 512 and l3 is 511.9, l0 or l5 is 511.9")
-        rospy.sleep(0.01)
-        lines = updatelines()
+            if lastside:
+                turn(25)
+            else:
+                turn(-25)
+            while lines[2] > 512 and lines[3] > 512 and not (
+                    lines[1] < 512 and lines[4] < 512 or lines[0] < 512 and lines[4] < 512 or lines[1] < 512 and lines[
+                5] < 512):
+                rospy.sleep(0.01)
+                lines = updatelines()
+
+    """           
     while lines[2] < 511.9 and lines[3] > 512:
         if lines[0] > 512 and lines[5] > 512:
             setspeedl(17)
@@ -148,6 +161,6 @@ while True:
             turn(-20)
         rospy.sleep(0.01)
         lines = updatelines()
-
+    """
     rospy.sleep(0.01)
     lines = updatelines()
