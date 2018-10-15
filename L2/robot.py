@@ -110,14 +110,14 @@ def main():
 
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # it has to turn to the left if L1 is black
-        if l1 < 600 and r3 > 600:
+        if l1 < 600 < r3:
             last_side = 1
             turn(-15)
             while r3 > 600:
                 rospy.sleep(0.005)
                 r3 = getliner3()
         # it has to turn to the right if R1 is black
-        elif r1 < 600 and l3 > 600:
+        elif r1 < 600 < l3:
             last_side = 0
             turn(15)
             while l3 > 600:
