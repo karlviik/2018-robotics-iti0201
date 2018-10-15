@@ -66,25 +66,25 @@ def preciseturn(side, turnspeed):  # side 0 is left, side 1 is right
         encgoal = robot.get_right_wheel_encoder() - wheelturngoal
         turn(turnspeed)
         while enc > encgoal:
-            rospy.sleep(0.01)
+            rospy.sleep(0.005)
             enc = robot.get_right_wheel_encoder()
     else:
         encgoal = robot.get_right_wheel_encoder() + wheelturngoal
         turn(-turnspeed)
         while enc < encgoal:
-            rospy.sleep(0.01)
+            rospy.sleep(0.005)
             enc = robot.get_right_wheel_encoder()
 
 
 def crossing(crosscount):
-    print("This is turn number " + crosscount + 1)
+    print("This is turn number " + str(crosscount + 1))
     speed(0)
     lenc = robot.get_right_wheel_encoder()
     # 200 == distance from the present position of robot to the middle of the crossroad ahead.
     lencgoal = lenc - 200
     speed(17)
     while lenc > lencgoal:
-        rospy.sleep(0.01)
+        rospy.sleep(0.005)
         lenc = robot.get_right_wheel_encoder()
     if crosscount % 3 == 0:
         preciseturn(0, 20)
