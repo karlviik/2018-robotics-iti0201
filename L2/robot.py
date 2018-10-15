@@ -77,6 +77,15 @@ def preciseturn(side, turnspeed):  # side 0 is left, side 1 is right
 
 
 def crossing(crosscount):
+    print("This is turn number " + crosscount + 1)
+    speed(0)
+    lenc = robot.get_right_wheel_encoder()
+    # 200 == distance from the present position of robot to the middle of the crossroad ahead.
+    lencgoal = lenc - 200
+    speed(17)
+    while lenc > lencgoal:
+        rospy.sleep(0.01)
+        lenc = robot.get_right_wheel_encoder()
     if crosscount % 3 == 0:
         preciseturn(0, 20)
     elif crosscount % 3 == 2:
@@ -84,26 +93,16 @@ def crossing(crosscount):
     return crosscount + 1
 
 
-def move():
+def main():
+    countandturn = 0
     last_side = 0
-    flag = ""
     while True:
         while linel3() < 600 and liner3() < 600:
             # print("move forward")
             if linel1() < 600 or liner1() < 600:
-                flag = "break"
-                break
-            speed(17)
-        # We have a crossroad if flag == break
-        if flag == "break":
-            speed(0)
-            print("finita la commedia")
-            distance = left_distance()
-            # 200 == distance from the present position of robot to the middle of the crossroad ahead.
-            while left_distance() > distance - 200:
-                speed(15)
-            # go to the main function.
-            break
+                print("finita la commedia")
+                countandturn = crossing(countandturn)
+            speed(20)
 
         # it has to turn to the left if linel1() < 600.
         if linel1() < 600:
@@ -134,84 +133,12 @@ def move():
         if linel1() < 600 and linel3() < 600 or linel1() < 600 and liner3() < 600 or liner1() < 600 \
                 and linel3() < 600 or liner1() < 600 and liner3() < 600:
             print("surprise!")
-            distance = left_distance()
-            while left_distance() > distance - 200:
-                speed(15)
-            break
-
-
-def main():
-    countandturn = 0
-    while True:
-        move()
-        print(countandturn)
-        countandturn = crossing(countandturn)
-        #speed(0)
-        #distance = left_distance()
-        #print("start turning")
-        # 592  - a rule of thumb. Just calculated this value and added to the formula.
-        # formula is designed to turn left
-        #while left_distance() < distance + (pi * 592) / 4:
-        #    turn(-20)
-        #move()
-        #move()
-        #distance = right_distance()
-        # to turn right
-        #while right_distance() > distance - (pi * 592) / 4:
-        #    turn(20)
-        #speed(0)
+            countandturn = crossing(countandturn)
 
 
 main()
 
 """
-
-
-
 def updatelines():
     return [floor(getlinel1() / 512), floor(getlinel2() / 512), floor(getlinel3() / 512), floor(getliner3() / 512), floor(getliner2() / 512), floor(getliner1() / 512)]
-
-
-lastside = 1
-while True:
-    setspeed(30)
-    lines = updatelines()
-    while not lines[3] and not lines[4]:
-        rospy.sleep(0.01)
-    if lines[3] and lines[4]:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
-        setspeed(0)
-        if getlinel2() < 300 or getlinel1() < 300:
-            turnstat(-20)
-            lastside = 0
-            while getlinel3() > 700 and getliner3() > 700:
-                rospy.sleep(0.01)
-        elif getliner2() < 300 or getliner1() < 300:
-            turnstat(20)
-            lastside = 1
-            while getlinel3() > 700 and getliner3() > 700:
-                rospy.sleep(0.01)
-        else:
-            if getlinel1() < 300 or getlinel2() < 300 or getlinel3() < 300:
-                lastside = 0
-            if getliner1() < 300 or getliner2() < 300 or getliner3() < 300:
-                lastside = 1
-            if lastside:
-                turnstat(30)
-                while getlinel3() > 700 and getliner3() > 700:
-                    rospy.sleep(0.01)
-            else:
-                turnstat(-30)
-                while getlinel3() > 700 and getliner3() > 700:
-                    rospy.sleep(0.01)
-    elif getlinel3() > 700:  # these can't really use while loops anyways
-        setspeedr(20)
-        lastside = 1
-        while getlinel3() > 700 and getliner3() < 300:
-            rospy.sleep(0.01)
-    elif getliner3() > 700:
-        setspeedl(20)
-        lastside = 0
-        while getliner3() > 700 and getlinel3() < 300:
-            rospy.sleep(0.01)
-    rospy.sleep(0.01)
 """
