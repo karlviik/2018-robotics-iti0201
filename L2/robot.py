@@ -58,19 +58,19 @@ def turn(perc):  # negative speed turns left, positive right
     speedl(perc)
 
 
-def preciseturn(side, speed):  # side 0 is left, side 1 is right
+def preciseturn(side, turnspeed):  # side 0 is left, side 1 is right
     speed(0)
     wheelturngoal = (robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) * 90
     enc = robot.get_right_wheel_encoder()
     if side:
         encgoal = robot.get_right_wheel_encoder() - wheelturngoal
-        turn(speed)
+        turn(turnspeed)
         while enc > encgoal:
             rospy.sleep(0.01)
             enc = robot.get_right_wheel_encoder()
     else:
         encgoal = robot.get_right_wheel_encoder() + wheelturngoal
-        turn(-speed)
+        turn(-turnspeed)
         while enc < encgoal:
             rospy.sleep(0.01)
             enc = robot.get_right_wheel_encoder()
