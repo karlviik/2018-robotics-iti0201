@@ -7,12 +7,12 @@ robot = PiBot()
 # This whole section is just to make writing stuff easier, means linel1() is same as robot.get_rightmost_toomuchtext()
 # To note is that left and right sides are switched as in this task robot always moves backwards, so might aswell
 # treat robot's back as its front.
-linel1 = robot.get_rightmost_line_sensor
-linel2 = robot.get_second_line_sensor_from_right
-linel3 = robot.get_third_line_sensor_from_right
-liner1 = robot.get_leftmost_line_sensor
-liner2 = robot.get_second_line_sensor_from_left
-liner3 = robot.get_third_line_sensor_from_left
+getlinel1 = robot.get_rightmost_line_sensor
+getlinel2 = robot.get_second_line_sensor_from_right
+getlinel3 = robot.get_third_line_sensor_from_right
+getliner1 = robot.get_leftmost_line_sensor
+getliner2 = robot.get_second_line_sensor_from_left
+getliner3 = robot.get_third_line_sensor_from_left
 left_distance = robot.get_right_wheel_encoder
 right_distance = robot.get_right_wheel_encoder
 
@@ -90,6 +90,7 @@ def crossing(crosscount):
         preciseturn(0, 20)
     elif crosscount % 3 == 2:
         preciseturn(1, 20)  # make the bot turn 90 degrees RIGHT
+    speed(20)
     return crosscount + 1
 
 
@@ -97,29 +98,37 @@ def main():
     countandturn = 0
     last_side = 0
     while True:
-        while linel3() < 600 and liner3() < 600:
-            # print("move forward")
-            if linel1() < 600 or liner1() < 600:
-                print("finita la commedia")
-                countandturn = crossing(countandturn)
+        l3, r3 = getlinel3(), getliner3()
+        if l3 < 600 and r3 < 600:
             speed(20)
+            while l3 < 600 and r3 < 600:
+                rospy.sleep(0.005)
+                l3, r3, l1, r1 = getlinel3(), getliner3(), getlinel1(), getliner1()
+                if l1 < 600 or r1 < 600:
+                    print("finita la commedia")
+                    countandturn = crossing(countandturn)
 
-        # it has to turn to the left if linel1() < 600.
-        if linel1() < 600:
+        l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
+        # it has to turn to the left if L1 is black
+        if l1 < 600 and r3 > 600:
             last_side = 1
-            while liner3() > 600:
-                turn(-15)
-        # it has to turn to the right if liner1() < 600 respectively
-        elif liner1() < 600:
+            turn(-15)
+            while r3 > 600:
+                rospy.sleep(0.005)
+                r3 = getliner3()
+        # it has to turn to the right if R1 is black
+        elif r1 < 600 and l3 > 600:
             last_side = 0
-            while linel3() > 600:
-                turn(15)
+            turn(15)
+            while l3 > 600:
+                rospy.sleep(0.005)
+                l3 = getlinel3()
         # condition for maneuvering. in other words, we can just change speed of different vehicles to adjust the
         # trajectory of the robot.
-        elif linel2() < 600 and linel3() < 600:
+        elif l2 < 600 and l3 < 600:
             speedl(15)
             speedr(20)
-        elif liner2() < 600 and liner3() < 600:
+        elif r2 < 600 and r3 < 600:
             speedr(15)
             speedl(20)
         # try to predict direction of the next turn. if the robot turned to the left, then it is
@@ -129,11 +138,12 @@ def main():
                 turn(-15)
             else:
                 turn(15)
+        l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition to catch a crossroad when robot doesn't move straight.
-        if linel1() < 600 and linel3() < 600 or linel1() < 600 and liner3() < 600 or liner1() < 600 \
-                and linel3() < 600 or liner1() < 600 and liner3() < 600:
+        if l1 < 600 and l3 < 600 or l1 < 600 and r3 < 600 or r1 < 600 and l3 < 600 or r1 < 600 and r3 < 600:
             print("surprise!")
             countandturn = crossing(countandturn)
+        rospy.sleep(0.005)
 
 
 main()
