@@ -99,7 +99,7 @@ def main():
     last_side = 0
     while True:
         l3, r3, l2, r2 = getlinel3(), getliner3(), getlinel2(), getliner2()
-        if l3 < 600 and r3 < 600 or l2 > 500 and l3 < 600 or r2 > 500 and r3 < 600:
+        if l3 < 600 and r3 < 600:  # or l2 > 500 and l3 < 600 or r2 > 500 and r3 < 600
             speed(20)
             while l3 < 600 and r3 < 600:
                 rospy.sleep(0.005)
@@ -111,11 +111,11 @@ def main():
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition for maneuvering. in other words, we can just change speed of different vehicles to adjust the
         # trajectory of the robot.
-        if l2 < 600 and l3 < 600:
+        if l3 < 600:
             last_side = 1
             speedl(15)
             speedr(20)
-        elif r2 < 600 and r3 < 600:
+        elif r3 < 600:
             last_side = 0
             speedr(15)
             speedl(20)
