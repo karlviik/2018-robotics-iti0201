@@ -98,8 +98,8 @@ def main():
     countandturn = 0
     last_side = 0
     while True:
-        l3, r3 = getlinel3(), getliner3()
-        if l3 < 600 and r3 < 600:
+        l3, r3, l2, r2 = getlinel3(), getliner3(), getlinel2(), getliner2()
+        if l3 < 600 and r3 < 600 or l2 > 600 and l3 < 600 or r2 > 600 and r3 < 600:
             speed(20)
             while l3 < 600 and r3 < 600:
                 rospy.sleep(0.005)
