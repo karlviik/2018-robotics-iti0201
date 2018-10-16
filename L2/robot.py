@@ -137,19 +137,22 @@ def main():
         # try to predict direction of the next turn. if the robot turned to the left, then it is
         # more possible that the next turn has to be in the same direction (case of loop).
         else:
+            check = 1
             l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
-            if l1 < 600 or l2 < 600 or l3 < 600:
+            if l1 < 600 or l2 < 600:
                 last_side = 1
-            elif r1 < 600 or r2 < 600 or r3 < 600:
+            elif r1 < 600 or r2 < 600:
                 last_side = 0
+            elif r3 < 600 or l3 < 600:
+                check = 0
             print("I just turned!")
             print(l1, l2, l3, r3, r2, r1)
-            if last_side:  # true is left
+            if last_side and check:  # true is left
                 turn(-15)
                 while l3 > 600 or (l2 > 600 and r3 > 600):  # expanded these checks
                     rospy.sleep(0.005)
                     l2, l3, r3 = getlinel2(), getlinel3(), getliner3()
-            else:
+            elif check:
                 turn(15)
                 while r3 > 600 or (r2 > 600 and l3 > 600):
                     rospy.sleep(0.005)
