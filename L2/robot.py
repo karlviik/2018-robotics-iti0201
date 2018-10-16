@@ -126,25 +126,27 @@ def main():
         # condition for maneuvering. in other words, we can just change speed of different vehicles to adjust the
         # trajectory of the robot.
         elif l2 < 600 and l3 < 600:
+            last_side = 1
             speedl(15)
             speedr(20)
         elif r2 < 600 and r3 < 600:
+            last_side = 0
             speedr(15)
             speedl(20)
         # try to predict direction of the next turn. if the robot turned to the left, then it is
         # more possible that the next turn has to be in the same direction (case of loop).
         else:
             print("I just turned!")
-            if last_side:
+            if last_side:  # true is left
                 turn(-15)
-                while l2 > 600:
+                while l3 > 600 or (l2 > 600 and r3 > 600):  # expanded these checks
                     rospy.sleep(0.005)
-                    l2 = getlinel2()
+                    l2, l3, r3 = getlinel2(), getlinel3(), getliner3()
             else:
                 turn(15)
-                while r2 > 600:
+                while r3 > 600 or (r2 > 600 and l3 > 600):
                     rospy.sleep(0.005)
-                    r2 = getliner2()
+                    r2, r3, l3 = getliner2(), getliner3(), getlinel3()
             print("And I just finished turning!")
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition to catch a crossroad when robot doesn't move straight.
