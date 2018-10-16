@@ -143,6 +143,7 @@ def main():
             elif r1 < 600 or r2 < 600 or r3 < 600:
                 last_side = 0
             print("I just turned!")
+            print(l1, l2, l3, r3, r2, r1)
             if last_side:  # true is left
                 turn(-15)
                 while l3 > 600 or (l2 > 600 and r3 > 600):  # expanded these checks
