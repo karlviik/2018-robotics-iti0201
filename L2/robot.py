@@ -134,13 +134,21 @@ def main():
         # try to predict direction of the next turn. if the robot turned to the left, then it is
         # more possible that the next turn has to be in the same direction (case of loop).
         else:
+            print("I just turned!")
             if last_side:
                 turn(-15)
+                while l2 > 600:
+                    rospy.sleep(0.005)
+                    l2 = getlinel2()
             else:
                 turn(15)
+                while r2 > 600:
+                    rospy.sleep(0.005)
+                    r2 = getliner2()
+            print("And I just finished turning!")
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition to catch a crossroad when robot doesn't move straight.
-        if l1 < 600 and l3 < 600 or l1 < 600 and r3 < 600 or r1 < 600 and l3 < 600 or r1 < 600 and r3 < 600:
+        if (l1 < 600 or r1 < 600) and (l3 < 600 or r3 < 600):
             print("surprise!")
             countandturn = crossing(countandturn)
         rospy.sleep(0.005)
