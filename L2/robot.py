@@ -109,23 +109,9 @@ def main():
                     countandturn = crossing(countandturn)
 
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
-        # it has to turn to the left if L1 is black
-        if (l1 < 600 or l2 < 600) and 600 < r3:
-            last_side = 1
-            turn(-15)
-            while r3 > 600:
-                rospy.sleep(0.005)
-                r3 = getliner3()
-        # it has to turn to the right if R1 is black
-        elif (r1 < 600 or r2 < 600) and 600 < l3:
-            last_side = 0
-            turn(15)
-            while l3 > 600:
-                rospy.sleep(0.005)
-                l3 = getlinel3()
         # condition for maneuvering. in other words, we can just change speed of different vehicles to adjust the
         # trajectory of the robot.
-        elif l2 < 600 and l3 < 600:
+        if l2 < 600 and l3 < 600:
             last_side = 1
             speedl(15)
             speedr(20)
@@ -133,6 +119,21 @@ def main():
             last_side = 0
             speedr(15)
             speedl(20)
+        # it has to turn to the left if L1 is black
+        elif (l1 < 600 or l2 < 600) and 600 < r3:
+            last_side = 1
+            turn(-15)
+            while l3 > 600:  # changed r3 to l3 inside the loop
+                rospy.sleep(0.005)
+                l3 = getliner3()
+        # it has to turn to the right if R1 is black
+        elif (r1 < 600 or r2 < 600) and 600 < l3:
+            last_side = 0
+            turn(15)
+            while r3 > 600:  #  changed l3 to r3 inside the loop
+                rospy.sleep(0.005)
+                r3 = getlinel3()
+
         # try to predict direction of the next turn. if the robot turned to the left, then it is
         # more possible that the next turn has to be in the same direction (case of loop).
         else:
