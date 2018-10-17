@@ -1,7 +1,6 @@
 """Take a shot at following the line. White is lava."""
 from PiBot import PiBot
 import rospy
-from math import pi
 
 robot = PiBot()
 # This whole section is just to make writing stuff easier, means linel1() is same as robot.get_rightmost_toomuchtext()
@@ -98,19 +97,18 @@ def main():
     countandturn = 0
     last_side = 0
     while True:
-        l3, r3, l2, r2 = getlinel3(), getliner3(), getlinel2(), getliner2()
-        if l3 < 600 and r3 < 600:  # or l2 > 500 and l3 < 600 or r2 > 500 and r3 < 600
+        l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
+        if l2 > 600 and r2 > 600 and (l3 < 600 or r3 < 600):  # if l3 < 600 and r3 < 600:  # or l2 > 500 and l3 < 600 or r2 > 500 and r3 < 600
             speed(20)
             print("I'm in a loop now!")
-            while l3 < 600 and r3 < 600:
+            while l2 > 600 and r2 > 600 and (l3 < 600 or r3 < 600): #l3 < 600 and r3 < 600:
                 rospy.sleep(0.005)
-                l3, r3, l1, r1 = getlinel3(), getliner3(), getlinel1(), getliner1()
+                l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
                 if l1 < 600 or r1 < 600:
                     print("finita la commedia")
                     countandturn = crossing(countandturn)
             print("I exited my oppressor loop! Viva la ... Nocycle?")
-
-        l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
+            l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition for maneuvering. in other words, we can just change speed of different vehicles to adjust the
         # trajectory of the robot.
         if l3 < 600:
@@ -135,7 +133,6 @@ def main():
             while r3 > 600:  #  changed l3 to r3 inside the loop
                 rospy.sleep(0.005)
                 r3 = getlinel3()
-
         # try to predict direction of the next turn. if the robot turned to the left, then it is
         # more possible that the next turn has to be in the same direction (case of loop).
         else:
