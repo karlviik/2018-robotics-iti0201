@@ -173,6 +173,7 @@ def main():
         if (l1 < 600 or r1 < 600) and (l3 < 600 or r3 < 600):
             print("surprise!")
             countandturn = crossing(countandturn)
+        print(getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1())
         rospy.sleep(0.005)
 
 
