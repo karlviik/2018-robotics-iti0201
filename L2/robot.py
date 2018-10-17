@@ -152,17 +152,21 @@ def main():
                 while l3 > 600 or (l2 > 600 and r3 > 600):  # expanded these checks
                     if r1 < 600 or r2 < 600:
                         last_side = 0
+                        speed(0)
                         break
                     rospy.sleep(0.005)
                     l2, l3, r3, r2, r1 = getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
+                speed(0)
             elif check:
                 turn(15)
                 while r3 > 600 or (r2 > 600 and l3 > 600):
                     if l1 < 600 or l2 < 600:
                         last_side = 1
+                        speed(0)
                         break
                     rospy.sleep(0.005)
                     r2, r3, l3, l2, l1 = getliner2(), getliner3(), getlinel3(), getlinel2(), getlinel1()
+                speed(0)
             print("And I just finished turning!")
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition to catch a crossroad when robot doesn't move straight.
