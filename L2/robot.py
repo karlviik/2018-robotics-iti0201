@@ -106,6 +106,7 @@ def main():
                     print("     finita la commedia")
                     #print("     " + str(l1) + str(l2) + str(l3) + str(r3) + str(r2) + str(r1))
                     countandturn = crossing(countandturn)
+                rospy.sleep(0.05)
                 #l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
             print("}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
             l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
