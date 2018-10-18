@@ -120,10 +120,10 @@ def main():
             print("{")
             while getlinel2() > 600 and getliner2() > 600 and (getlinel3() < 600 or getliner3() < 600):  # l3 < 600 and r3 < 600:
                 if getlinel1() < 600 or getliner1() < 600:
-                    print("     finita la commedia")
+                    # print("     finita la commedia")
                     # print("     " + str(l1) + str(l2) + str(l3) + str(r3) + str(r2) + str(r1))
                     countandturn = crossing(countandturn)
-                rospy.sleep(0.03)
+                rospy.sleep(0.01)
                 # l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
             print("}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
             l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
