@@ -116,10 +116,12 @@ def main():
             last_side = 1
             speedl(15)
             speedr(20)
+            rospy.sleep(0.05)
         elif r3 < 600:
             last_side = 0
             speedr(15)
             speedl(20)
+            rospy.sleep(0.05)
         # it has to turn to the left if L1 is black
         #"""elif (l1 < 600 or l2 < 600) and 600 < r3:
         #    last_side = 1
@@ -154,7 +156,7 @@ def main():
                         last_side = 0
                         speed(0)
                         break
-                    rospy.sleep(0.005)
+                    rospy.sleep(0.05)
                     l2, l3, r3, r2, r1 = getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
                 speed(0)
             elif check:
@@ -164,16 +166,18 @@ def main():
                         last_side = 1
                         speed(0)
                         break
-                    rospy.sleep(0.005)
+                        rospy.sleep(0.05)
                     r2, r3, l3, l2, l1 = getliner2(), getliner3(), getlinel3(), getlinel2(), getlinel1()
                 speed(0)
+            else:
+                rospy.sleep(0.05)
             print("     And I just finished turning!\n}}}}}}}}}}}}")
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition to catch a crossroad when robot doesn't move straight.
         if (l1 < 600 or r1 < 600) and (l3 < 600 or r3 < 600) or (l2 < 600 and r1 < 600) or (r2 < 600 and l1 < 600) or (l2 < 600 and l3 < 600 and r3 < 600 and r2 < 600):
             print("surprise!")
             countandturn = crossing(countandturn)
-        rospy.sleep(0.005)
+        #rospy.sleep(0.005)
 
 
 main()
