@@ -150,7 +150,7 @@ def main():
             if last_side and check:  # true is left
                 turn(-15)
                 while l3 > 600 or (l2 > 600 and r3 > 600):  # expanded these checks
-                    if r1 < 600 or r2 < 600:
+                    if r1 < 600 or r2 < 600 or r3 < 600:
                         last_side = 0
                         speed(0)
                         break
@@ -160,7 +160,7 @@ def main():
             elif check:
                 turn(15)
                 while r3 > 600 or (r2 > 600 and l3 > 600):
-                    if l1 < 600 or l2 < 600:
+                    if l1 < 600 or l2 < 600 or l3 < 600:
                         last_side = 1
                         speed(0)
                         break
