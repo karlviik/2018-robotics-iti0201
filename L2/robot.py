@@ -171,7 +171,7 @@ def main():
                         last_side = 0
                         speed(0)
                         break
-                    rospy.sleep(0.03)
+                    rospy.sleep(0.01)
                     l2, l3, r3, r2, r1 = getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
                 speed(0)
             elif check:
@@ -181,7 +181,7 @@ def main():
                         last_side = 1
                         speed(0)
                         break
-                    rospy.sleep(0.03)
+                    rospy.sleep(0.01)
                     r2, r3, l3, l2, l1 = getliner2(), getliner3(), getlinel3(), getlinel2(), getlinel1()
                 speed(0)
             print("     And I just finished turning!\n}}}}}}}}}}}}")
