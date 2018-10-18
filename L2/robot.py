@@ -100,15 +100,15 @@ def main():
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         if l2 > 600 and r2 > 600 and (l3 < 600 or r3 < 600):  # if l3 < 600 and r3 < 600:  # or l2 > 500 and l3 < 600 or r2 > 500 and r3 < 600
             speed(20)
-            print("I'm in a loop now!")
+            print("{")
             while l2 > 600 and r2 > 600 and (l3 < 600 or r3 < 600): #l3 < 600 and r3 < 600:
                 if l1 < 600 or r1 < 600:
-                    print("finita la commedia")
-                    print(l1, l2, l3, r3, r2, r1)
+                    print("     finita la commedia")
+                    print("     " + l1, l2, l3, r3, r2, r1)
                     countandturn = crossing(countandturn)
                 rospy.sleep(0.005)
                 l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
-            print("I exited my oppressor loop! Viva la ... Nocycle?")
+            print("}")
             l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition for maneuvering. in other words, we can just change speed of different vehicles to adjust the
         # trajectory of the robot.
@@ -145,8 +145,8 @@ def main():
                 last_side = 0
             elif r3 < 600 or l3 < 600:
                 check = 0
-            print("I just turned!")
-            print(l1, l2, l3, r3, r2, r1)
+            print("{\n     I just turned!")
+            print("     " + l1, l2, l3, r3, r2, r1)
             if last_side and check:  # true is left
                 turn(-15)
                 while l3 > 600 or (l2 > 600 and r3 > 600):  # expanded these checks
@@ -167,7 +167,7 @@ def main():
                     rospy.sleep(0.005)
                     r2, r3, l3, l2, l1 = getliner2(), getliner3(), getlinel3(), getlinel2(), getlinel1()
                 speed(0)
-            print("And I just finished turning!")
+            print("     And I just finished turning!\n}")
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition to catch a crossroad when robot doesn't move straight.
         if (l1 < 600 or r1 < 600) and (l3 < 600 or r3 < 600) or (l2 < 600 and r1 < 600) or (r2 < 600 and l1 < 600):
