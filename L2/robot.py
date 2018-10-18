@@ -106,6 +106,7 @@ def main():
                 l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
                 if l1 < 600 or r1 < 600:
                     print("finita la commedia")
+                    print(l1, l2, l3, r3, r2, r1)
                     countandturn = crossing(countandturn)
             print("I exited my oppressor loop! Viva la ... Nocycle?")
             l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
