@@ -102,12 +102,12 @@ def main():
             speed(20)
             print("I'm in a loop now!")
             while l2 > 600 and r2 > 600 and (l3 < 600 or r3 < 600): #l3 < 600 and r3 < 600:
-                rospy.sleep(0.005)
-                l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
                 if l1 < 600 or r1 < 600:
                     print("finita la commedia")
                     print(l1, l2, l3, r3, r2, r1)
                     countandturn = crossing(countandturn)
+                rospy.sleep(0.005)
+                l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
             print("I exited my oppressor loop! Viva la ... Nocycle?")
             l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition for maneuvering. in other words, we can just change speed of different vehicles to adjust the
