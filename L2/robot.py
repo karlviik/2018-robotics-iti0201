@@ -106,7 +106,6 @@ def main():
                     print("     finita la commedia")
                     #print("     " + str(l1) + str(l2) + str(l3) + str(r3) + str(r2) + str(r1))
                     countandturn = crossing(countandturn)
-                rospy.sleep(0.000)
                 #l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
             print("}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
             l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
@@ -121,7 +120,7 @@ def main():
             speedr(15)
             speedl(20)
         # it has to turn to the left if L1 is black
-        elif (l1 < 600 or l2 < 600) and 600 < r3:
+        """elif (l1 < 600 or l2 < 600) and 600 < r3:
             last_side = 1
             turn(-15)
             while l3 > 600:  # changed r3 to l3 inside the loop
@@ -133,7 +132,7 @@ def main():
             turn(15)
             while r3 > 600:  #  changed l3 to r3 inside the loop
                 rospy.sleep(0.005)
-                r3 = getlinel3()
+                r3 = getlinel3()"""
         # try to predict direction of the next turn. if the robot turned to the left, then it is
         # more possible that the next turn has to be in the same direction (case of loop).
         else:
@@ -177,8 +176,3 @@ def main():
 
 
 main()
-
-"""
-def updatelines():
-    return [floor(getlinel1() / 512), floor(getlinel2() / 512), floor(getlinel3() / 512), floor(getliner3() / 512), floor(getliner2() / 512), floor(getliner1() / 512)]
-"""
