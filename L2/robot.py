@@ -155,10 +155,10 @@ def main():
         # more possible that the next turn has to be in the same direction (case of loop).
         else:
             check = 1
-            l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
-            if l1 < 600 or l2 < 600:
+            # l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
+            if (l1 < 600 or l2 < 600) and r2 > 600 and r1 > 600:
                 last_side = 1
-            elif r1 < 600 or r2 < 600:
+            elif (r1 < 600 or r2 < 600) and l2 > 600 and l1 > 600:
                 last_side = 0
             elif r3 < 600 or l3 < 600:
                 check = 0
