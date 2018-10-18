@@ -102,7 +102,7 @@ def main():
             speed(20)
             print("{")
             while getlinel2() > 600 and getliner2() > 600 and (getlinel3() < 600 or getliner3() < 600): #l3 < 600 and r3 < 600:
-                if getlinel1() < 600 or getliner1() < 600 or:
+                if getlinel1() < 600 or getliner1() < 600:
                     print("     finita la commedia")
                     #print("     " + str(l1) + str(l2) + str(l3) + str(r3) + str(r2) + str(r1))
                     countandturn = crossing(countandturn)
