@@ -104,7 +104,7 @@ def main():
             while l2 > 600 and r2 > 600 and (l3 < 600 or r3 < 600): #l3 < 600 and r3 < 600:
                 if l1 < 600 or r1 < 600:
                     print("     finita la commedia")
-                    print("     " + l1, l2, l3, r3, r2, r1)
+                    print("     " + str(l1) + str(l2) + str(l3) + str(r3) + str(r2) + str(r1))
                     countandturn = crossing(countandturn)
                 rospy.sleep(0.005)
                 l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
@@ -146,7 +146,7 @@ def main():
             elif r3 < 600 or l3 < 600:
                 check = 0
             print("{\n     I just turned!")
-            print("     " + l1, l2, l3, r3, r2, r1)
+            print("     " + str(l1) + str(l2) + str(l3) + str(r3) + str(r2) + str(r1))
             if last_side and check:  # true is left
                 turn(-15)
                 while l3 > 600 or (l2 > 600 and r3 > 600):  # expanded these checks
