@@ -187,7 +187,7 @@ def main():
             print("     And I just finished turning!\n}}}}}}}}}}}}")
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition to catch a crossroad when robot doesn't move straight.
-        if (l1 < 600 or r1 < 600) and (l3 < 600 or r3 < 600) or (l2 < 600 and r1 < 600) or (r2 < 600 and l1 < 600) or (l2 < 600 and l3 < 600 and r3 < 600 and r2 < 600):
+        if (l1 < 600 or r1 < 600) and (l3 < 600 or r3 < 600) or (l2 < 600 and r1 < 600) or (r2 < 600 and l1 < 600) or (l2 < 600 and l3 < 600 and r3 < 600 and r2 < 600) or (r1 < 600 and l1 < 600):
             print("surprise!")
             countandturn = crossing(countandturn)
         rospy.sleep(0.05)
