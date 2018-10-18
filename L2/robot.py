@@ -46,7 +46,7 @@ def speedr(perc):
     robot.set_left_wheel_speed(-perc)
 
 
-def turn(perc):  # negative speed turns left, positive right
+def turn(perc):
     """
     Make the robot turn in a stationary position. Positive input turns right and negative left when treating front as back.
 
@@ -57,17 +57,24 @@ def turn(perc):  # negative speed turns left, positive right
     speedl(perc)
 
 
-def preciseturn(side, turnspeed):  # side 0 is left, side 1 is right
-    speed(0)
+def preciseturn(side, turnspeed):
+    """
+    Make robot do a 90 degree turn in given direction.
+
+    :param side: where to turn, 0 is left, 1 is right
+    :param turnspeed: speed of turning
+    :return: none
+    """
+    speed(0)  # stop bot
     wheelturngoal = (robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) * 90
     enc = robot.get_right_wheel_encoder()
-    if side:
-        encgoal = robot.get_right_wheel_encoder() - wheelturngoal
+    if side:  # turning right
+        encgoal = robot.get_right_wheel_encoder() - wheelturngoal  # encoder goal to reach to get 90 degree turn
         turn(turnspeed)
         while enc > encgoal:
             rospy.sleep(0.005)
             enc = robot.get_right_wheel_encoder()
-    else:
+    else:  # turning right
         encgoal = robot.get_right_wheel_encoder() + wheelturngoal
         turn(-turnspeed)
         while enc < encgoal:
@@ -76,19 +83,29 @@ def preciseturn(side, turnspeed):  # side 0 is left, side 1 is right
 
 
 def crossing(crosscount):
+    """
+    Manage 90 degree turns at intersections.
+
+    :param crosscount: current count of crossings already made
+    :return: crosscount + 1
+    """
     print("This is turn number " + str(crosscount + 1))
     speed(0)
+
+    # moves bot forward a bit so it would do 90 degree turn more or less directly on crossing
     lenc = robot.get_right_wheel_encoder()
-    # 200 == distance from the present position of robot to the middle of the crossroad ahead.
-    lencgoal = lenc - 200
+    lencgoal = lenc - 200  # 200 is approximate distance from current position to the middle of the crossroad
     speed(17)
     while lenc > lencgoal:
         rospy.sleep(0.005)
         lenc = robot.get_right_wheel_encoder()
+
+    # initiates the 90 degree turns
     if crosscount % 3 == 0:
-        preciseturn(0, 20)
+        preciseturn(0, 20)  # turn left with speed 20
     elif crosscount % 3 == 2:
-        preciseturn(1, 20)  # make the bot turn 90 degrees RIGHT
+        preciseturn(1, 20)  # turn right with speed 20
+
     speed(20)
     return crosscount + 1
 
@@ -101,13 +118,13 @@ def main():
         if l2 > 600 and r2 > 600 and (l3 < 600 or r3 < 600):  # if l3 < 600 and r3 < 600:  # or l2 > 500 and l3 < 600 or r2 > 500 and r3 < 600
             speed(20)
             print("{")
-            while getlinel2() > 600 and getliner2() > 600 and (getlinel3() < 600 or getliner3() < 600): #l3 < 600 and r3 < 600:
+            while getlinel2() > 600 and getliner2() > 600 and (getlinel3() < 600 or getliner3() < 600):  # l3 < 600 and r3 < 600:
                 if getlinel1() < 600 or getliner1() < 600:
                     print("     finita la commedia")
-                    #print("     " + str(l1) + str(l2) + str(l3) + str(r3) + str(r2) + str(r1))
+                    # print("     " + str(l1) + str(l2) + str(l3) + str(r3) + str(r2) + str(r1))
                     countandturn = crossing(countandturn)
                 rospy.sleep(0.05)
-                #l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
+                # l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
             print("}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
             l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition for maneuvering. in other words, we can just change speed of different vehicles to adjust the
@@ -116,21 +133,19 @@ def main():
             last_side = 1
             speedl(15)
             speedr(20)
-            rospy.sleep(0.05)
         elif r3 < 600:
             last_side = 0
             speedr(15)
             speedl(20)
-            rospy.sleep(0.05)
         # it has to turn to the left if L1 is black
-        #"""elif (l1 < 600 or l2 < 600) and 600 < r3:
+        # elif (l1 < 600 or l2 < 600) and 600 < r3:
         #    last_side = 1
         #    turn(-15)
         #    while l3 > 600:  # changed r3 to l3 inside the loop
         #        rospy.sleep(0.005)
         #        l3 = getliner3()
-        ## it has to turn to the right if R1 is black
-        #elif (r1 < 600 or r2 < 600) and 600 < l3:
+        # it has to turn to the right if R1 is black
+        # elif (r1 < 600 or r2 < 600) and 600 < l3:
         #    last_side = 0
         #    turn(15)
         #    while r3 > 600:  #  changed l3 to r3 inside the loop
@@ -156,7 +171,7 @@ def main():
                         last_side = 0
                         speed(0)
                         break
-                    rospy.sleep(0.05)
+                    rospy.sleep(0.03)
                     l2, l3, r3, r2, r1 = getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
                 speed(0)
             elif check:
@@ -166,18 +181,16 @@ def main():
                         last_side = 1
                         speed(0)
                         break
-                        rospy.sleep(0.05)
+                    rospy.sleep(0.03)
                     r2, r3, l3, l2, l1 = getliner2(), getliner3(), getlinel3(), getlinel2(), getlinel1()
                 speed(0)
-            else:
-                rospy.sleep(0.05)
             print("     And I just finished turning!\n}}}}}}}}}}}}")
         l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition to catch a crossroad when robot doesn't move straight.
         if (l1 < 600 or r1 < 600) and (l3 < 600 or r3 < 600) or (l2 < 600 and r1 < 600) or (r2 < 600 and l1 < 600) or (l2 < 600 and l3 < 600 and r3 < 600 and r2 < 600):
             print("surprise!")
             countandturn = crossing(countandturn)
-        #rospy.sleep(0.005)
+        rospy.sleep(0.05)
 
 
 main()
