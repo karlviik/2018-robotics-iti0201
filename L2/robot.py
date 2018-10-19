@@ -160,6 +160,7 @@ def main():
             while getlinel2() > 600 and getliner2() > 600 and (getlinel3() < 600 or getliner3() < 600):
                 if getlinel1() < 600 or getliner1() < 600:
                     count_and_turn = crossing(count_and_turn)
+                rospy.sleep(0.005)
             print("}}}}}}}}}}")
             l1, l2, l3, r3, r2, r1 = getlinel1(), getlinel2(), getlinel3(), getliner3(), getliner2(), getliner1()
         # condition for maneuvering. in other words, we can just change speed of different vehicles to adjust the
