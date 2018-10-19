@@ -190,6 +190,7 @@ def main():
                 speed(0)
             print("     And I just finished turning!\n}}}}}}}}}}}}")
         left_line_1, left_line_2, left_line_3, right_line_3, right_line_2, right_line_1 = get_line_l1(), get_line_l2(), get_line_l3(), get_line_r3(), get_line_r2(), get_line_r1()
+        print(left_line_1, left_line_2, left_line_3, right_line_3, right_line_2, right_line_1)
         # condition to catch a crossroad when robot doesn't move straight.
         if (left_line_1 < 600 or right_line_1 < 600) and (left_line_3 < 600 or right_line_3 < 600) or (left_line_2 < 600 and right_line_1 < 600) or (right_line_2 < 600 and left_line_1 < 600) or (left_line_2 < 600 and left_line_3 < 600 and right_line_3 < 600 and right_line_2 < 600) or (right_line_1 < 600 and left_line_1 < 600):
             print("surprise!")
