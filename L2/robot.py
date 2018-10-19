@@ -102,9 +102,9 @@ def crossing(crossing_count):
 
     # initiates the 90 degree turns
     if crossing_count % 3 == 0:
-        precise_turn(0, 20)  # turn left with speed 20
+        precise_turn(0, 17)  # turn left with speed 20
     elif crossing_count % 3 == 2:
-        precise_turn(1, 20)  # turn right with speed 20
+        precise_turn(1, 17)  # turn right with speed 20
 
     speed(20)
     return crossing_count + 1
