@@ -20,6 +20,7 @@ forward_distance_r = robot.get_rear_left_straight_ir
 
 # side sensors
 distance_right = robot.get_rear_left_side_ir
+distance_left = robot.get_rear_right_side_ir
 
 
 def speed(perc):
@@ -93,28 +94,29 @@ def main():
             break
 
         if l1 > 600 and l2 > 600 and l3 > 600 and r3 > 600 and r2 > 600 and r1 > 600:
-                turn(15)
+            turn(15)
         rospy.sleep(0.005)
 
 
-def move_along_wall(value):
+def move_along_wall(value, side):
+    print("move along")
     flag = 0
     if value < 0.02:
         value += 0.01
     while True:
-        if getlinel3() < 300 or getliner3() < 300:
+        if getlinel3() < 300 or getliner3() < 300 or getliner1() < 300 or getlinel1() < 300:
             flag = 1
             break
-        if value - distance_right() < -0.05:
+        if value - side() < -0.05:
             break
-        elif abs(value - distance_right()) <= 0.002:
+        elif abs(value - side()) <= 0.002:
             rospy.sleep(0.05)
             speedl(17)
             speedr(17)
-        elif value - distance_right() > 0.002:
+        elif value - side() > 0.002:
             speedl(16)
             speedr(18)
-        elif value - distance_right() < -0.002:
+        elif value - side() < -0.002:
             speedl(18)
             speedr(16)
     speed(0)
@@ -143,6 +145,7 @@ def precise_turn(side):  # side 0 is left, side 1 is kright
 # before rotation robot has to be a little bit further from the edge of the object
 # it is important to have a space for movement after rotation
 def move_forward(value):
+    print("move forward")
     flag = 0
     lenc = robot.get_right_wheel_encoder()
     lencgoal = lenc - value
@@ -150,77 +153,76 @@ def move_forward(value):
     while lenc > lencgoal:
         rospy.sleep(0.005)
         lenc = robot.get_right_wheel_encoder()
-        if getlinel3() < 300 or getliner3() < 300:
-            print("f1")
+        if getlinel3() < 300 or getliner3() < 300 or getliner1() < 300 or getlinel1() < 300:
             flag = 1
             break
     speed(0)
     return flag
 
 
-def move_until_the_wall():
-    while distance_right() > 0.1:
-        speed(20)
+def move_until_the_wall(value):
+    print("until the wall")
+    if value:
+        while distance_left() > 0.1:
+            speed(20)
+    else:
+        while distance_right() > 0.1:
+            speed(20)
     speed(0)
+
+
+def left():
+    precise_turn(0)
+    while True:
+        flag = move_along_wall(distance_right(), distance_right())
+        if flag:
+            break
+        flag = move_forward(425)
+        if flag:
+            break
+        precise_turn(1)
+        move_until_the_wall(0)
+
+
+def right():
+    precise_turn(1)
+    while True:
+        flag = move_along_wall(distance_left(), distance_left())
+        if flag:
+            break
+        flag = move_forward(425)
+        if flag:
+            break
+        precise_turn(0)
+        move_until_the_wall(1)
 
 
 def control():
     obstacles = 0
     while True:
         while True:
-            print("line")
-            if obstacles:
-                print("turn")
+            if obstacles == 1:
                 precise_turn(0)
+            elif obstacles == 2:
+                precise_turn(1)
             main()
-            obstacles = 1
             speed(0)
             if forward_distance_l() < forward_distance_r():
+                left_side = 0
                 while forward_distance_r() - forward_distance_l() > 0.002:
                     turn(-15)
             else:
+                left_side = 1
                 while forward_distance_l() - forward_distance_r() > 0.002:
                     turn(15)
-
-            precise_turn(0)
-            move_along_wall(distance_right())
-            move_forward(425)
-
-            precise_turn(1)
-            move_until_the_wall()
-            flag = move_along_wall(distance_right())
-            if flag:
-                break
-            flag = move_forward(425)
-            if flag:
-                break
-
-            precise_turn(1)
-            move_until_the_wall()
-            flag = move_along_wall(distance_right())
-            if flag:
-                break
-            flag = move_forward(425)
-            if flag:
-                break
-
-            precise_turn(1)
-            move_until_the_wall()
-            flag = move_along_wall(distance_right())
-            if flag:
-                break
-            flag = move_forward(425)
-            if flag:
-                break
-
-            precise_turn(1)
-            move_until_the_wall()
-            flag = move_along_wall(distance_right())
-            if flag:
-                break
-            flag = move_forward(470)
-            if flag:
-                break
+            if left_side:
+                obstacles = 1
+                print("left")
+                left()
+            else:
+                obstacles = 2
+                print("rigth")
+                right()
 
 
 control()
