@@ -6,14 +6,18 @@ robot = PiBot()
 # TODO: function that scans the field for the object
 # TODO: function that moves towards the object until required distance
 
+set_speed = robot.set_wheels_speed
+get_flir = robot.get_front_left_ir
+get_fmir = robot.get_front_middle_ir
+get_frir = robot.get_front_right_ir
 
-def set_speed(speed):
-    robot.set_left_wheel_speed(speed)
-    robot.set_right_wheel_speed(speed)
 
 
 def turn(speed, side):
-    pass
+    if not side:
+        speed = -speed
+    robot.set_left_wheel_speed(speed)
+    robot.set_right_wheel_speed(- speed)
 
 
 def turn_precise(degrees, side, speed):
@@ -25,27 +29,27 @@ def turn_precise(degrees, side, speed):
     lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
     if side == 1:
-        robot.set_left_wheel_speed(speed)
-        robot.set_right_wheel_speed(- speed)
+        turn(speed, 1)
         while lencgoal > robot.get_left_wheel_encoder():
             rospy.sleep(0.05)
     else:
-        robot.set_left_wheel_speed(- speed)
-        robot.set_right_wheel_speed(speed)
+        turn(speed, 0)
         while lencgoal < robot.get_left_wheel_encoder():
             rospy.sleep(0.05)
-    robot.set_wheels_speed(0)
+    set_speed(0)
 
 
 def scan_for_object():
-    pass
-    # TODO: implement a way of finding the object, perhaps based on difference of sensors.
-    # Just one sensor or all three sensors? Use a buffer?
-    # Prolly do full circle? Or not?
-    # If sensor step 1 is far, step 2 is closer, step 3 is far
-    # then step 2 has object. Prolly 10cm difference is okay?
+    wheelturngoal = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)  # full 360 degree turn
+    turn(13, 1)  # does turning with speed 13 clockwise
+    left_encoder = robot.get_left_wheel_encoder()
+    last_middle_ir = get_fmir()
+    while left_encoder < wheelturngoal:
+        middle_ir = get_fmir()
+        if abs(last_middle_ir - middle_ir) > 10:
+            set_speed(20)
+            break
 
 
-turn_precise(180, 1, 20)
-rospy.sleep(1)
-turn_precise(90, 0, 20)
+
+scan_for_object()
