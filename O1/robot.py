@@ -55,8 +55,9 @@ def scan_for_object():
 def move_towards_object():
     last_fmir = get_fmir()
     fmir = get_fmir()
-    while fmir > 0.16:
-        if fmir < last_fmir:
+    while fmir > 0.17:
+        if fmir > last_fmir:
+            set_speed(0)
             return False
         last_fmir = fmir
         rospy.sleep(0.005)
