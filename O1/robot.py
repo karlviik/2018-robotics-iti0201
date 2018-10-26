@@ -41,7 +41,7 @@ def turn_precise(degrees, side, speed):
 
 def scan_for_object():
     wheelturngoal = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)  # full 360 degree turn
-    turn(13, 1)  # does turning with speed 13 clockwise
+    turn(16, 1)  # does turning with speed 13 clockwise
     left_encoder = robot.get_left_wheel_encoder()
     last_middle_ir = get_fmir()
     while left_encoder < wheelturngoal:
