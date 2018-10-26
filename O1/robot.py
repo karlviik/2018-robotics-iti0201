@@ -12,6 +12,10 @@ def set_speed(speed):
     robot.set_right_wheel_speed(speed)
 
 
+def turn(speed, side):
+    pass
+
+
 def turn_precise(degrees, side, speed):
     wheelturngoal = (degrees * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)
     multiplier = 1
@@ -33,7 +37,6 @@ def turn_precise(degrees, side, speed):
     robot.set_wheels_speed(0)
 
 
-
 def scan_for_object():
     pass
     # TODO: implement a way of finding the object, perhaps based on difference of sensors.
@@ -42,6 +45,7 @@ def scan_for_object():
     # If sensor step 1 is far, step 2 is closer, step 3 is far
     # then step 2 has object. Prolly 10cm difference is okay?
 
-turn(180, 1, 20)
+
+turn_precise(180, 1, 20)
 rospy.sleep(1)
-turn(90, 0, 20)
+turn_precise(90, 0, 20)
