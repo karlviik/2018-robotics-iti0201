@@ -50,6 +50,7 @@ def scan_for_object():
             break
         last_middle_ir = middle_ir
         rospy.sleep(0.005)
+    print("I just finished scanning, woo!")
 
 
 def move_towards_object():
