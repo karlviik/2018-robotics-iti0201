@@ -12,7 +12,6 @@ get_fmir = robot.get_front_middle_ir
 get_frir = robot.get_front_right_ir
 
 
-
 def turn(speed, side):
     if not side:
         speed = -speed
@@ -40,15 +39,17 @@ def turn_precise(degrees, side, speed):
 
 
 def scan_for_object():
-    wheelturngoal = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)  # full 360 degree turn
-    turn(16, 1)  # does turning with speed 13 clockwise
     left_encoder = robot.get_left_wheel_encoder()
+    wheelturngoal = left_encoder + (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)  # full 360 degree turn
+    turn(16, 1)  # does turning with speed 13 clockwise
     last_middle_ir = get_fmir()
     while left_encoder < wheelturngoal:
         middle_ir = get_fmir()
-        if abs(last_middle_ir - middle_ir) > 10:
+        if abs(last_middle_ir - middle_ir) > 0.1:
             set_speed(20)
             break
+        last_middle_ir = middle_ir
+        rospy.sleep(0.005)
 
 
 
