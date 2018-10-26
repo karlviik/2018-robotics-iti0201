@@ -12,8 +12,8 @@ def set_speed(speed):
     robot.set_right_wheel_speed(speed)
 
 
-def turn(degrees, side, speed):
-    wheelturngoal = (robot.AXIS_LENGTH / (360 / degrees) / robot.WHEEL_DIAMETER) * 360
+def turn_precise(degrees, side, speed):
+    wheelturngoal = (degrees * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)
     multiplier = 1
     if side == 0:
         multiplier = -1
