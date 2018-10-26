@@ -66,6 +66,7 @@ def move_towards_object():
 while True:
     scan_for_object()
     if move_towards_object():
+        print("Has science gone too far?")
         rospy.sleep(0.5)
         set_speed(0)
         break
