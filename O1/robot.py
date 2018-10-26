@@ -3,9 +3,6 @@ from PiBot import PiBot
 
 robot = PiBot()
 
-# TODO: function that scans the field for the object
-# TODO: function that moves towards the object until required distance
-
 set_speed = robot.set_wheels_speed
 get_flir = robot.get_front_left_ir
 get_fmir = robot.get_front_middle_ir
@@ -39,6 +36,8 @@ def turn_precise(degrees, side, speed):
 
 
 def scan_for_object():
+    robot.set_left_wheel_speed(13)
+    robot.set_right_wheel_speed(- 13)
     left_encoder = robot.get_left_wheel_encoder()
     wheelturngoal = left_encoder + (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)  # full 360 degree turn
     turn(16, 1)  # does turning with speed 13 clockwise
@@ -47,6 +46,7 @@ def scan_for_object():
         middle_ir = get_fmir()
         if abs(last_middle_ir - middle_ir) > 0.1:
             set_speed(20)
+            print(middle_ir)
             break
         last_middle_ir = middle_ir
         rospy.sleep(0.005)
