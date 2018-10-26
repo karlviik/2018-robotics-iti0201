@@ -52,5 +52,11 @@ def scan_for_object():
         rospy.sleep(0.005)
 
 
+def move_towards_object():
+    while get_fmir() > 0.16:
+        rospy.sleep(0.005)
+    rospy.sleep(0.5)
+    set_speed(0)
 
 scan_for_object()
+move_towards_object()
