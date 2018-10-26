@@ -60,6 +60,7 @@ def move_towards_object():
             return False
         last_fmir = fmir
         rospy.sleep(0.005)
+        fmir = get_fmir()
     return True
 
 
