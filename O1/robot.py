@@ -46,11 +46,9 @@ def scan_for_object():
         middle_ir = get_fmir()
         if abs(last_middle_ir - middle_ir) > 0.1:
             set_speed(20)
-            print(middle_ir)
             break
         last_middle_ir = middle_ir
         rospy.sleep(0.005)
-    print("I just finished scanning, woo!")
 
 
 def move_towards_object():
