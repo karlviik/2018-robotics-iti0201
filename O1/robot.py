@@ -81,15 +81,14 @@ def move_towards_object_vol2():
             if rspeed < lspeed:
                 lspeed = 15
                 rspeed = 20
-                set_lspeed(lspeed)
-                set_rspeed(rspeed)
-                rospy.sleep(0.05)
             else:
                 lspeed = 20
                 rspeed = 15
-                set_lspeed(lspeed)
-                set_rspeed(rspeed)
-                rospy.sleep(0.05)
+            set_lspeed(lspeed)
+            set_rspeed(rspeed)
+            last_fmir = fmir
+            rospy.sleep(0.05)
+            fmir = get_fmir()
         if fmir < 0.17:
             break
         set_speed(20)
