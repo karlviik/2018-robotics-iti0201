@@ -67,6 +67,7 @@ def check_cache_for_object(cache):
 
 
 def scan_for_object_vol2():
+    print("Started scanning")
     left_encoder = robot.get_left_wheel_encoder()
     step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / 20  # step of turning because some idea
     wheelturngoal = left_encoder + step  # full 360 degree turn
@@ -118,6 +119,7 @@ def move_towards_object():
 
 
 def move_towards_object_vol2():
+    print("Started moving towards!")
     set_speed(20)
     rspeed, lspeed = 20, 20
     last_fmir = get_fmir()
@@ -150,6 +152,7 @@ def move_towards_object_vol2():
 
 
 while True:
+    print("I should have started!")
     scan_for_object_vol2()
     if move_towards_object_vol2():
         print("Has science gone too far?")
