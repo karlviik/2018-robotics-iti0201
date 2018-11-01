@@ -63,7 +63,7 @@ def check_cache_for_object(cache):
         return True, -2
     if cache[0] > cache[1] < cache[2] < cache[3] > cache[4]:
         return True, -3
-    return False
+    return False, 0
 
 
 def scan_for_object_vol2():
