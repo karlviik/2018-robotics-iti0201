@@ -70,7 +70,7 @@ def check_cache_for_object(cache):
 def scan_for_object_vol2():
     print("Started scanning")
     left_encoder = robot.get_left_wheel_encoder()
-    step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / 20  # step of turning because some idea
+    step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / 30  # step of turning because some idea
     wheelturngoal = left_encoder + step  # full 360 degree turn
     turn(16, 1)  # does turning with speed 13 clockwise
     fmir = get_fmir()
