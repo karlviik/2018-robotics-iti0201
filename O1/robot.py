@@ -75,7 +75,7 @@ def scan_for_object_vol2():
     fmir = get_fmir()
     counter = 0
     cache = [fmir, fmir, fmir, fmir, fmir]
-    while counter < 25:  # does 1.25 turns
+    while counter < 100:  # does 5 turns
         if wheelturngoal < left_encoder:  # if left wheel has gone above goal encoder
 
             # add new fmir to cache and remove oldest
