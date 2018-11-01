@@ -73,7 +73,7 @@ def move_towards_object_vol2():
     fmir = get_fmir()
     flag = False
     while True:
-        while last_fmir > fmir > 0.17:
+        while last_fmir >= fmir > 0.17:
             "I should be moving straight forward ight now!"
             last_fmir = fmir
             rospy.sleep(0.05)
