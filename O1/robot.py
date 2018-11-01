@@ -74,10 +74,12 @@ def move_towards_object_vol2():
     flag = False
     while True:
         while last_fmir > fmir > 0.17:
+            "I should be moving straight forward ight now!"
             last_fmir = fmir
             rospy.sleep(0.05)
             fmir = get_fmir()
         while 0.17 < last_fmir < fmir:
+            "Ohnoes I started second loop!"
             if rspeed < lspeed:
                 lspeed = 15
                 rspeed = 20
@@ -91,6 +93,7 @@ def move_towards_object_vol2():
             fmir = get_fmir()
         if fmir < 0.17:
             break
+        "I ended main loop!"
         set_speed(20)
         rspeed, lspeed = 20, 20
     return True
