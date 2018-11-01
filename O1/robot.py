@@ -4,6 +4,8 @@ from PiBot import PiBot
 robot = PiBot()
 
 set_speed = robot.set_wheels_speed
+set_rspeed = robot.set_right_wheel_speed
+set_lspeed = robot.set_left_wheel_speed
 get_flir = robot.get_front_left_ir
 get_fmir = robot.get_front_middle_ir
 get_frir = robot.get_front_right_ir
@@ -64,9 +66,40 @@ def move_towards_object():
     return True
 
 
+def move_towards_object_vol2():
+    set_speed(20)
+    rspeed, lspeed = 20, 20
+    last_fmir = get_fmir()
+    fmir = get_fmir()
+    flag = False
+    while True:
+        while last_fmir > fmir > 0.17:
+            last_fmir = fmir
+            rospy.sleep(0.05)
+            fmir = get_fmir()
+        while 0.17 < last_fmir < fmir:
+            if rspeed < lspeed:
+                lspeed = 15
+                rspeed = 20
+                set_lspeed(lspeed)
+                set_rspeed(rspeed)
+                rospy.sleep(0.05)
+            else:
+                lspeed = 20
+                rspeed = 15
+                set_lspeed(lspeed)
+                set_rspeed(rspeed)
+                rospy.sleep(0.05)
+        if fmir < 17:
+            break
+        set_speed(20)
+        rspeed, lspeed = 20, 20
+    return True
+
+
 while True:
     scan_for_object()
-    if move_towards_object():
+    if move_towards_object_vol2():
         print("Has science gone too far?")
         rospy.sleep(0.3)
         set_speed(0)
