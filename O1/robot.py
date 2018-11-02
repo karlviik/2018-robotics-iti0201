@@ -81,8 +81,8 @@ def scan_for_object_vol2():
 
             # add new fmir to cache and remove oldest
             fmir = get_fmir()
-            if fmir > 1:
-                fmir = 1
+            if fmir > 0.8:
+                fmir = 0.8
             cache.pop(0)
             cache.append(fmir)
 
