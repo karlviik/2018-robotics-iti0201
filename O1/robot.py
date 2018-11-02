@@ -106,6 +106,27 @@ def scan_for_object_vol2():
         left_encoder = robot.get_left_wheel_encoder()
 
 
+def scan_for_object_vol3():
+    print("do something stuff hahahahaha")
+    left_encoder = robot.get_left_wheel_encoder()
+    wheelturngoal = left_encoder + (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)  # full 360 degree turn
+    turn(16, 1)  # does turning with speed 13 clockwise
+    closest, encoder = float("inf"), 0
+    while left_encoder < wheelturngoal:
+        middle_ir = get_fmir()
+        if closest > middle_ir:
+            closest = middle_ir
+            encoder = left_encoder
+        rospy.sleep(0.005)
+        left_encoder = robot.get_left_wheel_encoder()
+    set_speed(0)
+    turn(16, 0)
+    while left_encoder > encoder:
+        rospy.sleep(0.05)
+        left_encoder = robot.get_left_wheel_encoder()
+    set_speed(0)
+
+
 def move_towards_object():
     last_fmir = get_fmir()
     fmir = get_fmir()
@@ -154,7 +175,7 @@ def move_towards_object_vol2():
 
 while True:
     print("I should have started!")
-    scan_for_object_vol2()
+    scan_for_object_vol3()
     if move_towards_object_vol2():
         print("Has science gone too far?")
         rospy.sleep(0.3)
