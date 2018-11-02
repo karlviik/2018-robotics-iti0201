@@ -90,7 +90,7 @@ def scan_for_object_vol2():
             check, backstep = check_cache_for_object(cache)
 
             # if so, stop and turn back backstep amount of steps to center on the object, hopefully
-            if check:
+            """if check:
                 set_speed(0)
                 wheelturngoal = left_encoder + step * backstep  # this sets the goal encoder, backstep is negative
                 turn(13, 0)
@@ -100,7 +100,7 @@ def scan_for_object_vol2():
                     rospy.sleep(0.05)
                     left_encoder = robot.get_left_wheel_encoder()
                 set_speed(0)
-                #break  # break the loop if it reaches the object thingy line
+                #break  # break the loop if it reaches the object thingy line"""
 
             # if no check was detected add a step to goal and counter
             wheelturngoal += step
