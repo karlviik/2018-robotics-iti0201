@@ -58,12 +58,12 @@ def check_cache_for_object(cache):
     print(cache)
     if cache[0] <= cache[1] <= cache[2] > cache[3] < cache[4]:
         return True, -1
-    # if cache[0] <= cache[1] > cache[2] > cache[3] < cache[4]:
-    #     return True, -1
+    if cache[0] <= cache[1] > cache[2] > cache[3] < cache[4]:
+        return True, -1
     if cache[0] > cache[1] > cache[2] < cache[3] >= cache[4]:
         return True, -2
-    # if cache[0] > cache[1] < cache[2] < cache[3] >= cache[4]:
-    #     return True, -3
+    if cache[0] > cache[1] < cache[2] < cache[3] >= cache[4]:
+        return True, -3
     return False, 0
 
 
