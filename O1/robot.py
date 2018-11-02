@@ -159,25 +159,6 @@ def scan_for_object_vol4():
                 closestcounter = tempmeasure
             print(closestcounter)
 
-            # add new fmir to cache and remove oldest
-
-
-            # get if past 5 things have had an object
-            # check, backstep = check_cache_for_object(cache)
-
-            # if so, stop and turn back backstep amount of steps to center on the object, hopefully
-            """if check:
-                set_speed(0)
-                wheelturngoal = left_encoder + step * backstep  # this sets the goal encoder, backstep is negative
-                turn(13, 0)
-
-                # while bot hasn't rotated back to that point just keep doing it
-                while wheelturngoal < left_encoder:
-                    rospy.sleep(0.05)
-                    left_encoder = robot.get_left_wheel_encoder()
-                set_speed(0)
-                #break  # break the loop if it reaches the object thingy line"""
-
             # if no check was detected add a step to goal and counter
             wheelturngoal += step
             sectioncounter += 1
