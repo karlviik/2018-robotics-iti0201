@@ -72,7 +72,7 @@ def scan_for_object_vol2():
     left_encoder = robot.get_left_wheel_encoder()
     step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / 30  # step of turning because some idea
     wheelturngoal = left_encoder + step  # full 360 degree turn
-    turn(16, 1)  # does turning with speed 13 clockwise
+    turn(14, 1)  # does turning with speed 13 clockwise
     fmir = get_fmir()
     counter = 0
     cache = [fmir, fmir, fmir, fmir, fmir]
@@ -91,7 +91,7 @@ def scan_for_object_vol2():
             if check:
                 set_speed(0)
                 wheelturngoal = left_encoder + step * backstep  # this sets the goal encoder, backstep is negative
-                turn(16, 0)
+                turn(13, 0)
 
                 # while bot hasn't rotated back to that point just keep doing it
                 while wheelturngoal < left_encoder:
