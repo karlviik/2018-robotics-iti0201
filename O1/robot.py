@@ -70,13 +70,13 @@ def check_cache_for_object(cache):
 def scan_for_object_vol2():
     print("Started scanning")
     left_encoder = robot.get_left_wheel_encoder()
-    step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / 30  # step of turning because some idea
+    step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / 20  # step of turning because some idea
     wheelturngoal = left_encoder + step  # full 360 degree turn
     turn(14, 1)  # does turning with speed 13 clockwise
     fmir = get_fmir()
     counter = 0
     cache = [fmir, fmir, fmir, fmir, fmir]
-    while counter < 100:  # does 5 turns
+    while counter < 40:  # does 5 turns
         if wheelturngoal < left_encoder:  # if left wheel has gone above goal encoder
 
             # add new fmir to cache and remove oldest
@@ -100,7 +100,7 @@ def scan_for_object_vol2():
                     rospy.sleep(0.05)
                     left_encoder = robot.get_left_wheel_encoder()
                 set_speed(0)
-                break  # break the loop if it reaches the object thingy line
+                #break  # break the loop if it reaches the object thingy line
 
             # if no check was detected add a step to goal and counter
             wheelturngoal += step
