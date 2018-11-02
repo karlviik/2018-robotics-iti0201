@@ -133,6 +133,58 @@ def scan_for_object_vol3():
     set_speed(0)
 
 
+def scan_for_object_vol4():
+    print("Started scanning")
+    left_encoder = robot.get_left_wheel_encoder()
+    sectionsinfullcircle = 20
+    step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / sectionsinfullcircle  # step of turning because some idea
+    wheelturngoal = left_encoder + step  # full 360 degree turn
+    turn(14, 1)  # does turning with speed 13 clockwise
+    fmir = get_fmir()
+    if fmir > 0.8:
+        fmir = 0.8
+    sectioncounter = 0
+    cache = []
+    total = 0
+    closestcounter, closestmeasure = 0, float("inf")
+    measurecounter = 0
+    while sectioncounter < 2 * sectionsinfullcircle:  # does 5 turns
+        if wheelturngoal < left_encoder:  # if left wheel has gone above goal encoder
+            tempmeasure = total / measurecounter
+            total, measurecounter = 0, 0
+            if tempmeasure < closestcounter:
+                closestcounter = tempmeasure
+            print(closestcounter)
+
+            # add new fmir to cache and remove oldest
+
+
+            # get if past 5 things have had an object
+            # check, backstep = check_cache_for_object(cache)
+
+            # if so, stop and turn back backstep amount of steps to center on the object, hopefully
+            """if check:
+                set_speed(0)
+                wheelturngoal = left_encoder + step * backstep  # this sets the goal encoder, backstep is negative
+                turn(13, 0)
+
+                # while bot hasn't rotated back to that point just keep doing it
+                while wheelturngoal < left_encoder:
+                    rospy.sleep(0.05)
+                    left_encoder = robot.get_left_wheel_encoder()
+                set_speed(0)
+                #break  # break the loop if it reaches the object thingy line"""
+
+            # if no check was detected add a step to goal and counter
+            wheelturngoal += step
+            sectioncounter += 1
+        fmir = get_fmir()
+        total += fmir
+        measurecounter += 1
+        rospy.sleep(0.05)
+        left_encoder = robot.get_left_wheel_encoder()
+
+
 def move_towards_object():
     set_speed(20)
     last_fmir = get_fmir()
