@@ -122,7 +122,7 @@ def scan_for_object_vol3():
     set_speed(0)
     turn(16, 0)
     while left_encoder > encoder:
-        rospy.sleep(0.05)
+        rospy.sleep(0.01)
         left_encoder = robot.get_left_wheel_encoder()
     set_speed(0)
 
