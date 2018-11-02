@@ -144,11 +144,13 @@ def scan_for_object_vol4():
     if fmir > 0.8:
         fmir = 0.8
     sectioncounter = 0
-    cache = []
     total = 0
     closestcounter, closestmeasure = 0, float("inf")
     measurecounter = 0
     while sectioncounter < 2 * sectionsinfullcircle:  # does 5 turns
+        fmir = get_fmir()
+        total += fmir
+        measurecounter += 1
         if wheelturngoal < left_encoder:  # if left wheel has gone above goal encoder
             tempmeasure = total / measurecounter
             total, measurecounter = 0, 0
