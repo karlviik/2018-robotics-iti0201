@@ -177,7 +177,7 @@ def move_towards_object_vol2():
 
 while True:
     print("I should have started!")
-    scan_for_object_vol3()
+    scan_for_object_vol2()
     break
     #if move_towards_object():
     #    print("Has science gone too far?")
