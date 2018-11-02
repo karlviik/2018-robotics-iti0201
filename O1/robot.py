@@ -129,6 +129,7 @@ def scan_for_object_vol3():
 
 
 def move_towards_object():
+    set_speed(20)
     last_fmir = get_fmir()
     fmir = get_fmir()
     while fmir > 0.17:
