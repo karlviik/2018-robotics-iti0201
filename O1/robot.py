@@ -97,6 +97,7 @@ def scan_for_object_vol2():
                 while wheelturngoal < left_encoder:
                     rospy.sleep(0.05)
                     left_encoder = robot.get_left_wheel_encoder()
+                set_speed(0)
                 break  # break the loop if it reaches the object thingy line
 
             # if no check was detected add a step to goal and counter
