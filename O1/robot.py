@@ -157,9 +157,9 @@ def scan_for_object_vol4():
             fmir = get_fmir()
             total += fmir
             measurecounter += 1
-            if tempmeasure < closestcounter:
-                closestcounter = tempmeasure
-            print(closestcounter)
+            if tempmeasure < closestmeasure:
+                closestmeasure = tempmeasure
+            print(closestmeasure)
 
             # if no check was detected add a step to goal and counter
             wheelturngoal += step
