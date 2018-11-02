@@ -74,6 +74,8 @@ def scan_for_object_vol2():
     wheelturngoal = left_encoder + step  # full 360 degree turn
     turn(14, 1)  # does turning with speed 13 clockwise
     fmir = get_fmir()
+    if fmir > 0.8:
+        fmir = 0.8
     counter = 0
     cache = [fmir, fmir, fmir, fmir, fmir]
     while counter < 40:  # does 5 turns
