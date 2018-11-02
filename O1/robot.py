@@ -178,8 +178,8 @@ def move_towards_object_vol2():
 while True:
     print("I should have started!")
     scan_for_object_vol3()
-    if move_towards_object():
-        print("Has science gone too far?")
-        rospy.sleep(0.3)
-        set_speed(0)
-        break
+    #if move_towards_object():
+    #    print("Has science gone too far?")
+    #    rospy.sleep(0.3)
+    #    set_speed(0)
+    #    break
