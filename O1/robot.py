@@ -152,6 +152,9 @@ def scan_for_object_vol4():
         if wheelturngoal < left_encoder:  # if left wheel has gone above goal encoder
             tempmeasure = total / measurecounter
             total, measurecounter = 0, 0
+            fmir = get_fmir()
+            total += fmir
+            measurecounter += 1
             if tempmeasure < closestcounter:
                 closestcounter = tempmeasure
             print(closestcounter)
@@ -178,9 +181,6 @@ def scan_for_object_vol4():
             # if no check was detected add a step to goal and counter
             wheelturngoal += step
             sectioncounter += 1
-        fmir = get_fmir()
-        total += fmir
-        measurecounter += 1
         rospy.sleep(0.05)
         left_encoder = robot.get_left_wheel_encoder()
 
