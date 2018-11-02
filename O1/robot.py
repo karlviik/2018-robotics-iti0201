@@ -117,6 +117,7 @@ def scan_for_object_vol3():
         if closest > middle_ir:
             closest = middle_ir
             encoder = left_encoder
+            print(closest)
         rospy.sleep(0.005)
         left_encoder = robot.get_left_wheel_encoder()
     set_speed(0)
