@@ -9,13 +9,17 @@ set_lspeed = robot.set_left_wheel_speed
 get_flir = robot.get_front_left_ir
 get_fmir = robot.get_front_middle_ir
 get_frir = robot.get_front_right_ir
+get_lenc = robot.get_left_wheel_encoder
+get_renc = robot.get_right_wheel_encoder
 
 
-def turn(speed, side):
+def turn(lspeed, rspeed, side):
     if not side:
-        speed = -speed
-    robot.set_left_wheel_speed(speed)
-    robot.set_right_wheel_speed(- speed)
+        lspeed = -lspeed
+    else:
+        rpseed = -rspeed
+    robot.set_left_wheel_speed(lspeed)
+    robot.set_right_wheel_speed(rpseed)
 
 
 def turn_precise(degrees, side, speed):
@@ -37,121 +41,25 @@ def turn_precise(degrees, side, speed):
     set_speed(0)
 
 
-def scan_for_object():
-    robot.set_left_wheel_speed(13)
-    robot.set_right_wheel_speed(- 13)
-    left_encoder = robot.get_left_wheel_encoder()
-    wheelturngoal = left_encoder + (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)  # full 360 degree turn
-    turn(16, 1)  # does turning with speed 13 clockwise
-    last_middle_ir = get_fmir()
-    while left_encoder < wheelturngoal:
-        middle_ir = get_fmir()
-        if abs(last_middle_ir - middle_ir) > 0.1:
-            set_speed(20)
-            break
-        last_middle_ir = middle_ir
-        rospy.sleep(0.005)
-        left_encoder = robot.get_left_wheel_encoder()
-
-
-def check_cache_for_object(cache):
-    print(cache)
-    if cache[0] <= cache[1] <= cache[2] > cache[3] < cache[4]:
-        return True, -1
-    if cache[0] <= cache[1] > cache[2] > cache[3] < cache[4]:
-        return True, -1
-    if cache[0] > cache[1] > cache[2] < cache[3] >= cache[4]:
-        return True, -2
-    if cache[0] > cache[1] < cache[2] < cache[3] >= cache[4]:
-        return True, -3
-    return False, 0
-
-
-def scan_for_object_vol2():
-    print("Started scanning")
-    left_encoder = robot.get_left_wheel_encoder()
-    step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / 20  # step of turning because some idea
-    wheelturngoal = left_encoder + step  # full 360 degree turn
-    turn(14, 1)  # does turning with speed 13 clockwise
-    fmir = get_fmir()
-    if fmir > 0.8:
-        fmir = 0.8
-    counter = 0
-    cache = [fmir, fmir, fmir, fmir, fmir]
-    while counter < 40:  # does 5 turns
-        if wheelturngoal < left_encoder:  # if left wheel has gone above goal encoder
-
-            # add new fmir to cache and remove oldest
-            fmir = get_fmir()
-            if fmir > 0.8:
-                fmir = 0.8
-            cache.pop(0)
-            cache.append(fmir)
-
-            # get if past 5 things have had an object
-            check, backstep = check_cache_for_object(cache)
-
-            # if so, stop and turn back backstep amount of steps to center on the object, hopefully
-            """if check:
-                set_speed(0)
-                wheelturngoal = left_encoder + step * backstep  # this sets the goal encoder, backstep is negative
-                turn(13, 0)
-
-                # while bot hasn't rotated back to that point just keep doing it
-                while wheelturngoal < left_encoder:
-                    rospy.sleep(0.05)
-                    left_encoder = robot.get_left_wheel_encoder()
-                set_speed(0)
-                #break  # break the loop if it reaches the object thingy line"""
-
-            # if no check was detected add a step to goal and counter
-            wheelturngoal += step
-            counter += 1
-        rospy.sleep(0.05)
-        left_encoder = robot.get_left_wheel_encoder()
-
-
-def scan_for_object_vol3():
-    print("do something stuff hahahahaha")
-    left_encoder = robot.get_left_wheel_encoder()
-    wheelturngoal = left_encoder + (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)  # full 360 degree turn
-    turn(13, 1)  # does turning with speed 13 clockwise
-    closest, encoder = float("inf"), 0
-    while left_encoder < wheelturngoal:
-        middle_ir = get_fmir()
-        if closest > middle_ir:
-            closest = middle_ir
-            encoder = left_encoder
-            print(closest)
-        rospy.sleep(0.005)
-        left_encoder = robot.get_left_wheel_encoder()
-    set_speed(0)
-    turn(13, 0)
-    while left_encoder > encoder:
-        rospy.sleep(0.01)
-        left_encoder = robot.get_left_wheel_encoder()
-    set_speed(0)
-
-
 def scan_for_object_vol4():
+    lspeed, rspeed = 14, 14
     print("Started scanning")
-    left_encoder = robot.get_left_wheel_encoder()
+    lenc = get_lenc()
     sectionsinfullcircle = 20
     step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / sectionsinfullcircle  # step of turning because some idea
-    wheelturngoal = left_encoder + step  # full 360 degree turn
-    turn(14, 1)  # does turning with speed 13 clockwise
-    fmir = get_fmir()
-    if fmir > 0.8:
-        fmir = 0.8
+    wheelturngoal = lenc + step  # full 360 degree turn
     sectioncounter = 0
     total = 0
     closestcounter, closestmeasure = 0, float("inf")
     measurecounter = 0
+    last_trenc = get_renc()
+    last_tlenc = get_lenc()
+    turn(lspeed, rspeed, 1)  # does turning with speed 13 clockwise
     while sectioncounter < 2 * sectionsinfullcircle:  # does 5 turns
         fmir = get_fmir()
         total += fmir
         measurecounter += 1
-        if wheelturngoal < left_encoder:  # if left wheel has gone above goal encoder
+        if wheelturngoal < lenc:  # if left wheel has gone above goal encoder
             tempmeasure = total / measurecounter
             total, measurecounter = 0, 0
             fmir = get_fmir()
@@ -159,13 +67,58 @@ def scan_for_object_vol4():
             measurecounter += 1
             if tempmeasure < closestmeasure:
                 closestmeasure = tempmeasure
+                closestsector = sectioncounter
             print(closestmeasure)
 
             # if no check was detected add a step to goal and counter
             wheelturngoal += step
             sectioncounter += 1
         rospy.sleep(0.05)
-        left_encoder = robot.get_left_wheel_encoder()
+
+        # this whole part is for error correction
+        trenc = get_renc()
+        tlenc = get_lenc()
+        if abs(trenc - last_trenc) > abs(tlenc - last_tlenc):
+            if lspeed < 16:
+                lspeed += 1
+            else:
+                rspeed -= 1
+        else:
+            if rspeed < 16:
+                rspeed += 1
+            else:
+                lspeed -= 1
+        turn(lspeed, rspeed, 1)
+        last_trenc = trenc
+        last_tlenc = tlenc
+        # end of error correction
+
+        lenc = get_lenc()
+    set_speed(0)
+    last_trenc = get_renc()
+    last_tlenc = get_lenc()
+    turn(lspeed, rspeed, 0)  # does turning with speed 13 clockwise
+    lenc = get_lenc()
+    wheelturngoal = lenc - step * closestsector # full 360 degree turn
+    while wheelturngoal < lenc:
+        rospy.sleep(0.05)
+        trenc = get_renc()
+        tlenc = get_lenc()
+        if abs(trenc - last_trenc) > abs(tlenc - last_tlenc):
+            if lspeed < 16:
+                lspeed += 1
+            else:
+                rspeed -= 1
+        else:
+            if rspeed < 16:
+                rspeed += 1
+            else:
+                lspeed -= 1
+        turn(lspeed, rspeed, 1)
+        last_trenc = trenc
+        last_tlenc = tlenc
+        lenc = get_lenc()
+
 
 
 def move_towards_object():
