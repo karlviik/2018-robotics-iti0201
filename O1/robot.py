@@ -45,7 +45,7 @@ def scan_for_object_vol4():
     lspeed, rspeed = 14, 14
     print("Started scanning")
     lenc = get_lenc()
-    sectionsinfullcircle = 20
+    sectionsinfullcircle = 30
     step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / sectionsinfullcircle  # step of turning because some idea
     wheelturngoal = lenc + step  # full 360 degree turn
     sectioncounter = 0
@@ -73,7 +73,7 @@ def scan_for_object_vol4():
             # if no check was detected add a step to goal and counter
             wheelturngoal += step
             sectioncounter += 1
-        rospy.sleep(0.05)
+        rospy.sleep(0.02)
 
         # this whole part is for error correction
         trenc = get_renc()
@@ -99,7 +99,7 @@ def scan_for_object_vol4():
     last_tlenc = get_lenc()
     turn(lspeed, rspeed, 0)  # does turning with speed 13 clockwise
     lenc = get_lenc()
-    wheelturngoal = lenc - step * closestsector # full 360 degree turn
+    wheelturngoal = lenc - step * (sectioncounter - closestsector) # full 360 degree turn
     while wheelturngoal < lenc:
         rospy.sleep(0.05)
         trenc = get_renc()
@@ -172,8 +172,8 @@ def move_towards_object_vol2():
 while True:
     print("I should have started!")
     scan_for_object_vol4()
+    move_towards_object_vol2()
     break
-    #move_towards_object_vol2()
     #if move_towards_object():
     #    print("Has science gone too far?")
     #    rospy.sleep(0.3)
