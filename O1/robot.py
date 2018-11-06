@@ -55,7 +55,7 @@ def scan_for_object_vol4():
     last_trenc = get_renc()
     last_tlenc = get_lenc()
     turn(lspeed, rspeed, 1)  # does turning with speed 13 clockwise
-    while sectioncounter < 5 * sectionsinfullcircle:  # does 5 turns
+    while sectioncounter < sectionsinfullcircle:  # does 5 turns
         fmir = get_fmir()
         total += fmir
         measurecounter += 1
