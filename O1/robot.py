@@ -114,10 +114,11 @@ def scan_for_object_vol4():
                 rspeed += 1
             else:
                 lspeed -= 1
-        turn(lspeed, rspeed, 1)
+        turn(lspeed, rspeed, 0)
         last_trenc = trenc
         last_tlenc = tlenc
         lenc = get_lenc()
+    set_speed(0)
 
 
 
@@ -172,6 +173,7 @@ while True:
     print("I should have started!")
     scan_for_object_vol4()
     break
+    #move_towards_object_vol2()
     #if move_towards_object():
     #    print("Has science gone too far?")
     #    rospy.sleep(0.3)
