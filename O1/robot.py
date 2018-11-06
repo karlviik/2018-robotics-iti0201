@@ -17,9 +17,9 @@ def turn(lspeed, rspeed, side):
     if not side:
         lspeed = -lspeed
     else:
-        rpseed = -rspeed
+        rspeed = -rspeed
     robot.set_left_wheel_speed(lspeed)
-    robot.set_right_wheel_speed(rpseed)
+    robot.set_right_wheel_speed(rspeed)
 
 
 def turn_precise(degrees, side, speed):
@@ -55,7 +55,7 @@ def scan_for_object_vol4():
     last_trenc = get_renc()
     last_tlenc = get_lenc()
     turn(lspeed, rspeed, 1)  # does turning with speed 13 clockwise
-    while sectioncounter < 2 * sectionsinfullcircle:  # does 5 turns
+    while sectioncounter < 5 * sectionsinfullcircle:  # does 5 turns
         fmir = get_fmir()
         total += fmir
         measurecounter += 1
