@@ -9,13 +9,17 @@ set_lspeed = robot.set_left_wheel_speed
 get_flir = robot.get_front_left_ir
 get_fmir = robot.get_front_middle_ir
 get_frir = robot.get_front_right_ir
+get_lenc = robot.get_left_wheel_encoder
+get_renc = robot.get_right_wheel_encoder
 
 
-def turn(speed, side):
+def turn(lspeed, rspeed, side):
     if not side:
-        speed = -speed
-    robot.set_left_wheel_speed(speed)
-    robot.set_right_wheel_speed(- speed)
+        lspeed = -lspeed
+    else:
+        rspeed = -rspeed
+    robot.set_left_wheel_speed(lspeed)
+    robot.set_right_wheel_speed(rspeed)
 
 
 def turn_precise(degrees, side, speed):
@@ -38,24 +42,24 @@ def turn_precise(degrees, side, speed):
 
 
 def scan_for_object_vol4():
+    lspeed, rspeed = 14, 14
     print("Started scanning")
-    left_encoder = robot.get_left_wheel_encoder()
-    sectionsinfullcircle = 20
+    lenc = get_lenc()
+    sectionsinfullcircle = 30
     step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / sectionsinfullcircle  # step of turning because some idea
-    wheelturngoal = left_encoder + step  # full 360 degree turn
-    turn(14, 1)  # does turning with speed 13 clockwise
-    fmir = get_fmir()
-    if fmir > 0.8:
-        fmir = 0.8
+    wheelturngoal = lenc + step  # full 360 degree turn
     sectioncounter = 0
     total = 0
     closestcounter, closestmeasure = 0, float("inf")
     measurecounter = 0
-    while sectioncounter < 2 * sectionsinfullcircle:  # does 5 turns
+    last_trenc = get_renc()
+    last_tlenc = get_lenc()
+    turn(lspeed, rspeed, 1)  # does turning with speed 13 clockwise
+    while sectioncounter < sectionsinfullcircle:  # does 5 turns
         fmir = get_fmir()
         total += fmir
         measurecounter += 1
-        if wheelturngoal < left_encoder:  # if left wheel has gone above goal encoder
+        if wheelturngoal < lenc:  # if left wheel has gone above goal encoder
             tempmeasure = total / measurecounter
             total, measurecounter = 0, 0
             fmir = get_fmir()
@@ -63,13 +67,59 @@ def scan_for_object_vol4():
             measurecounter += 1
             if tempmeasure < closestmeasure:
                 closestmeasure = tempmeasure
+                closestsector = sectioncounter
             print(closestmeasure)
 
             # if no check was detected add a step to goal and counter
             wheelturngoal += step
             sectioncounter += 1
+        rospy.sleep(0.02)
+
+        # this whole part is for error correction
+        trenc = get_renc()
+        tlenc = get_lenc()
+        if abs(trenc - last_trenc) > abs(tlenc - last_tlenc):
+            if lspeed < 16:
+                lspeed += 1
+            else:
+                rspeed -= 1
+        else:
+            if rspeed < 16:
+                rspeed += 1
+            else:
+                lspeed -= 1
+        turn(lspeed, rspeed, 1)
+        last_trenc = trenc
+        last_tlenc = tlenc
+        # end of error correction
+
+        lenc = get_lenc()
+    set_speed(0)
+    last_trenc = get_renc()
+    last_tlenc = get_lenc()
+    turn(lspeed, rspeed, 0)  # does turning with speed 13 clockwise
+    lenc = get_lenc()
+    wheelturngoal = lenc - step * (sectioncounter - closestsector) # full 360 degree turn
+    while wheelturngoal < lenc:
         rospy.sleep(0.05)
-        left_encoder = robot.get_left_wheel_encoder()
+        trenc = get_renc()
+        tlenc = get_lenc()
+        if abs(trenc - last_trenc) > abs(tlenc - last_tlenc):
+            if lspeed < 16:
+                lspeed += 1
+            else:
+                rspeed -= 1
+        else:
+            if rspeed < 16:
+                rspeed += 1
+            else:
+                lspeed -= 1
+        turn(lspeed, rspeed, 0)
+        last_trenc = trenc
+        last_tlenc = tlenc
+        lenc = get_lenc()
+    set_speed(0)
+
 
 
 def move_towards_object():
@@ -122,6 +172,7 @@ def move_towards_object_vol2():
 while True:
     print("I should have started!")
     scan_for_object_vol4()
+    move_towards_object_vol2()
     break
     #if move_towards_object():
     #    print("Has science gone too far?")
