@@ -126,7 +126,6 @@ def scan_for_object():
             # if this average measure is less than current closest measure, make it the closest measure and save sector
             if tempmeasure < closestmeasure:
                 closestmeasure = tempmeasure
-                closestsector = sectorcounter
                 closestdiff = (abs(last_trenc - last_tlenc) - lrenc)
             print(closestmeasure, tempmeasure, sectorcounter)  # just printing stuff
 
