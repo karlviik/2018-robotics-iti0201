@@ -32,7 +32,7 @@ def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side=0):
     if mode == 1:  # if we're doing turning at one spot (lspeed == - rspeed), minspeed -inf, maxspeed 16
         maxspeed = 17
     elif mode == 2:  # if we're moving straight forward (lspeed == rspeed)
-        maxspeed = 23
+        maxspeed = 20
 
     if abs(trenc - last_trenc) > abs(tlenc - last_tlenc):
         if lspeed < maxspeed:
@@ -149,7 +149,7 @@ def scan_for_object():
 def move_towards_object():
     """Move bot towards object."""
     print("Started moving towards!")
-    rspeed, lspeed = 20, 20  # initial speeds
+    rspeed, lspeed = 18, 18  # initial speeds
 
     # get value of fmir encoder (average to combat noise)
     total = 0
@@ -172,7 +172,7 @@ def move_towards_object():
             fmir = total / measurementcounter
             print(fmir)
             total, measurementcounter = 0, 0
-            if fmir < 0.2:  # if new value places bot at closer than this value
+            if fmir < 0.22:  # if new value places bot at closer than this value
                 set_speed(0)
                 return True
             if fmir > last_fmir:  # if last value is somehow smaller than new value, meaning lost object.
