@@ -13,7 +13,7 @@ get_lenc = robot.get_left_wheel_encoder
 get_renc = robot.get_right_wheel_encoder
 
 
-def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side = 0):
+def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side=0):
     """
     Do error correction by adjusting speed by one.
 
@@ -21,43 +21,35 @@ def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side = 0):
     :param rspeed: current right wheel speed
     :param last_tlenc: last left wheel encoder when this function ran
     :param last_trenc: last right wheel encoder when this function ran
-    :param mode:
+    :param mode: 1 for turning on the spot, 2 for moving straight forward
     :param side: which side to turn if mode = 1
     :return: new lspeed, rspeed, (last_)tlenc, (last_)trenc
     """
     trenc = get_renc()
     tlenc = get_lenc()
 
-    # if we're doing turning at one spot (lspeed == - rspeed), minspeed -inf, maxspeed 16
-    if mode == 1:
-        if abs(trenc - last_trenc) > abs(tlenc - last_tlenc):
-            if lspeed < 16:
-                lspeed += 1
-            else:
-                rspeed -= 1
-        else:
-            if rspeed < 16:
-                rspeed += 1
-            else:
-                lspeed -= 1
-        turn(lspeed, rspeed, side)
+    if mode == 1:  # if we're doing turning at one spot (lspeed == - rspeed), minspeed -inf, maxspeed 16
+        maxspeed = 16
+    elif mode == 2:  # if we're moving straight forward (lspeed == rspeed)
+        maxspeed = 23
 
-    # if we're moving straight forward (lspeed == rpseed), minspeed -inf, maxspeed 23
-    elif mode == 2:
-        if abs(trenc - last_trenc) > abs(tlenc - last_tlenc):
-            if lspeed < 23:
-                lspeed += 1
-            else:
-                rspeed -= 1
+    if abs(trenc - last_trenc) > abs(tlenc - last_tlenc):
+        if lspeed < maxspeed:
+            lspeed += 1
         else:
-            if rspeed < 23:
-                rspeed += 1
-            else:
-                lspeed -= 1
+            rspeed -= 1
+    else:
+        if rspeed < maxspeed:
+            rspeed += 1
+        else:
+            lspeed -= 1
+
+    if mode == 1:
+        turn(lspeed, rspeed, side)
+    elif mode == 2:
         set_lspeed(lspeed)
         set_rspeed(rspeed)
 
-    # if we're doing... Something else?
     return lspeed, rspeed, tlenc, trenc
 
 
@@ -79,8 +71,8 @@ def turn_precise(degrees, side, speed):
     wheelturngoal = wheelturngoal * multiplier
     lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
-    last_tlenc = get_lenc
-    last_trenc = get_renc
+    last_tlenc = get_lenc()
+    last_trenc = get_renc()
 
     if side == 1:
         turn(lspeed, rspeed, 1)
@@ -160,6 +152,8 @@ def move_towards_object():
         total += get_fmir()
         rospy.sleep(0.05)
     last_fmir = total / (i + 1)
+    fmir = 0
+
     last_trenc = get_renc()
     last_tlenc = get_lenc()
     measurementcounter = 0
@@ -177,8 +171,8 @@ def move_towards_object():
             if fmir > last_fmir:
                 set_speed(0)
                 return False
-        print("I ended main loop!")
-        rospy.sleep(0.05)
+        print(fmir)
+        rospy.sleep(0.02)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 2)
 
 
