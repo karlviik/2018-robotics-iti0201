@@ -115,7 +115,6 @@ def scan_for_object():
     renc = last_trenc
     lrenc = abs(lenc - renc)
 
-
     while sectorcounter < sectorsinfullcircle:  # does a full 360 degree turn
         # add current fmir to total and add one to measurecounter
         fmir = get_fmir()
@@ -123,7 +122,7 @@ def scan_for_object():
         measurecounter += 1
         print("woof")
         # for when bot has reached end of sector
-        if (abs(last_trenc - last_tlenc) - abs(lenc - renc)) > sectorcounter * degstep * 2:  # wheelturngoal < last_tlenc:
+        if (abs(last_trenc - last_tlenc) - abs(lenc - renc)) > (sectorcounter + 1) * degstep * 2:  # wheelturngoal < last_tlenc:
             print((abs(last_trenc - last_tlenc) - abs(lenc - renc)), sectorcounter * degstep * 2)
             print(last_tlenc, last_trenc, lenc, renc)
             tempmeasure = total / measurecounter  # average measurement of fmir during sector
