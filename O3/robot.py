@@ -14,6 +14,6 @@ get_renc = robot.get_right_wheel_encoder
 
 
 set_speed(20)
-while True:
-    print(get_lenc)
+for i in range(100):
+    print(get_lenc())
     rospy.sleep(0.01)
