@@ -100,7 +100,7 @@ def scan_for_object():
     print("Started scanning")
     last_trenc = get_renc()  # used for error correction
     last_tlenc = get_lenc()  # used for error correction and also places where left encoder is needed
-    sectorsinfullcircle = 20  # how many sectors in full 360 degree turn
+    sectorsinfullcircle = 30  # how many sectors in full 360 degree turn
     step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / sectorsinfullcircle  # how much to turn for one sector
     degstep = step
     wheelturngoal = last_tlenc + step  # where first sector ends
