@@ -150,7 +150,7 @@ def move_towards_object():
     rspeed, lspeed = 20, 20
     total = 0
     for i in range(20):
-        total += get_fmir
+        total += get_fmir()
         rospy.sleep(0.05)
     last_fmir = total / (i + 1)
     last_trenc = get_renc()
