@@ -75,24 +75,24 @@ def turn_precise(degrees, side, speed):
     wheelturngoal = (degrees * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)
     multiplier = 1
     lspeed, rspeed = speed, speed
-    if side == 0:
-        multiplier = -1
-    wheelturngoal = wheelturngoal * multiplier
-    lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
 
     last_tlenc = get_lenc()
     last_trenc = get_renc()
+    diff = last_tlenc - last_trenc
 
     if side == 1:
-        turn(lspeed, rspeed, 1)
-        while lencgoal > robot.get_left_wheel_encoder():
-            rospy.sleep(0.05)
-            lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 1)
+        goal = last_tlenc - last_trenc - diff + 2 * wheelturngoal
     else:
-        turn(lspeed, rspeed, 0)
-        while lencgoal < robot.get_left_wheel_encoder():
-            rospy.sleep(0.05)
-            lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 0)
+        goal = last_tlenc - last_trenc - diff - 2 * wheelturngoal
+
+    if goal < (last_tlenc - last_trenc - diff):
+        multiplier = -1
+
+    turn(lspeed, rspeed, side)
+    while multiplier * (last_tlenc - last_trenc - diff) < multiplier * goal:
+        rospy.sleep(0.02)
+        lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, side)
+
     set_speed(0)
 
 
@@ -182,6 +182,10 @@ def move_towards_object():
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 2)
 
 
+def get_object_to_mid():
+    turn_precise(90, 1, 15)
+
+
 if __name__ == "__main__":
     while True:
         print("I should have started!")
@@ -189,14 +193,7 @@ if __name__ == "__main__":
         if move_towards_object():  # if movement reached object correctly
             print("Has science gone too far?")
             # get value of fmir encoder (average to combat noise)
-            total = 0
-            for i in range(10):
-                total += get_fmir()
-                rospy.sleep(0.05)
-            fmir = total / (i + 1)
-            sleep = round((fmir - 0.05), 3) * 2
-            set_lspeed(16)
-            set_rspeed(16)
-            rospy.sleep(sleep)
-            set_speed(0)
+            distance = get_object_to_mid()
+            #move_to_object(distance)
+            #roam_for_line()
             break
