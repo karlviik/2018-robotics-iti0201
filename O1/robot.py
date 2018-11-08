@@ -100,7 +100,7 @@ def scan_for_object():
     print("Started scanning")
     last_trenc = get_renc()  # used for error correction
     last_tlenc = get_lenc()  # used for error correction and also places where left encoder is needed
-    sectorsinfullcircle = 2  # how many sectors in full 360 degree turn
+    sectorsinfullcircle = 20  # how many sectors in full 360 degree turn
     step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / sectorsinfullcircle  # how much to turn for one sector
     degstep = step
     wheelturngoal = last_tlenc + step  # where first sector ends
@@ -120,11 +120,8 @@ def scan_for_object():
         fmir = get_fmir()
         total += fmir
         measurecounter += 1
-        print("woof")
         # for when bot has reached end of sector
         if (abs(last_trenc - last_tlenc) - abs(lenc - renc)) > (sectorcounter + 1) * degstep * 2:  # wheelturngoal < last_tlenc:
-            print((abs(last_trenc - last_tlenc) - abs(lenc - renc)), sectorcounter * degstep * 2)
-            print(last_tlenc, last_trenc, lenc, renc)
             tempmeasure = total / measurecounter  # average measurement of fmir during sector
             total, measurecounter = 0, 0  # zeroes them for next sector
 
