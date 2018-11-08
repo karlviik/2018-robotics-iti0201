@@ -184,12 +184,13 @@ def move_towards_object():
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 2)
 
 
-while True:
-    print("I should have started!")
-    scan_for_object()
-    if move_towards_object():  # if movement reached object correctly
-        set_speed(15)
-        print("Has science gone too far?")
-        rospy.sleep(0.2)
-        set_speed(0)
-        break
+if __name__ == "__main__":
+    while True:
+        print("I should have started!")
+        scan_for_object()
+        if move_towards_object():  # if movement reached object correctly
+            set_speed(15)
+            print("Has science gone too far?")
+            rospy.sleep(0.2)
+            set_speed(0)
+            break
