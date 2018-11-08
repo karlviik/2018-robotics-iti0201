@@ -29,7 +29,7 @@ def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side=0):
     tlenc = get_lenc()
 
     if mode == 1:  # if we're doing turning at one spot (lspeed == - rspeed), minspeed -inf, maxspeed 16
-        maxspeed = 16
+        maxspeed = 18
     elif mode == 2:  # if we're moving straight forward (lspeed == rspeed)
         maxspeed = 23
 
@@ -88,7 +88,7 @@ def turn_precise(degrees, side, speed):
 
 
 def scan_for_object():
-    lspeed, rspeed = 14, 14
+    lspeed, rspeed = 15, 15
     print("Started scanning")
     last_trenc = get_renc()  # used for error correction
     last_tlenc = get_lenc()  # used for error correction and also places where left encoder is needed
