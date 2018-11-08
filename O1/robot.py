@@ -185,7 +185,6 @@ def move_towards_object():
 while True:
     print("I should have started!")
     scan_for_object()
-    break
     if move_towards_object():
         set_speed(15)
         print("Has science gone too far?")
