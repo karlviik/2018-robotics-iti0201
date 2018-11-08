@@ -121,7 +121,7 @@ def scan_for_object():
         fmir = get_fmir()
         total += fmir
         measurecounter += 1
-
+        print("woof")
         # for when bot has reached end of sector
         if (abs(last_trenc - last_tlenc) - abs(lenc - renc)) > sectorcounter * degstep * 2:  # wheelturngoal < last_tlenc:
             print((abs(last_trenc - last_tlenc) - abs(lenc - renc)), sectorcounter * degstep * 2)
