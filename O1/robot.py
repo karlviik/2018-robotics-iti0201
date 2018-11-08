@@ -110,7 +110,7 @@ def scan_for_object():
     measurecounter = 0  # how many measurements have been made in sector so far
     turn(lspeed, rspeed, 1)  # starts clockwise turning
 
-    while sectorcounter < sectionsinfullcircle:  # does a full 360 degree turn
+    while sectorcounter < (sectionsinfullcircle - 1):  # does a full 360 degree turn
         # add current fmir to total and add one to measurecounter
         fmir = get_fmir()
         total += fmir
