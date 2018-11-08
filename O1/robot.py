@@ -139,7 +139,7 @@ def scan_for_object():
     set_speed(0)  # stops the bot
     cdiff = abs(last_trenc - last_tlenc) - lrenc  # gets current encoder difference
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
-    while (closestdiff - 0.5 * step) < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
+    while (closestdiff - 1 * step) < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
         rospy.sleep(0.02)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 0)
         cdiff = abs(last_trenc - last_tlenc) - lrenc
@@ -195,7 +195,8 @@ if __name__ == "__main__":
                 rospy.sleep(0.05)
             fmir = total / (i + 1)
             sleep = round((fmir - 0.05), 3) * 3
-            set_speed(15)
+            set_lspeed(16)
+            set_rspeed(16)
             rospy.sleep(sleep)
             set_speed(0)
             break
