@@ -1,3 +1,4 @@
+"""Fid object and move to it."""
 import rospy
 from PiBot import PiBot
 
@@ -29,7 +30,7 @@ def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side=0):
     tlenc = get_lenc()
 
     if mode == 1:  # if we're doing turning at one spot (lspeed == - rspeed), minspeed -inf, maxspeed 16
-        maxspeed = 18
+        maxspeed = 17
     elif mode == 2:  # if we're moving straight forward (lspeed == rspeed)
         maxspeed = 23
 
@@ -54,6 +55,13 @@ def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side=0):
 
 
 def turn(lspeed, rspeed, side):
+    """
+    Make bot turn at one spot.
+
+    :param lspeed: speed to give to left wheel
+    :param rspeed: speed to give to right wheel
+    :param side: where to turn. 0 is left, 1 is right.
+    """
     if not side:
         lspeed = -lspeed
     else:
@@ -63,6 +71,7 @@ def turn(lspeed, rspeed, side):
 
 
 def turn_precise(degrees, side, speed):
+    """Do a precise turn. Not used here. Can probably delete."""
     wheelturngoal = (degrees * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)
     multiplier = 1
     lspeed, rspeed = speed, speed
@@ -88,7 +97,8 @@ def turn_precise(degrees, side, speed):
 
 
 def scan_for_object():
-    lspeed, rspeed = 15, 15
+    """Scan for object."""
+    lspeed, rspeed = 15, 15  # initial speeds for left and right wheel
     print("Started scanning")
     last_trenc = get_renc()  # used for error correction
     last_tlenc = get_lenc()  # used for error correction and also places where left encoder is needed
@@ -102,10 +112,7 @@ def scan_for_object():
     closestmeasure = float("inf")  # what was the closest measurement
     measurecounter = 0  # how many measurements have been made in sector so far
     turn(lspeed, rspeed, 1)  # starts clockwise turning
-
-    lenc = last_tlenc
-    renc = last_trenc
-    lrenc = abs(lenc - renc)
+    lrenc = abs(last_trenc - last_tlenc)  # the encoder difference at the beginning
 
     while sectorcounter < sectorsinfullcircle:  # does a full 360 degree turn
         # add current fmir to total and add one to measurecounter
@@ -113,7 +120,7 @@ def scan_for_object():
         total += fmir
         measurecounter += 1
         # for when bot has reached end of sector
-        if (abs(last_trenc - last_tlenc) - lrenc) > (sectorcounter + 1) * degstep * 2:  # wheelturngoal < last_tlenc:
+        if (abs(last_trenc - last_tlenc) - lrenc) > (sectorcounter + 1) * degstep * 2:  # if encoder difference has grown more than it would to scan one sector
             tempmeasure = total / measurecounter  # average measurement of fmir during sector
             total, measurecounter = 0, 0  # zeroes them for next sector
 
@@ -122,7 +129,7 @@ def scan_for_object():
                 closestmeasure = tempmeasure
                 closestsector = sectorcounter
                 closestdiff = (abs(last_trenc - last_tlenc) - lrenc)
-            print(closestmeasure, tempmeasure, sectorcounter)
+            print(closestmeasure, tempmeasure, sectorcounter)  # just printing stuff
 
             wheelturngoal += step  # end of next sector
             sectorcounter += 1
@@ -132,12 +139,9 @@ def scan_for_object():
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 1)
 
     set_speed(0)  # stops the bot
-    last_trenc = get_renc()
-    last_tlenc = get_lenc()
-    cdiff = abs(last_trenc - last_tlenc) - lrenc
+    cdiff = abs(last_trenc - last_tlenc) - lrenc  # gets current encoder difference
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
-    wheelturngoal = last_tlenc - step * (sectorcounter - closestsector + 0.5)  # aim for middle of closest sector
-    while (closestdiff - 0.5 * step) < cdiff:
+    while (closestdiff - 0.5 * step) < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
         rospy.sleep(0.02)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 0)
         cdiff = abs(last_trenc - last_tlenc) - lrenc
@@ -145,33 +149,37 @@ def scan_for_object():
 
 
 def move_towards_object():
+    """Move bot towards object."""
     print("Started moving towards!")
-    rspeed, lspeed = 20, 20
+    rspeed, lspeed = 20, 20  # initial speeds
+
+    # get value of fmir encoder (average to combat noise)
     total = 0
-    for i in range(20):
+    for i in range(10):
         total += get_fmir()
         rospy.sleep(0.05)
     last_fmir = total / (i + 1)
-    fmir = 0
 
-    last_trenc = get_renc()
-    last_tlenc = get_lenc()
+    last_trenc = get_renc()  # for error correction
+    last_tlenc = get_lenc()  # for error correction
     measurementcounter = 0
     total = 0
     set_speed(20)
     while True:
+        # get average value of fmir over 10 steps
         measurementcounter += 1
+        print(measurementcounter)
         total += get_fmir()
         if measurementcounter == 10:
             fmir = total / measurementcounter
+            print(fmir)
             total, measurementcounter = 0, 0
-            if fmir < 0.2:
+            if fmir < 0.2:  # if new value places bot at closer than this value
                 set_speed(0)
                 return True
-            if fmir > last_fmir:
+            if fmir > last_fmir:  # if last value is somehow smaller than new value, meaning lost object.
                 set_speed(0)
                 return False
-        print(fmir)
         rospy.sleep(0.02)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 2)
 
@@ -179,7 +187,7 @@ def move_towards_object():
 while True:
     print("I should have started!")
     scan_for_object()
-    if move_towards_object():
+    if move_towards_object():  # if movement reached object correctly
         set_speed(15)
         print("Has science gone too far?")
         rospy.sleep(0.2)
