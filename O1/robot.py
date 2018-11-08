@@ -70,32 +70,6 @@ def turn(lspeed, rspeed, side):
     robot.set_right_wheel_speed(rspeed)
 
 
-def turn_precise(degrees, side, speed):
-    """Do a precise turn. Not used here. Can probably delete."""
-    wheelturngoal = (degrees * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)
-    multiplier = 1
-    lspeed, rspeed = speed, speed
-    if side == 0:
-        multiplier = -1
-    wheelturngoal = wheelturngoal * multiplier
-    lencgoal = robot.get_left_wheel_encoder() + wheelturngoal
-
-    last_tlenc = get_lenc()
-    last_trenc = get_renc()
-
-    if side == 1:
-        turn(lspeed, rspeed, 1)
-        while lencgoal > robot.get_left_wheel_encoder():
-            rospy.sleep(0.05)
-            lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 1)
-    else:
-        turn(lspeed, rspeed, 0)
-        while lencgoal < robot.get_left_wheel_encoder():
-            rospy.sleep(0.05)
-            lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 0)
-    set_speed(0)
-
-
 def scan_for_object():
     """Scan for object."""
     lspeed, rspeed = 15, 15  # initial speeds for left and right wheel
@@ -194,7 +168,7 @@ if __name__ == "__main__":
                 total += get_fmir()
                 rospy.sleep(0.05)
             fmir = total / (i + 1)
-            sleep = round((fmir - 0.05), 3) * 3
+            sleep = round((fmir - 0.05), 3) * 2
             set_lspeed(16)
             set_rspeed(16)
             rospy.sleep(sleep)
