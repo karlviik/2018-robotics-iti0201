@@ -100,8 +100,8 @@ def scan_for_object():
     print("Started scanning")
     last_trenc = get_renc()  # used for error correction
     last_tlenc = get_lenc()  # used for error correction and also places where left encoder is needed
-    sectionsinfullcircle = 30  # how many sectors in full 360 degree turn
-    step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / sectionsinfullcircle  # how much to turn for one sector
+    sectorsinfullcircle = 30  # how many sectors in full 360 degree turn
+    step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / sectorsinfullcircle  # how much to turn for one sector
     wheelturngoal = last_tlenc + step  # where first sector ends
     sectorcounter = 0  # which sector is in progress
     total = 0 # total of all the measurements in the sector
@@ -110,7 +110,7 @@ def scan_for_object():
     measurecounter = 0  # how many measurements have been made in sector so far
     turn(lspeed, rspeed, 1)  # starts clockwise turning
 
-    while sectorcounter < (sectionsinfullcircle - 1):  # does a full 360 degree turn
+    while sectorcounter < sectorsinfullcircle:  # does a full 360 degree turn
         # add current fmir to total and add one to measurecounter
         fmir = get_fmir()
         total += fmir
@@ -125,7 +125,7 @@ def scan_for_object():
             if tempmeasure < closestmeasure:
                 closestmeasure = tempmeasure
                 closestsector = sectorcounter
-            print(closestmeasure)
+            print(closestmeasure, tempmeasure, sectorcounter)
 
             wheelturngoal += step  # end of next sector
             sectorcounter += 1
@@ -135,6 +135,7 @@ def scan_for_object():
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 1)
 
     set_speed(0)  # stops the bot
+    return 0
     last_trenc = get_renc()
     last_tlenc = get_lenc()
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
@@ -178,6 +179,7 @@ def move_towards_object():
 while True:
     print("I should have started!")
     scan_for_object()
+    break
     if move_towards_object():
         set_speed(15)
         print("Has science gone too far?")
