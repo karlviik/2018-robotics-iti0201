@@ -125,6 +125,7 @@ def scan_for_object():
         # for when bot has reached end of sector
         if (abs(last_trenc - last_tlenc) - abs(lenc - renc)) > sectorcounter * degstep * 2:  # wheelturngoal < last_tlenc:
             print((abs(last_trenc - last_tlenc) - abs(lenc - renc)), sectorcounter * degstep * 2)
+            print(last_tlenc, last_trenc, lenc, renc)
             tempmeasure = total / measurecounter  # average measurement of fmir during sector
             total, measurecounter = 0, 0  # zeroes them for next sector
 
