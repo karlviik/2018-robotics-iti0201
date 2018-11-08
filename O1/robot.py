@@ -107,8 +107,7 @@ def scan_for_object():
     degstep = step
     wheelturngoal = last_tlenc + step  # where first sector ends
     sectorcounter = 0  # which sector is in progress
-    total = 0 # total of all the measurements in the sector
-    closestsector = 0  # which sector had the closest measurement
+    total = 0  # total of all the measurements in the sector
     closestmeasure = float("inf")  # what was the closest measurement
     measurecounter = 0  # how many measurements have been made in sector so far
     turn(lspeed, rspeed, 1)  # starts clockwise turning
