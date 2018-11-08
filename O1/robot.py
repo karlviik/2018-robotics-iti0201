@@ -121,7 +121,7 @@ def scan_for_object():
         total += fmir
         measurecounter += 1
         # for when bot has reached end of sector
-        if (abs(last_trenc - last_tlenc) - abs(lenc - renc)) > (sectorcounter + 1) * degstep * 2:  # wheelturngoal < last_tlenc:
+        if (abs(last_trenc - last_tlenc) - lrenc) > (sectorcounter + 1) * degstep * 2:  # wheelturngoal < last_tlenc:
             tempmeasure = total / measurecounter  # average measurement of fmir during sector
             total, measurecounter = 0, 0  # zeroes them for next sector
 
@@ -129,6 +129,7 @@ def scan_for_object():
             if tempmeasure < closestmeasure:
                 closestmeasure = tempmeasure
                 closestsector = sectorcounter
+                closestdiff = (abs(last_trenc - last_tlenc) - lrenc)
             print(closestmeasure, tempmeasure, sectorcounter)
 
             wheelturngoal += step  # end of next sector
@@ -141,11 +142,13 @@ def scan_for_object():
     set_speed(0)  # stops the bot
     last_trenc = get_renc()
     last_tlenc = get_lenc()
+    cdiff = abs(last_trenc - last_tlenc) - lrenc
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
     wheelturngoal = last_tlenc - step * (sectorcounter - closestsector + 0.5)  # aim for middle of closest sector
-    while wheelturngoal < last_tlenc:
-        rospy.sleep(0.05)
+    while closestdiff < cdiff:
+        rospy.sleep(0.02)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 0)
+        cdiff = abs(last_trenc - last_tlenc) - lrenc
     set_speed(0)
 
 
