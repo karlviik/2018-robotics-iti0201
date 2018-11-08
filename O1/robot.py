@@ -187,8 +187,15 @@ if __name__ == "__main__":
         print("I should have started!")
         scan_for_object()
         if move_towards_object():  # if movement reached object correctly
-            set_speed(15)
             print("Has science gone too far?")
-            rospy.sleep(0.2)
+            # get value of fmir encoder (average to combat noise)
+            total = 0
+            for i in range(10):
+                total += get_fmir()
+                rospy.sleep(0.05)
+            fmir = total / (i + 1)
+            sleep = round((fmir - 0.05), 3) * 3
+            set_speed(15)
+            rospy.sleep(sleep)
             set_speed(0)
             break
