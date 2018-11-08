@@ -102,6 +102,7 @@ def scan_for_object():
     last_tlenc = get_lenc()  # used for error correction and also places where left encoder is needed
     sectorsinfullcircle = 2  # how many sectors in full 360 degree turn
     step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / sectorsinfullcircle  # how much to turn for one sector
+    degstep = step
     wheelturngoal = last_tlenc + step  # where first sector ends
     sectorcounter = 0  # which sector is in progress
     total = 0 # total of all the measurements in the sector
@@ -110,6 +111,11 @@ def scan_for_object():
     measurecounter = 0  # how many measurements have been made in sector so far
     turn(lspeed, rspeed, 1)  # starts clockwise turning
 
+    lenc = last_tlenc
+    renc = last_trenc
+    lrenc = abs(lenc - renc)
+
+
     while sectorcounter < sectorsinfullcircle:  # does a full 360 degree turn
         # add current fmir to total and add one to measurecounter
         fmir = get_fmir()
@@ -117,7 +123,7 @@ def scan_for_object():
         measurecounter += 1
 
         # for when bot has reached end of sector
-        if wheelturngoal < last_tlenc:
+        if abs(last_trenc - last_tlenc) - lrenc > sectorcounter * degstep:  # wheelturngoal < last_tlenc:
             tempmeasure = total / measurecounter  # average measurement of fmir during sector
             total, measurecounter = 0, 0  # zeroes them for next sector
 
