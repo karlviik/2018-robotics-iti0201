@@ -61,8 +61,6 @@ def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side = 0):
     return lspeed, rspeed, tlenc, trenc
 
 
-----------------------------------------------------------------------------------------------------------------
-
 def turn(lspeed, rspeed, side):
     if not side:
         lspeed = -lspeed
