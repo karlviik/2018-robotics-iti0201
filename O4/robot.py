@@ -183,7 +183,16 @@ def move_towards_object():
 
 
 def get_object_to_mid():
-    turn_precise(90, 1, 15)
+    robot.set_grabber_height(0)
+    rospy.sleep(2)
+    set_speed(20)
+    rospy.sleep(0.2)
+    set_speed(0)
+    robot.close_grabber(100)
+    rospy.sleep(2)
+    robot.set_grabber_height(100)
+    rospy.sleep(2)
+
 
 
 if __name__ == "__main__":
