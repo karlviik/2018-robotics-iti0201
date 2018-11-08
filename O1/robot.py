@@ -145,7 +145,7 @@ def scan_for_object():
     cdiff = abs(last_trenc - last_tlenc) - lrenc
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
     wheelturngoal = last_tlenc - step * (sectorcounter - closestsector + 0.5)  # aim for middle of closest sector
-    while closestdiff < cdiff:
+    while (closestdiff - 2 * step) < cdiff:
         rospy.sleep(0.02)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 0)
         cdiff = abs(last_trenc - last_tlenc) - lrenc
