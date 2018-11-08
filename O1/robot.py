@@ -160,7 +160,7 @@ def move_towards_object():
     set_speed(20)
     while True:
         measurementcounter += 1
-        total += get_fmir
+        total += get_fmir()
         if measurementcounter == 10:
             fmir = total / measurementcounter
             total, measurementcounter = 0, 0
