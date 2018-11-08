@@ -139,7 +139,6 @@ def scan_for_object():
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 1)
 
     set_speed(0)  # stops the bot
-    return 0
     last_trenc = get_renc()
     last_tlenc = get_lenc()
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
