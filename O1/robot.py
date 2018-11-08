@@ -146,59 +146,41 @@ def scan_for_object():
 
 
 def move_towards_object():
-    set_speed(20)
-    last_fmir = get_fmir()
-    fmir = get_fmir()
-    while fmir > 0.17:
-        if fmir > last_fmir:
-            set_speed(0)
-            return False
-        last_fmir = fmir
-        rospy.sleep(0.005)
-        fmir = get_fmir()
-    return True
-
-
-def move_towards_object_vol2():
     print("Started moving towards!")
-    set_speed(20)
     rspeed, lspeed = 20, 20
-    last_fmir = get_fmir()
-    fmir = get_fmir()
+    total = 0
+    for i in range(20):
+        total += get_fmir
+        rospy.sleep(0.05)
+    last_fmir = total / (i + 1)
+    last_trenc = get_renc()
+    last_tlenc = get_lenc()
+    measurementcounter = 0
+    total = 0
+    set_speed(20)
     while True:
-        while last_fmir >= fmir > 0.17:
-            print("I should be moving straight forward ight now!")
-            last_fmir = fmir
-            rospy.sleep(0.05)
-            fmir = get_fmir()
-        while 0.17 < last_fmir < fmir:
-            print("Ohnoes I started second loop!")
-            if rspeed < lspeed:
-                lspeed = 15
-                rspeed = 20
-            else:
-                lspeed = 20
-                rspeed = 15
-            set_lspeed(lspeed)
-            set_rspeed(rspeed)
-            last_fmir = fmir
-            rospy.sleep(0.05)
-            fmir = get_fmir()
-        if fmir < 0.17:
-            break
+        measurementcounter += 1
+        total += get_fmir
+        if measurementcounter == 10:
+            fmir = total / measurementcounter
+            total, measurementcounter = 0, 0
+            if fmir < 0.2:
+                set_speed(0)
+                return True
+            if fmir > last_fmir:
+                set_speed(0)
+                return False
         print("I ended main loop!")
-        set_speed(20)
-        rspeed, lspeed = 20, 20
-    return True
+        rospy.sleep(0.05)
+        lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 2)
 
 
 while True:
     print("I should have started!")
     scan_for_object()
-    move_towards_object_vol2()
-    break
-    #if move_towards_object():
-    #    print("Has science gone too far?")
-    #    rospy.sleep(0.3)
-    #    set_speed(0)
-    #    break
+    if move_towards_object():
+        set_speed(15)
+        print("Has science gone too far?")
+        rospy.sleep(0.2)
+        set_speed(0)
+        break
