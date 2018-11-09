@@ -100,6 +100,8 @@ def scan_for_object():
     measurecounter = 0  # how many measurements have been made in sector so far
     turn(lspeed, rspeed, 1)  # starts clockwise turning
     lrenc = abs(last_trenc - last_tlenc)  # the encoder difference at the beginning
+    flag, flagsec = False, False
+    objstart =
 
     while sectorcounter < sectorsinfullcircle:  # does a full 360 degree turn
         # add current fmir to total and add one to measurecounter
@@ -113,9 +115,15 @@ def scan_for_object():
 
             cache.append(tempmeasure)
             cache.pop(0)
-            flag, sector = object_in_cache(cache)
-            if flag:
+            flag, obj = object_in_cache(cache)
+            if flag and not flagsec:
+                flagsec = True
+                flag = False
+                objstart = 1
+            if flag and flagsec:
+                obj = (obj + objstart) / 2
                 break
+            objstart += 1
             # if this average measure is less than current closest measure, make it the closest measure and save sector
             #if tempmeasure < closestmeasure:
             #    closestmeasure = tempmeasure
@@ -135,9 +143,9 @@ def scan_for_object():
 
 
     cdiff = abs(last_trenc - last_tlenc) - lrenc  # gets current encoder difference
-    goaldiff = cdiff - (flag + 0.5) * step  # * 2
+    goaldiff = cdiff - (obj + 0.5) * step  # * 2
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
-    while (goaldiff) < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
+    while goaldiff < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
         rospy.sleep(0.02)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 0)
         cdiff = abs(last_trenc - last_tlenc) - lrenc
