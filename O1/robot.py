@@ -188,7 +188,7 @@ def move_towards_object():
                 return False
         rospy.sleep(0.02)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 2)
-        print(lspeed, rspeed, last_tlenc, last_trenc)
+        print(lspeed, rspeed, last_tlenc, last_trenc, (last_tlenc - last_trenc))
 
 
 if __name__ == "__main__":
