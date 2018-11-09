@@ -186,7 +186,7 @@ def move_towards_object():
             if fmir > last_fmir:  # if last value is somehow smaller than new value, meaning lost object.
                 set_speed(0)
                 return False
-        rospy.sleep(0.02)
+        rospy.sleep(0.05)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 2)
         print(lspeed, rspeed, last_tlenc, last_trenc, (last_tlenc - last_trenc))
 
