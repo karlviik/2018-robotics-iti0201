@@ -135,7 +135,7 @@ def scan_for_object():
 
 
     cdiff = abs(last_trenc - last_tlenc) - lrenc  # gets current encoder difference
-    goaldiff = cdiff - (flag + 0.5) * 2 * step
+    goaldiff = cdiff - (flag + 0.5) * step  # * 2
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
     while (goaldiff) < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
         rospy.sleep(0.02)
