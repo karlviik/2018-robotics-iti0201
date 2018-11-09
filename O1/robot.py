@@ -50,7 +50,7 @@ def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side=0):
     elif mode == 2:
         set_lspeed(lspeed)
         set_rspeed(rspeed)
-
+    print(abs(trenc - last_trenc) - abs(tlenc - last_tlenc))
     return lspeed, rspeed, tlenc, trenc
 
 
@@ -122,7 +122,7 @@ def scan_for_object():
                 objstart = 1
             elif flagsec and not flag:
                 objstart += 1
-            if flagsec and (flag or objstart > (sectorsinfullcircle / 10)):
+            if flagsec and (flag or objstart > 2):
                 obj = (obj + objstart) / 2
                 print(obj, cache, objstart)
                 break
