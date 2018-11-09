@@ -70,10 +70,19 @@ def turn(lspeed, rspeed, side):
     robot.set_right_wheel_speed(rspeed)
 
 
+def object_in_cache(cache):
+    if (cache[0] - cache[1]) > 0.2:
+        return True, 0
+    if (cache[1] - cache[0]) > 0.2:
+        return True, 1
+    return False
+
+
 def scan_for_object():
     """Scan for object."""
     lspeed, rspeed = 15, 15  # initial speeds for left and right wheel
     print("Started scanning")
+    cache = []
     last_trenc = get_renc()  # used for error correction
     last_tlenc = get_lenc()  # used for error correction and also places where left encoder is needed
     sectorsinfullcircle = 30  # how many sectors in full 360 degree turn
@@ -97,10 +106,15 @@ def scan_for_object():
             tempmeasure = total / measurecounter  # average measurement of fmir during sector
             total, measurecounter = 0, 0  # zeroes them for next sector
 
+            cache.append(tempmeasure)
+            cache.pop(0)
+            flag, sector = object_in_cache(cache)
+            if flag:
+                break
             # if this average measure is less than current closest measure, make it the closest measure and save sector
-            if tempmeasure < closestmeasure:
-                closestmeasure = tempmeasure
-                closestdiff = (abs(last_trenc - last_tlenc) - lrenc)
+            #if tempmeasure < closestmeasure:
+            #    closestmeasure = tempmeasure
+            #    closestdiff = (abs(last_trenc - last_tlenc) - lrenc)
             print(closestmeasure, tempmeasure, sectorcounter)  # just printing stuff
 
             wheelturngoal += step  # end of next sector
@@ -109,11 +123,16 @@ def scan_for_object():
 
         # function for error correction
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 1)
+    set_speed(0)
+    if not flag:
+        return False
 
-    set_speed(0)  # stops the bot
+
+
     cdiff = abs(last_trenc - last_tlenc) - lrenc  # gets current encoder difference
+    goaldiff = cdiff - (flag + 0.5) * 2 * step
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
-    while (closestdiff - 1 * step) < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
+    while (goaldiff) < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
         rospy.sleep(0.02)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 0)
         cdiff = abs(last_trenc - last_tlenc) - lrenc
