@@ -101,7 +101,7 @@ def scan_for_object():
     turn(lspeed, rspeed, 1)  # starts clockwise turning
     lrenc = abs(last_trenc - last_tlenc)  # the encoder difference at the beginning
     flag, flagsec = False, False
-    objstart =
+    objstart = 0
 
     while sectorcounter < sectorsinfullcircle:  # does a full 360 degree turn
         # add current fmir to total and add one to measurecounter
