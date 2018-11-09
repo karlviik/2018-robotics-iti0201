@@ -14,7 +14,7 @@ get_lenc = robot.get_left_wheel_encoder
 get_renc = robot.get_right_wheel_encoder
 
 
-def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side=0):
+def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode=1, side=0):
     """
     Do error correction by adjusting speed by one.
 
@@ -124,9 +124,8 @@ def scan_for_object():
                 objstart += 1
             if flagsec and (flag or objstart > 2):
                 flag = True
-                print(obj, objstart)
+                print(obj, objstart, cache)
                 obj = (obj + objstart) / 2
-                print(obj, cache, objstart)
                 break
             # if this average measure is less than current closest measure, make it the closest measure and save sector
             #if tempmeasure < closestmeasure:
@@ -147,7 +146,7 @@ def scan_for_object():
     cdiff = abs(last_trenc - last_tlenc) - lrenc  # gets current encoder difference
     goaldiff = cdiff - (obj + 0.5) * step * 2
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
-    print(cdiff, goaldiff, obj, )
+    print(cdiff, goaldiff, obj)
     while goaldiff < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
         print("derpahooo")
         rospy.sleep(0.02)
@@ -176,7 +175,6 @@ def move_towards_object():
     while True:
         # get average value of fmir over 5 steps
         measurementcounter += 1
-        print(measurementcounter)
         total += get_fmir()
         if measurementcounter == 5:
             fmir = total / measurementcounter
