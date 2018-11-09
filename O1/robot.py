@@ -123,6 +123,7 @@ def scan_for_object():
             elif flagsec and not flag:
                 objstart += 1
             if flagsec and (flag or objstart > 2):
+                print(obj, objstart)
                 obj = (obj + objstart) / 2
                 print(obj, cache, objstart)
                 break
@@ -142,12 +143,12 @@ def scan_for_object():
     if not flag:
         return False
 
-
-
     cdiff = abs(last_trenc - last_tlenc) - lrenc  # gets current encoder difference
     goaldiff = cdiff - (obj + 0.5) * step * 2
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
+    print(cdiff, goaldiff, obj, )
     while goaldiff < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
+        print("derpahooo")
         rospy.sleep(0.02)
         lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 0)
         cdiff = abs(last_trenc - last_tlenc) - lrenc
@@ -172,18 +173,18 @@ def move_towards_object():
     total = 0
     set_speed(20)
     while True:
-        # get average value of fmir over 10 steps
+        # get average value of fmir over 5 steps
         measurementcounter += 1
         print(measurementcounter)
         total += get_fmir()
-        if measurementcounter == 10:
+        if measurementcounter == 5:
             fmir = total / measurementcounter
             print(fmir)
             total, measurementcounter = 0, 0
             if fmir < 0.22:  # if new value places bot at closer than this value
                 set_speed(0)
                 return True
-            if fmir > last_fmir:  # if last value is somehow smaller than new value, meaning lost object.
+            if (fmir + 0.05) > last_fmir:  # if last value is somehow smaller than new value, meaning lost object.
                 set_speed(0)
                 return False
         rospy.sleep(0.05)
