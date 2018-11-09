@@ -82,7 +82,12 @@ def scan_for_object():
     """Scan for object."""
     lspeed, rspeed = 15, 15  # initial speeds for left and right wheel
     print("Started scanning")
-    cache = []
+    total = 0
+    for i in range(10):
+        total += get_fmir()
+        rospy.sleep(0.05)
+    last_fmir = total / (i + 1)
+    cache = [last_fmir, last_fmir]
     last_trenc = get_renc()  # used for error correction
     last_tlenc = get_lenc()  # used for error correction and also places where left encoder is needed
     sectorsinfullcircle = 30  # how many sectors in full 360 degree turn
