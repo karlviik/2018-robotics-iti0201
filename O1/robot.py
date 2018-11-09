@@ -120,10 +120,11 @@ def scan_for_object():
                 flagsec = True
                 flag = False
                 objstart = 1
-            if flag and flagsec:
+            elif flagsec and not flag:
+                objstart += 1
+            if flagsec and (flag or objstart > (sectorsinfullcircle / 10)):
                 obj = (obj + objstart) / 2
                 break
-            objstart += 1
             # if this average measure is less than current closest measure, make it the closest measure and save sector
             #if tempmeasure < closestmeasure:
             #    closestmeasure = tempmeasure
@@ -143,7 +144,7 @@ def scan_for_object():
 
 
     cdiff = abs(last_trenc - last_tlenc) - lrenc  # gets current encoder difference
-    goaldiff = cdiff - (obj + 0.5) * step  # * 2
+    goaldiff = cdiff - (obj + 0.5) * step * 2
     turn(lspeed, rspeed, 0)  # starts turning counterclockwise
     while goaldiff < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
         rospy.sleep(0.02)
