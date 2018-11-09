@@ -123,6 +123,7 @@ def scan_for_object():
             elif flagsec and not flag:
                 objstart += 1
             if flagsec and (flag or objstart > 2):
+                flag = True
                 print(obj, objstart)
                 obj = (obj + objstart) / 2
                 print(obj, cache, objstart)
