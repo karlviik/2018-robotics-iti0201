@@ -124,6 +124,7 @@ def scan_for_object():
                 objstart += 1
             if flagsec and (flag or objstart > (sectorsinfullcircle / 10)):
                 obj = (obj + objstart) / 2
+                print(obj, cache, objstart)
                 break
             # if this average measure is less than current closest measure, make it the closest measure and save sector
             #if tempmeasure < closestmeasure:
