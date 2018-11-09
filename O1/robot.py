@@ -75,7 +75,7 @@ def object_in_cache(cache):
         return True, 0
     if (cache[1] - cache[0]) > 0.2:
         return True, 1
-    return False
+    return False, 0
 
 
 def scan_for_object():
