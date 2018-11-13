@@ -9,7 +9,6 @@ def fmir_buffer_init():
     """
     Fill fmir buffer with average value over 10 measurements.
 
-    :param variables: dict of variables
     :return: dict of variables
     """
     total = 0
@@ -42,9 +41,6 @@ def fmir_buffering(variables):
 def sense(variables):
     variables["left_enc"] = robot.get_left_wheel_encoder()
     variables["right_enc"] = robot.get_right_wheel_encoder()
-    if variables["phase"] == "initialization":
-        variables["last_fmir"], variables["fmir_buffer"] = fmir_buffer_init(variables)
-        variables["phase"] = "scanning"
     variables = fmir_buffering(variables)  # updates fmir with buffer
     return variables
 
@@ -79,8 +75,9 @@ def main():
     variables = dict()
     variables["left_speed"] = 0
     variables["right_speed"] = 0
-    variables["phase"] = "initialization"
-    variables["fmir_buffer"] = []
+    variables["last_fmir"], variables["fmir_buffer"] = fmir_buffer_init()
+    variables["phase"] = "scanning"
+
     while True:
         variables = sense(variables)
         variables = plan(variables)
