@@ -110,7 +110,7 @@ def plan(variables):
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "scanning"
             else:
-                if variables["front_mid_ir"] < 20:
+                if variables["front_mid_ir"] < 0.20:
                     variables["left_speed"], variables["right_speed"] = 0, 0
                     variables["phase"] = "blind to obj"
     elif variables["phase"] == "blind to obj":
