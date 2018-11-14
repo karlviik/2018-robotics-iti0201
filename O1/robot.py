@@ -129,6 +129,8 @@ def main():
     variables = dict()
     variables["left_speed"] = 0
     variables["right_speed"] = 0
+    variables["left_enc"] = robot.get_left_wheel_encoder()
+    variables["right_enc"] = robot.get_right_wheel_encoder()
     variables["last_fmir"], variables["fmir_buffer"] = fmir_buffer_init()
     variables["phase"] = "scanning"
     variables["scan_progress"] = 0
