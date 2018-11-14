@@ -95,7 +95,7 @@ def plan(variables):
             print(variables["left_speed"], variables["right_speed"])
             print(variables["fmir_buffer"])
             print("------------------------------------------------------")
-            if abs(diff) > 0.15:  # if difference between last valid and current valid measurement is longer than 15 cm
+            if abs(diff) > 0.20:  # if difference between last valid and current valid measurement is longer than 15 cm
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "move to obj"
                 variables["scan_progress"] = 0
