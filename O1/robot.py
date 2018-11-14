@@ -18,7 +18,7 @@ def fmir_buffer_init():
         total += robot.get_front_middle_ir()
         rospy.sleep(0.05)
     fmir_average = total / (i + 1)
-    return fmir_average, [fmir_average, fmir_average, fmir_average], fmir_average
+    return fmir_average, [fmir_average, fmir_average, fmir_average, fmir_average], fmir_average
 
 
 def fmir_buffering(variables):
@@ -33,7 +33,7 @@ def fmir_buffering(variables):
     variables["last_fmir"] = variables["front_mid_ir"]
     buffer.pop(0)
     buffer.append(fmir)
-    average = (buffer[0] + buffer[1] + buffer[2]) / 3
+    average = (buffer[0] + buffer[1] + buffer[2] + buffer[3]) / 4
     if average * 0.85 < fmir < average * 1.15:
         variables["front_mid_ir"] = fmir
     else:
