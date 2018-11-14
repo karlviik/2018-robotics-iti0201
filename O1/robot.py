@@ -65,10 +65,9 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     :param target_speed: speed to aim for
     :return: dictionary with new left and right wheel speeds
     """
-    r_dist = math.pi * robot.WHEEL_DIAMETER * (360 / (variables["right_enc"] - variables["last_right_enc"]))
-    l_dist = math.pi * robot.WHEEL_DIAMETER * (360 / (variables["left_enc"] - variables["last_left_enc"]))
+    r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
+    l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
     time_diff = variables["current_time"] - variables["last_time"]
-    print(r_dist, l_dist, time_diff, variables["right_enc"], variables["last_right_enc"], variables["left_enc"], variables["last_left_enc"])
     r_speed = r_dist / time_diff
     l_speed = l_dist / time_diff
     l_error = target_speed - l_speed
@@ -78,7 +77,6 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
         r_error = target_speed - r_speed
     else:
         raise KeyError("Just some error, yo. Method has to be either 1 or 2 for p_speed")
-    print(r_speed, l_speed)
     variables["left_speed"] = math.ceil(variables["left_speed"] + GAIN * l_error)
     variables["right_speed"] = math.ceil(variables["right_speed"] + GAIN * r_error)
     return variables
