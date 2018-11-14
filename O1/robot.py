@@ -49,18 +49,31 @@ def sense(variables):
 
 def plan(variables):
     if variables["phase"] == "scanning":
-        pass
-        # if fmir difference is more than 15 cm or something
-            # then stop scanning and zero in on the object?
-        # else
-            # if haven't turned like 1.5 turns:
-                # change wheel speed according to encoders and stuff, P/I/D controlling or something
+        diff = variables["last_fmir"] - variables["front_mid_ir"]
+        if abs(diff) > 0.15:  # if difference between last valid and current valid measurement is bigger than 15 cm
+            if diff > 0:  # if bot scans clockwise and bot is currently on object:
+                # TODO: these parts should affect the next phase, ie if on obj, turn away and then scan sector by sector until exactly on object.
+                pass
+            else:  # if bot has passed the object:
+                # TODO: these parts should affect the next phase, ie if not on obj, no need to turn away
+                pass
+            variables["phase"] = "zero to obj"  # activate next phase
+        else:
+            if variables["scan_range"] < 360 * 1.5:  # if hasn't turned 1.5 turns yet
+                # TODO: insert some P/I/D controlling here that controls based on how much it has turned, also update scan range
+                pass
+            else:  # if has turned enough
+                # TODO: exit condition for this phase where object hasn't been detected. Roam phase?
+                pass
     elif variables["phase"] == "zero to obj":
+        # TODO: do a full pass over the object, sector by sector, and if get the object, turn back to it (distance starts increasing after obj again) Also P/I/D again
         pass  # this part should aim itself directly at the object with PIDing
         # take 3 measurements per angle and try to get as close as possible. When got to as close as possible, check the direction haven't checked yet
     elif variables["phase"] == "move to obj":
+        # TODO: rather straightforward (haha pun-ish) thing, move SLOWLY towards object because of fmir buffer measuring. Could also stop every X distance.
         pass  # this part should move straight to obj until like 15cm close while PIDing
     elif variables["phase"] == "blind to obj":
+        # TODO: part where it gets the measurement and based on that blindly moves towards object for some distance (not time)
         pass  # this part should move the last X distance to obj
     return variables
 
@@ -75,7 +88,8 @@ def main():
     variables["left_speed"] = 0
     variables["right_speed"] = 0
     variables["last_fmir"], variables["fmir_buffer"] = fmir_buffer_init()
-    variables["phase"] = "scanning"
+    variables["phase"] = "scanning"  # TODO: maybe add act here so could start scanning right away? For timer.
+    variables["scan_range"] = 0
 
     while True:
         variables = sense(variables)
