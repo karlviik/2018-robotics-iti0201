@@ -4,7 +4,14 @@ from PiBot import PiBot
 import math
 GAIN = 20  # TODO: get good gain constant
 
+
+# newest version of this is not here
+
+
 robot = PiBot()
+# TODO: reconvert buffer to have 3 elements maybe
+# TODO: also kinda check how it behaves with --realism, configure the losing target when moving forward.
+#  Also configure detecting object.
 
 
 def fmir_buffer_init():
