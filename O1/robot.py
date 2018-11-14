@@ -68,6 +68,7 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     r_dist = math.pi * robot.WHEEL_DIAMETER * (360 / (variables["right_enc"] - variables["last_right_enc"]))
     l_dist = math.pi * robot.WHEEL_DIAMETER * (360 / (variables["left_enc"] - variables["last_left_enc"]))
     time_diff = variables["current_time"] - variables["last_time"]
+    print(r_dist, l_dist, time_diff, variables["right_enc"], variables["last_right_enc"], variables["left_enc"], variables["last_left_enc"])
     r_speed = r_dist / time_diff
     l_speed = l_dist / time_diff
     l_error = target_speed - l_speed
