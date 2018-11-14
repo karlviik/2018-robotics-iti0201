@@ -52,7 +52,7 @@ def sense(variables):
     variables = fmir_buffering(variables)  # updates fmir with buffer
 
     variables["last_time"] = variables["current_time"]
-    variables["current_time"] = robot.get_time()
+    variables["current_time"] = rospy.get_time()
     return variables
 
 
