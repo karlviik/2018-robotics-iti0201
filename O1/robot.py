@@ -77,6 +77,7 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
         r_error = target_speed - r_speed
     else:
         raise KeyError("Just some error, yo. Method has to be either 1 or 2 for p_speed")
+    print(r_speed, l_speed)
     variables["left_speed"] = math.ceil(variables["left_speed"] + GAIN * l_error)
     variables["right_speed"] = math.ceil(variables["right_speed"] + GAIN * r_error)
     return variables
