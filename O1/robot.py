@@ -67,6 +67,7 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     """
     r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
     l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
+    variables["distance"] = (r_dist + l_dist) / 2
     time_diff = variables["current_time"] - variables["last_time"]
     r_speed = r_dist / time_diff
     l_speed = l_dist / time_diff
@@ -94,32 +95,36 @@ def plan(variables):
             print(variables["left_speed"], variables["right_speed"])
             print(variables["fmir_buffer"])
             print("------------------------------------------------------")
-            if abs(diff) > 0.15:  # if difference between last valid and current valid measurement is bigger than 15 cm
-                #if diff > 0:  # if bot scans clockwise and bot is currently on object:
-                    # TODO: REQUIRES NEXT PHASE DONE! these parts should affect the next phase, ie if on obj, turn away and then scan sector by sector until exactly on object.
-                #    pass
-                #else:  # if bot has passed the object:
-                    # TODO: REQUIRES NEXT PHASE DONE! these parts should affect the next phase, ie if not on obj, no need to turn away
-                #    pass
-                #variables["phase"] = "zero to obj"  # activate next phase
+            if abs(diff) > 0.15:  # if difference between last valid and current valid measurement is longer than 15 cm
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "move to obj"
+                variables["scan_progress"] = 0
             else:
                 variables = p_speed(variables, 1, 0.05)
-    elif variables["phase"] == "zero to obj":
-        # TODO: do a full pass over the object, sector by sector, and if get the object, turn back to it (distance starts increasing after obj again) Also P/I/D again
-        pass  # this part should aim itself directly at the object with PIDing
-        # take 3 measurements per angle and try to get as close as possible. When got to as close as possible, check the direction haven't checked yet
     elif variables["phase"] == "move to obj":
         if variables["left_speed"] == 0:
             variables["left_speed"], variables["right_speed"] = 12, 12
-        p_speed(variables, 2, 0.1)
-        # TODO: rather straightforward (haha pun-ish) thing, move SLOWLY towards object because of fmir buffer measuring. Could also stop every X distance.
-        pass  # this part should move straight to obj until like 15cm close while PIDing
+        else:
+            p_speed(variables, 2, 0.1)
+            if variables["last_fmir"] > variables["front_mid_ir"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "scanning"
+            else:
+                if variables["front_mid_ir"] < 20:
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+                    variables["phase"] = "blind to obj"
     elif variables["phase"] == "blind to obj":
-        # TODO: part where it gets the measurement and based on that blindly moves towards object for some distance (not time)
-
-        pass  # this part should move the last X distance to obj
+        variables["counter"] = variables["counter"] + 1
+        if variables["counter"] == 3:
+            variables["timegoal"] = rospy.get_time() + (variables["front_mid_ir"] - 0.07) / 0.07
+            variables["left_speed"], variables["right_speed"] = 12, 12
+        elif variables["counter"] > 3:
+            variables = p_speed(variables, 2, 0.07)
+            if variables["current_time"] > variables["timegoal"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "end"
+    elif variables["phase"] == "end":
+        pass
     return variables
 
 
@@ -141,6 +146,7 @@ def main():
     variables["scan_progress"] = 0
     variables["current_time"] = 0
     variables["last_time"] = 0
+    variables["counter"] = 0
     while True:
         variables = sense(variables)
         variables = plan(variables)
