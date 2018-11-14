@@ -18,7 +18,7 @@ def fmir_buffer_init():
         total += robot.get_front_middle_ir()
         rospy.sleep(0.05)
     fmir_average = total / (i + 1)
-    return fmir_average, [fmir_average, fmir_average, fmir_average]
+    return fmir_average, [fmir_average, fmir_average, fmir_average], fmir_average
 
 
 def fmir_buffering(variables):
@@ -131,7 +131,7 @@ def main():
     variables["right_speed"] = 0
     variables["left_enc"] = robot.get_left_wheel_encoder()
     variables["right_enc"] = robot.get_right_wheel_encoder()
-    variables["last_fmir"], variables["fmir_buffer"] = fmir_buffer_init()
+    variables["last_fmir"], variables["fmir_buffer"], variables["front_mid_ir"] = fmir_buffer_init()
     variables["phase"] = "scanning"
     variables["scan_progress"] = 0
     variables["current_time"] = 0
