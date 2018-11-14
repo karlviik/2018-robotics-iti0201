@@ -87,8 +87,13 @@ def plan(variables):
     if variables["phase"] == "scanning":
         if variables["scan_progress"] == 0:
             variables["left_speed"], variables["right_speed"] = 12, -12
+            variables["scan_progress"] = 1
         else:
             diff = variables["last_fmir"] - variables["front_mid_ir"]
+            print("Differnece is: " + str(diff))
+            print(variables["left_speed"], variables["right_speed"])
+            print(variables["fmir_buffer"])
+            print("------------------------------------------------------")
             if abs(diff) > 0.15:  # if difference between last valid and current valid measurement is bigger than 15 cm
                 #if diff > 0:  # if bot scans clockwise and bot is currently on object:
                     # TODO: REQUIRES NEXT PHASE DONE! these parts should affect the next phase, ie if on obj, turn away and then scan sector by sector until exactly on object.
