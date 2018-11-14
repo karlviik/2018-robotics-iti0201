@@ -106,7 +106,7 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, 12
         else:
             p_speed(variables, 2, 0.1)
-            if (variables["last_fmir"] + 0.1) > variables["front_mid_ir"]:
+            if (variables["last_fmir"] - 0.1) > variables["front_mid_ir"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "scanning"
             else:
