@@ -72,13 +72,16 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     Control left and right wheel speed with P control method.
 
     :param variables: dictionary with all the variables
-    :param method: 1 for clockwise turning, 2 for moving straight
+    :param method: 1 for clockwise turning, 2 for moving straight, 3 for counterclockwise turning
     :param target_speed: speed to aim for
     :return: dictionary with new left and right wheel speeds
     """
     # calculate distance the bot has traveled during the past cycle
     r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
     l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
+
+    # not used currently
+    variables["distance"] = (r_dist + l_dist) / 2
 
     # time between this and last cycle
     time_diff = variables["current_time"] - variables["last_time"]
@@ -87,13 +90,16 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     r_speed = r_dist / time_diff
     l_speed = l_dist / time_diff
 
-    # get left wheel speed error, no second option (unlike right wheel) because left wheel always moves straight
-    l_error = target_speed - l_speed
+    # get left wheel speed error
+    if method == 1 or method == 2:  # clockwise turning or moving straight
+        l_error = target_speed - l_speed
+    elif method == 3:  # counterclockwise turning
+        l_error = - target_speed - l_speed
 
     # get right wheel speed error, two separate versions because right wheel turns backwards during turning
     if method == 1:  # clockwise turning
         r_error = - target_speed - r_speed
-    elif method == 2:   # moving straight
+    elif method == 2 or method == 3:   # moving straight or counterclockwise turning
         r_error = target_speed - r_speed
 
     # calculate new right and left wheel speeds by adding rounded value of GAIN constant times wheel speed error
@@ -199,6 +205,9 @@ def plan(variables):
             # last and current fmir sensor reading difference, used for object detection
             diff = variables["last_fmir"] - variables["fmir"]
 
+            # run p controller
+            variables = p_speed(variables, 1, 0.05)
+
             # output for checking the difference, wheel speeds and the buffer
             print("Differnece is: " + str(diff))
             print(variables["left_speed"], variables["right_speed"])
@@ -237,11 +246,6 @@ def plan(variables):
                 variables["scan_progress"] = 0
                 variables["phase"] = "decide"
 
-            # if it has not detected an object and it's still scanning
-            else:
-                # run the p controller function to adjust right and left wheel speeds
-                variables = p_speed(variables, 1, 0.05)
-
     # moving to object phase
     elif variables["phase"] == "decide":
         arc_length_1 = ((variables["second_object_first_encoder"] - variables["first_object_second_encoder"]) * variables["wheel circumference"]) / 360
@@ -261,7 +265,7 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = -12, 12
             variables["turning"] = 1
         elif variables["left_speed"]:  # meaning it's currently turning, therefore the phase has started
-            variables = p_speed(variables, 1, 0.05)
+            variables = p_speed(variables, 3, 0.05)
             if variables["left_enc"] < variables["target_turn"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "drive"
@@ -273,7 +277,7 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, 12
             variables["driving"] = 1
         elif variables["left_speed"]:
-            variables = p_speed(variables, 1, 0.05)
+            variables = p_speed(variables, 2, 0.05)
             if variables["left_enc"] > variables["target_drive"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
     # return dictionary with all the new values
