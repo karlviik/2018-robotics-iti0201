@@ -349,7 +349,8 @@ def plan(variables):
         # if bot is turning right
         elif variables["are_you_zeroing"] == 2:
             # if it has turned right for a bit and it is passing the object
-            if variables["zero_right_counter"] > 4 and variables["fmir"] + 0.1 > variables["closest_obj_reading"]:
+            if variables["zero_right_counter"] > 10 and variables["fmir"] + 0.1 > variables["closest_obj_reading"]:
+                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
                 # calculate the average left encoder from both edges and start turning there
                 variables["left_encoder_goal"] = (variables["left_edge_of_obj_enc"] + variables["left_enc"]) / 2
                 variables["are_you_zeroing"] = 3
