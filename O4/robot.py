@@ -350,7 +350,6 @@ def plan(variables):
         elif variables["are_you_zeroing"] == 2:
             # if it has turned right for a bit and it is passing the object
             if variables["zero_right_counter"] > 10 and variables["fmir"] + 0.1 > variables["closest_obj_reading"]:
-                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
                 # calculate the average left encoder from both edges and start turning there
                 variables["left_encoder_goal"] = (variables["left_edge_of_obj_enc"] + variables["left_enc"]) / 2
                 variables["are_you_zeroing"] = 3
@@ -373,7 +372,7 @@ def plan(variables):
         if variables["blind_cycle_counter"] == 4:
             # calculate the time goal of how long should bot move forward with said speed
             # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
-            variables["timegoal"] = rospy.get_time() + (variables["fmir"] - 0.07) / 0.07
+            variables["timegoal"] = rospy.get_time() + (variables["fmir"] - 0.10) / 0.07
 
             # and start moving forward
             variables["left_speed"], variables["right_speed"] = 12, 12
@@ -385,9 +384,39 @@ def plan(variables):
 
             # if bot has moved more than the timegoal said
             if variables["current_time"] > variables["timegoal"]:
-                # stop moving and start end phase
+                # stop moving and start next phase
                 variables["left_speed"], variables["right_speed"] = 0, 0
-                variables["phase"] = "end"
+                variables["phase"] = "claw this"
+                variables["claw_counter"] = 0
+
+    # claw the object which hopefully is at correct location
+    elif variables["phase"] == "claw this":
+        # if this hasn't started, open the claw and "sleep", also create some dimmy variable
+        if variables["claw_counter"] == 0:
+            variables["claw_counter"] = variables["current_time"] + 3
+            robot.close_grabber(0)
+            variables["dummy"] = 1
+
+        # if time has elapsed and claw is prolly open, lower it
+        elif variables["claw_counter"] > variables["current_time"] and variables["dummy"] == 1:
+            variables["claw_counter"] = variables["current_time"] + 5
+            robot.set_grabber_height(0)
+            variables["dummy"] = 2
+
+        elif variables["claw_counter"] > variables["current_time"] and variables["dummy"] == 2:
+            variables["claw_counter"] = variables["current_time"] + 3
+            robot.close_grabber(100)
+            variables["dummy"] = 3
+
+        elif variables["claw_counter"] > variables["current_time"] and variables["dummy"] == 3:
+            variables["claw_counter"] = variables["current_time"] + 5
+            robot.set_grabber_height(100)
+            variables["dummy"] = 4
+
+        elif variables["claw_counter"] > variables["current_time"] and variables["dummy"] == 4:
+            variables["dummy"] = 0
+            variables["phase"] = "end"  # TODO: the missing things
+
 
     # end phase, literally does nothing
     elif variables["phase"] == "end":
