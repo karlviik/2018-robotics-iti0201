@@ -176,14 +176,25 @@ def plan(variables):
 
         # when buffer has gotten entirely new set of values
         if variables["obj_verify_counter"] == 5:
+            # if it most likely actually is an object
+            if variables["obj_distance"] * 1.1 > variables["fmir"]:
+                # if it has done less than specified amount of checks, do another one
+                if variables["verify_multicheck"] < 3:
+                    variables["verify_multicheck"] += 1
 
-            # if it most likely actually is an object, start moving towards it
-            if variables["obj_distance"] + 0.07 > variables["fmir"]:
-                variables["phase"] = "move to obj"
+                # if it has done enouch checks, then it prolly is an object and start moving towards it, zero multicheck
+                else:
+                    variables["phase"] = "move to obj"
+                    variables["verify_doublecheck"] = 0
 
             # if it ain't, go back to scanning
             else:
                 variables["phase"] = "scanning"
+
+            # zero the counter
+            variables["obj_verify_counter"] = 0
+
+
 
     # moving to object phase
     elif variables["phase"] == "move to obj":
@@ -280,6 +291,7 @@ def main():
     variables["obj_verify_counter"] = 0
     variables["max_fmir"] = float("inf")
     variables["scan_measure_start"] = ""
+    variables["verify_multicheck"] = 0
 
     while True:
         variables = sense(variables)
