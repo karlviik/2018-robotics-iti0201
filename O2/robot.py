@@ -112,7 +112,7 @@ def decide(variables, left_distance, left_encoder, left_second_encoder, middle_d
         distance_between_two_closest_objects = sqrt(
             left_distance ** 2 + right_distance ** 2 - 2 * left_distance * right_distance * cos(
                 angle_between_two_closest_objects))
-        if distance_between_two_closest_objects > robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
+        if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
             # TODO "phase" = drive to other side of triangle
             return variables
         else:
@@ -137,7 +137,7 @@ def decide(variables, left_distance, left_encoder, left_second_encoder, middle_d
         distance_between_two_closest_objects = sqrt(
             left_distance ** 2 + middle_distance ** 2 - 2 * left_distance * middle_distance * cos(
                 angle_between_two_closest_objects))
-        if distance_between_two_closest_objects > robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
+        if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
             # TODO "phase" = drive to other side of triangle
             return variables
         else:
@@ -162,7 +162,7 @@ def decide(variables, left_distance, left_encoder, left_second_encoder, middle_d
         distance_between_two_closest_objects = sqrt(
             middle_distance ** 2 + right_distance ** 2 - 2 * middle_distance * right_distance * cos(
                 angle_between_two_closest_objects))
-        if distance_between_two_closest_objects > robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
+        if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
             # TODO "phase" = drive to other side of triangle
             return variables
         else:
