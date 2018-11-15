@@ -87,9 +87,6 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
     l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
 
-    # variable for getting approximate distance the bot has traveled during the cycle, used in phase "blind_to_obj"
-    variables["distance"] = (r_dist + l_dist) / 2
-
     # time between this and last cycle
     time_diff = variables["current_time"] - variables["last_time"]
 
