@@ -144,7 +144,7 @@ def plan(variables):
         variables["scan_rota_amount"] = robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["right_enc"]) - variables["scan_measure_start"]) / (2 * robot.AXIS_LENGTH)
 
         # if bot has turned 1.5 turns without detecting an object
-        if variables["scan_rota_amount"] > (360 * 1.5) and variables["move_to_obj_counter"] < 40:
+        if variables["scan_rota_amount"] > (360 * 1.5):
             # start turning to roam direction phase and set wheels to stop
             variables["phase"] = "turn to roam dir"
             variables["left_speed"], variables["right_speed"] = 0, 0
