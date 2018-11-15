@@ -175,7 +175,7 @@ def plan(variables):
         variables["obj_verify_counter"] += 1
 
         # when buffer has gotten entirely new set of values
-        if variables["obj_verify_ounter"] == 5:
+        if variables["obj_verify_counter"] == 5:
 
             # if it most likely actually is an object, start moving towards it
             if variables["obj_distance"] + 0.07 > variables["fmir"]:
