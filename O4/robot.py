@@ -177,6 +177,9 @@ def plan(variables):
 
                 # if closest wall is further away than approximate distance from current fmirs
                 if variables["closest_wall"] > ((variables["fmir"] + variables["last_fmir"]) / 2):
+                    # save the new closest wall
+                    variables["closest_wall"] = ((variables["fmir"] + variables["last_fmir"]) / 2)
+
                     # save the bot aiming direction in degrees into a variables used for roam direction selection
                     variables["closest_wall_encoder_diff"] = (robot.WHEEL_DIAMETER * (variables["left_enc"] - variables["right_enc"]) / (2 * robot.AXIS_LENGTH)) % 360
 
@@ -187,6 +190,7 @@ def plan(variables):
             # calculate the amount of degrees the bot has to turn
             variables["how_much_to_turn"] = ((variables["closest_wall_encoder_diff"] - 120) - robot.WHEEL_DIAMETER * (variables["left_enc"] - variables["right_enc"]) / (2 * robot.AXIS_LENGTH)) % 360
             variables["how_much_has_turned"] = 0
+
             # if calculated degrees are more than 180 degrees (so over half a turn clockwise)
             if variables["how_much_to_turn"] > 180:
                 # make so it has to turn to the point counterclockwise (so that it's a shorter turn) and start turning
