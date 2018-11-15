@@ -335,7 +335,7 @@ def plan(variables):
         # if bot is turning clockwise, do p controlling and also increment the counter
         elif variables["are_you_zeroing"] == 2:
             variables = p_speed(variables, 1, 0.08)
-            variables["zeroing_right_turn_tick_counter"] += 1
+            variables["zero_right_counter"] += 1
             pass
 
         # if bot is turning left and it is turning away from the object
@@ -354,10 +354,6 @@ def plan(variables):
                 variables["left_encoder_goal"] = (variables["left_edge_of_obj_enc"] + variables["left_enc"]) / 2
                 variables["are_you_zeroing"] = 3
                 variables["left_speed"], variables["right_speed"] = -12, 12
-
-            # otherwise increment the counter to prevent bot stopping this check too soon
-            else:
-                variables["zero_right_counter"] += 1
 
         # if bot is turning to the middle of the object
         elif variables["are_you_zeroing"] == 3:
