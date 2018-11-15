@@ -75,6 +75,10 @@ def sense(variables):
 
     variables["last_time"] = variables["current_time"]  # put last time into respective dict key
     variables["current_time"] = rospy.get_time()  # get new time
+
+    # gets line sensors
+    variables["l3 line"], variables["l2 line"], variables["l1 line"] = robot.get_leftmost_line_sensor(), robot.get_second_line_sensor_from_left(), robot.get_third_line_sensor_from_left()
+    variables["r3 line"], variables["r2 line"], variables["r1 line"] = robot.get_rightmost_line_sensor(), robot.get_second_line_sensor_from_right(), robot.get_third_line_sensor_from_right()
     return variables
 
 
@@ -424,11 +428,26 @@ def plan(variables):
         if variables["line roam phase"] == 0:
             variables["left_speed"], variables["right_speed"] = 15, 15
             variables["line roam phase"] = 1
+            variables["line detections"] = 0
 
         # if it's moving straight already
-        elif variables["line roam phase"] == 1:  # TODO: add line checker
+        elif variables["line roam phase"] == 1:
             # p controller
             variables = p_speed(variables, 2, 0.12)
+
+            # if any line sensor detected something
+            if variables["l3 line"] < 350 or variables["l2 line"] < 350 or variables["l1 line"] < 350 or variables["r1 line"] < 350 or variables["r2 line"] < 350 or variables["r3 line"] < 350:
+                variables["line detections"] += 1
+                if variables["line detections"] == 3:
+                    # TODO: break out of here
+                    variables["line detections"] = 0  # just in case
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+                    variables["phase"] = "verifying line"
+                    pass
+
+            # tries to filter out false positives
+            elif variables["line detections"] < 3:
+                variables["line detections"] = 0
 
             # if wall is closer than 35 cm, stop and start turning phase
             if (variables["fmir"] + variables["last_fmir"]) / 2 < 0.35:
@@ -441,7 +460,8 @@ def plan(variables):
             # if it's just starting turning
             if variables["turning phase"] == 0:
                 # set left wheel encoder goal to turn X degrees and change turning phase to active, also set speeds
-                variables["left_enc_goal"] = variables["left_enc"] + 60 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER
+                # TODO: either tune the whole roaming system or yolo the degree amount
+                variables["left_enc_goal"] = variables["left_enc"] + 65 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER
                 variables["turning phase"] = 1
                 variables["left_speed"], variables["right_speed"] = 12, -12
 
