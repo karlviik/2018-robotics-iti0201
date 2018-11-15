@@ -126,8 +126,8 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, -12
             variables["scan_progress"] = 1
 
-            # if bot hasn't moved towards an object
-            if variables["move_to_obj_counter"] < 40:
+            # if the scanning is starting again
+            if variables["scan_measure_start"] == "":
                 # set a variable for measuring how much the bot has turned
                 variables["scan_measure_start"] = variables["left_enc"] - variables["right_enc"]
 
@@ -211,7 +211,6 @@ def plan(variables):
         else:
             # increase the counter for detecting if it has actually detected an object by one
             variables["move_to_obj_counter"] = variables["move_to_obj_counter"] + 1
-            print(variables["move_to_obj_counter"])
 
             # if current fmir value is more than 10 cm shorter than maximum allowed fmir value
             # NOTE: max_fmir does not reset when it does "move to obj" to "scanning" to "move to obj"
@@ -224,6 +223,10 @@ def plan(variables):
                 # stop moving and start scanning again
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "scanning"
+
+                # also allows bot to spin more if it has moved towards object but has lost sight of it
+                if variables["move_to_obj_counter"] >= 40:
+                    variables["scan_measure_start"] = ""
 
             # for when it still has object
             else:
