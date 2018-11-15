@@ -208,30 +208,30 @@ def plan(variables):
             # if diff is more than 20cm, then it most likely has detected an object
             if abs(diff) > 0.20 and object_count == 0 and on_object == 0:
                 variables["first_object_first_distance"] = variables["last_fmir"] + robot.AXIS_LENGTH / 2
-                variables["first_object_first_encoder"] = variables["last_left_encoder"]
+                variables["first_object_first_encoder"] = variables["last_left_enc"]
                 variables["object_count"] = 1
                 variables["on_object"] = 1
             elif abs(diff) > 0.20 and object_count == 1 and on_object == 1:
                 variables["first_object_second_distance"] = variables["fmir"] + robot.AXIS_LENGTH / 2  # vb pole vaja, kuna vale
-                variables["first_object_second_encoder"] = variables["last_left_encoder"]
+                variables["first_object_second_encoder"] = variables["last_left_enc"]
                 variables["on_object"] = 0
             elif abs(diff) > 0.20 and object_count == 1 and on_object == 0:
                 variables["second_object_first_distance"] = variables["last_fmir"] + robot.AXIS_LENGTH / 2
-                variables["second_object_first_encoder"] = variables["last_left_encoder"]
+                variables["second_object_first_encoder"] = variables["last_left_enc"]
                 variables["object_count"] = 2
                 variables["on_object"] = 1
             elif abs(diff) > 0.20 and object_count == 2 and on_object == 1:
                 variables["second_object_second_distance"] = variables["fmir"] + robot.AXIS_LENGTH / 2  # vb pole vaja, kuna vale
-                variables["second_object_second_encoder"] = variables["last_left_encoder"]
+                variables["second_object_second_encoder"] = variables["last_left_enc"]
                 variables["on_object"] = 0
             elif abs(diff) > 0.20 and object_count == 2 and on_object == 0:
                 variables["third_object_first_distance"] = variables["last_fmir"] + robot.AXIS_LENGTH / 2
-                variables["third_object_first_encoder"] = variables["last_left_encoder"]
+                variables["third_object_first_encoder"] = variables["last_left_enc"]
                 variables["object_count"] = 3
                 variables["on_object"] = 1
             elif abs(diff) > 0.20 and object_count == 2 and on_object == 1:
                 variables["third_object_second_distance"] = variables["fmir"] + robot.AXIS_LENGTH / 2  # vb pole vaja, kuna vale
-                variables["third_object_second_encoder"] = variables["last_left_encoder"]
+                variables["third_object_second_encoder"] = variables["last_left_enc"]
                 variables["on_object"] = 0
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["scan_progress"] = 0
