@@ -229,7 +229,7 @@ def plan(variables):
                 variables["third_object_first_encoder"] = variables["last_left_enc"]
                 variables["object_count"] = 3
                 variables["on_object"] = 1
-            elif abs(diff) > 0.20 and object_count == 2 and on_object == 1:
+            elif abs(diff) > 0.20 and object_count == 3 and on_object == 1:
                 variables["third_object_second_distance"] = variables["fmir"] + robot.AXIS_LENGTH / 2  # vb pole vaja, kuna vale
                 variables["third_object_second_encoder"] = variables["last_left_enc"]
                 variables["on_object"] = 0
