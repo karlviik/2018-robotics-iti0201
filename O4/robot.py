@@ -145,9 +145,10 @@ def plan(variables):
 
         # if bot has turned 1.5 turns without detecting an object
         if variables["scan_rota_amount"] > (360 * 1.5):
-            # start turning to roam direction phase and set wheels to stop
+            # start turning to roam direction phase and set wheels to stop, turn scanning off
             variables["phase"] = "turn to roam dir"
             variables["left_speed"], variables["right_speed"] = 0, 0
+            variables["scan_progress"] = 0
 
         # if scanning is already in progress and hasn't turned enough
         else:
@@ -229,7 +230,8 @@ def plan(variables):
         # if it is already moving
         else:
             # if average of 2 last fmir measurements is less than 80 cm (wall or object), start scanning again
-            if (variables["last_fmir"] + variables["fmir"]) / 2 < 0.8:
+            if ((variables["last_fmir"] + variables["fmir"]) / 2) < 0.8:
+                print((variables["last_fmir"] + variables["fmir"]) / 2, variables["fmir_buffer"])
                 variables["phase"] = "scanning"
                 variables["left_speed"], variables["right_speed"] = 0, 0
 
