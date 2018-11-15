@@ -14,8 +14,6 @@ GAIN = 50
 # TODO: check if all instances of "move_to_obj_counter" work properly
 # TODO: (meaning they don't break valid object detections and always trigger on fake object detections)
 
-# TODO: Reminder to put the reset of closest encoder difference somewhere where it starts scanning after roaming
-
 
 robot = PiBot()
 
@@ -311,7 +309,64 @@ def plan(variables):
                 if variables["fmir"] < 0.20:
                     # stop moving and change phase to next one
                     variables["left_speed"], variables["right_speed"] = 0, 0
-                    variables["phase"] = "blind to obj"
+                    variables["phase"] = "zero to obj"
+
+                    # also save approximate object distance into dict
+                    variables["obj_distance_for_zeroing"] = min(variables["fmir"], variables["last_fmir"])
+
+    # phase for at 20cm aiming straight at object
+    elif variables["phase"] == "zero to obj":
+        # if current fmir reading shows that it's closer than current closest obj reading, put it instead of that
+        if variables["closest_obj_reading"] > variables["fmir"]:
+            variables["closest_obj_reading"] = variables["fmir"]
+
+        # if bot isn't doing this phase yet, has to be after the closest obj for hard escape (return variables in this)
+        if variables["are_you_zeroing"] == 0:
+            # change the key and start turning left slowly, also put closest object at infinite distance
+            variables["are_you_zeroing"] = 1
+            variables["left_speed"], variables["right_speed"] = -12, 12  # around 0.08 speed maybe?
+            variables["closest_obj_reading"] = float("inf")
+            return variables
+
+        # do p controlling based on what bot right now is doing (which way is turning)
+        # if bot is turning left / counterclockwise
+        if variables["are_you_zeroing"] == 1 or variables["are_you_zeroing"] == 3:
+            variables = p_speed(variables, 3, 0.08)
+
+        # if bot is turning clockwise, do p controlling and also increment the counter
+        elif variables["are_you_zeroing"] == 2:
+            variables = p_speed(variables, 1, 0.08)
+            variables["zeroing_right_turn_tick_counter"] += 1
+            pass
+
+        # if bot is turning left and it is turning away from the object
+        if variables["are_you_zeroing"] == 1 and variables["fmir"] + 0.1 > variables["closest_obj_reading"]:
+            # start turning the other way, also save left encoder and zero the counter
+            variables["left_speed"], variables["right_speed"] = 12, -12
+            variables["are_you_zeroing"] = 2
+            variables["left_edge_of_obj_enc"] = variables["left_enc"]
+            variables["zero_right_counter"] = 0
+
+        # if bot is turning right
+        elif variables["are_you_zeroing"] == 2:
+            # if it has turned right for a bit and it is passing the object
+            if variables["zero_right_counter"] > 4 and variables["fmir"] + 0.1 > variables["closest_obj_reading"]:
+                # calculate the average left encoder from both edges and start turning there
+                variables["left_encoder_goal"] = (variables["left_edge_of_obj_enc"] + variables["left_enc"]) / 2
+                variables["are_you_zeroing"] = 3
+                variables["left_speed"], variables["right_speed"] = -12, 12
+
+            # otherwise increment the counter to prevent bot stopping this check too soon
+            else:
+                variables["zero_right_counter"] += 1
+
+        # if bot is turning to the middle of the object
+        elif variables["are_you_zeroing"] == 3:
+            # if has turned enough, stop turning and start moving closer blindly
+            if variables["left_enc"] < variables["left_encoder_goal"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["are_you_zeroing"] = 0  # just in case
+                variables["phase"] = "blind to obj"
 
     # blindly moving towards object phase
     elif variables["phase"] == "blind to obj":
@@ -372,6 +427,7 @@ def main():
     variables["verify_multicheck"] = 0
     variables["closest_wall"] = float("inf")
     variables["closest_wall_encoder_diff"] = 0  # don't have to initialise this here, but doing it anyways
+    variables["are_you_zeroing"] = 0
 
     while True:
         variables = sense(variables)
