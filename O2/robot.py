@@ -297,6 +297,7 @@ def main():
     variables["object_count"] = 0
     variables["on_object"] = 0
     variables["turning"] = 0
+    variables["driving"] = 0
     variables["left_speed"] = 0
     variables["right_speed"] = 0
     variables["left_enc"] = robot.get_left_wheel_encoder()
