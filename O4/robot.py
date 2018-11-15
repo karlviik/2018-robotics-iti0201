@@ -14,6 +14,9 @@ GAIN = 50
 # TODO: check if all instances of "move_to_obj_counter" work properly
 # TODO: (meaning they don't break valid object detections and always trigger on fake object detections)
 
+# TODO: Reminder to put the reset of closest encoder difference somewhere where it starts scanning after roaming
+
+
 robot = PiBot()
 
 
@@ -82,7 +85,7 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     Control left and right wheel speed with P control method.
 
     :param variables: dictionary with all the variables
-    :param method: 1 for clockwise turning, 2 for moving straight
+    :param method: 1 for clockwise turning, 2 for moving straight, 3 for counterclockwise turning
     :param target_speed: speed to aim for
     :return: dictionary with new left and right wheel speeds
     """
@@ -100,13 +103,16 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     r_speed = r_dist / time_diff
     l_speed = l_dist / time_diff
 
-    # get left wheel speed error, no second option (unlike right wheel) because left wheel always moves straight
-    l_error = target_speed - l_speed
+    # get left wheel speed error
+    if method == 1 or method == 2:  # clockwise turning or moving straight
+        l_error = target_speed - l_speed
+    elif method == 3:  # counterclockwise turning
+        l_error = - target_speed - l_speed
 
     # get right wheel speed error, two separate versions because right wheel turns backwards during turning
     if method == 1:  # clockwise turning
         r_error = - target_speed - r_speed
-    elif method == 2:   # moving straight
+    elif method == 2 or method == 3:   # moving straight or counterclockwise turning
         r_error = target_speed - r_speed
 
     # calculate new right and left wheel speeds by adding rounded value of GAIN constant times wheel speed error
@@ -126,7 +132,7 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, -12
             variables["scan_progress"] = 1
 
-            # if the scanning is starting again
+            # if the scanning is starting fresh again
             if variables["scan_measure_start"] == "":
                 # set a variable for measuring how much the bot has turned
                 variables["scan_measure_start"] = variables["left_enc"] - variables["right_enc"]
@@ -139,9 +145,9 @@ def plan(variables):
 
         # if bot has turned 1.5 turns without detecting an object
         if variables["scan_rota_amount"] > (360 * 1.5) and variables["move_to_obj_counter"] < 40:
-            print(variables["move_to_obj_counter"])
-            variables["phase"] = "end"
-            pass  # TODO: implement rotation amount tracking in line 131 else thing
+            # start turning to roam direction phase and set wheels to stop
+            variables["phase"] = "turn to roam dir"
+            variables["left_speed"], variables["right_speed"] = 0, 0
 
         # if scanning is already in progress and hasn't turned enough
         else:
@@ -169,7 +175,48 @@ def plan(variables):
                 # run the p controller function to adjust right and left wheel speeds
                 variables = p_speed(variables, 1, 0.05)
 
-    # verifying if it has detected an object or not, removes some cases of false positives
+                # if closest wall is further away than approximate distance from current fmirs
+                if variables["closest_wall"] > ((variables["fmir"] + variables["last_fmir"]) / 2):
+                    # save the bot aiming direction in degrees into a variables used for roam direction selection
+                    variables["closest_wall_encoder_diff"] = (robot.WHEEL_DIAMETER * (variables["left_enc"] - variables["right_enc"]) / (2 * robot.AXIS_LENGTH)) % 360
+
+    # phase for turning to a somewhat random direction
+    elif variables["phase"] == "turn to roam dir":
+        # if it is being run the first time
+        if variables["left_wheel_speed"] == 0:
+            # calculate the amount of degrees the bot has to turn
+            variables["how_much_to_turn"] = ((variables["closest_wall_encoder_diff"] - 120) - robot.WHEEL_DIAMETER * (variables["left_enc"] - variables["right_enc"]) / (2 * robot.AXIS_LENGTH)) % 360
+            variables["how_much_has_turned"] = 0
+            # if calculated degrees are more than 180 degrees (so over half a turn clockwise)
+            if variables["how_much_to_turn"] > 180:
+                # make so it has to turn to the point counterclockwise (so that it's a shorter turn) and start turning
+                variables["how_much_to_turn"] = variables["how_much_to_turn"] - 360
+                variables["left_speed"], variables["right_speed"] = -12, 12
+
+                # variables for making life easier on p controller
+                variables["left_speed_mark"], variables["right_speed_mark"], variables["p_method"] = -1, 1, 3
+
+            # if the shortest path is clockwise turning
+            else:
+                variables["left_speed"], variables["right_speed"] = 12, -12
+                variables["left_speed_mark"], variables["right_speed_mark"], variables["p_method"] = 1, -1, 1
+
+        # if it isn't first cycle
+        else:
+            # add tick turn amount (absolute) to how much it has turned
+            variables["how_much_has_turned"] += abs(robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) - (variables["right_enc"] - variables["last_right_enc"])) / (2 * robot.AXIS_LENGTH))
+
+            # if it has turned enough
+            if abs(variables["how_much_has_turned"]) > abs(variables["how_much_to_turn"]):
+                # stop turning and start moving in that direction phase
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "move straight until wall"
+
+    # phase for moving until wall, part of roaming
+    elif variables["phase"] == "move straight until wall":
+        pass
+
+    # verifying if it has detected an object or not, removes some cases of false positives, not all though
     elif variables["phase"] == "verify obj":
         # increment the counter for fmir buffer verifying
         variables["obj_verify_counter"] += 1
@@ -193,8 +240,6 @@ def plan(variables):
 
             # zero the counter
             variables["obj_verify_counter"] = 0
-
-
 
     # moving to object phase
     elif variables["phase"] == "move to obj":
@@ -296,6 +341,8 @@ def main():
     variables["max_fmir"] = float("inf")
     variables["scan_measure_start"] = ""
     variables["verify_multicheck"] = 0
+    variables["closest_wall"] = float("inf")
+    variables["closest_wall_encoder_diff"] = 0  # don't have to initialise this here, but doing it anyways
 
     while True:
         variables = sense(variables)
