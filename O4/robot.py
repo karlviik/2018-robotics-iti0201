@@ -11,6 +11,9 @@ GAIN = 50
 #           b)  (--cone) it can detect the object at the very left edge and as it moves towards the object it can
 #               lose the object as cone no longer hits it, resulting in another scanning. Only happens sometimes.
 
+# TODO: check if all instances of "move_to_obj_counter" work properly
+# TODO: (meaning they don't break valid object detections and always trigger on fake object detections)
+
 robot = PiBot()
 
 
@@ -87,7 +90,7 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
     l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
 
-    # variable for getting approximate distance the bot has traveled during the cycle, used in phase "blind_to_obj"
+    # not used currently
     variables["distance"] = (r_dist + l_dist) / 2
 
     # time between this and last cycle
@@ -114,45 +117,6 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     return variables
 
 
-def move_to_obj(variables):
-    """
-    Move to object phase broken into a separate function to keep plan() complexity down.
-
-    :param variables: dict of variables
-    :return variables: dict of variables with new values
-    """
-    # if moving to object has not started, based on wheel speed, could do same with scanning though...
-    if variables["left_speed"] == 0:
-        # start moving
-        variables["left_speed"], variables["right_speed"] = 12, 12
-
-    # if it is moving
-    else:
-        # if current fmir value is more than 10 cm shorter than maximum allowed fmir value
-        # NOTE: max_fmir does not reset when it does "move to obj" to "scanning" to "move to obj"
-        if variables["max_fmir"] > variables["fmir"] + 0.1:
-            # then put current fmir plus 10 cm as max fmir
-            variables["max_fmir"] = variables["fmir"] + 0.1
-
-        # if current fmir is longer than allowed fmir, meaning it has lost the object or there was no object
-        if variables["max_fmir"] < variables["fmir"]:
-            # stop moving and start scanning again
-            variables["left_speed"], variables["right_speed"] = 0, 0
-            variables["phase"] = "scanning"
-
-        # for when it still has object
-        else:
-            # do p controller for adjusting speed of wheels so it'd move as straight as possible
-            p_speed(variables, 2, 0.1)
-
-            # if bot has gotten to withing 20 cm of the object
-            if variables["fmir"] < 0.20:
-                # stop moving and change phase to next one
-                variables["left_speed"], variables["right_speed"] = 0, 0
-                variables["phase"] = "blind to obj"
-    return variables
-
-
 def plan(variables):
     """Do all the planning in variable dict and then return it. Because Python."""
     # scanning phase
@@ -162,7 +126,24 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, -12
             variables["scan_progress"] = 1
 
-        # if scanning is already in progress
+            # if bot hasn't moved towards an object
+            if variables["move_to_obj_counter"] < 5:
+                # set a variable for measuring how much the bot has turned
+                variables["scan_measure_start"] = variables["left_enc"] - variables["right_enc"]
+
+            # forceful - ish break out of plan() so can properly update scan rota amount before its checking
+            return variables
+
+        # calculates how much robot has turned during scanning
+        variables["scan_rota_amount"] = robot.WHEEL_DIAMETER * (variables["scan_measure_start"] - (variables["left_enc"] - variables["right_enc"])) / (2 * robot.AXIS_LENGTH)
+
+        # if bot has turned 1.5 turns without detecting an object
+        if variables["scan_rota_amount"] > (360 * 1.5) and variables["move_to_obj_counter"] < 5:
+            print("MOMMY I DIDN'T DETECT AN OBJECT. WAIT, ARE YOU MY MOMMY? ARE YOU MY MOMMY?")
+            variables["phase"] = "end"
+            pass  # TODO: implement rotation amount tracking in line 131 else thing
+
+        # if scanning is already in progress and hasn't turned enough
         else:
             # last and current fmir sensor reading difference, used for object detection
             diff = variables["last_fmir"] - variables["fmir"]
@@ -187,15 +168,50 @@ def plan(variables):
 
     # moving to object phase
     elif variables["phase"] == "move to obj":
-        variables = move_to_obj(variables)
+        # if moving to object has not started, based on wheel speed, could do same with scanning though...
+        if variables["left_speed"] == 0:
+            # start moving
+            variables["left_speed"], variables["right_speed"] = 12, 12
+
+            # if last time the cycle ran it was a fake object
+            if variables["move_to_obj_counter"] < 5:
+                variables["move_to_obj_counter"] = 0
+
+        # if it is moving
+        else:
+            # increase the counter for detecting if it has actually detected an object by one
+            variables["move_to_obj_counter"] = variables["move_to_obj_counter"] + 1
+
+            # if current fmir value is more than 10 cm shorter than maximum allowed fmir value
+            # NOTE: max_fmir does not reset when it does "move to obj" to "scanning" to "move to obj"
+            if variables["max_fmir"] > variables["fmir"] + 0.1:
+                # then put current fmir plus 10 cm as max fmir
+                variables["max_fmir"] = variables["fmir"] + 0.1
+
+            # if current fmir is longer than allowed fmir, meaning it has lost the object or there was no object
+            if variables["max_fmir"] < variables["fmir"]:
+                # stop moving and start scanning again
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "scanning"
+
+            # for when it still has object
+            else:
+                # do p controller for adjusting speed of wheels so it'd move as straight as possible
+                p_speed(variables, 2, 0.1)
+
+                # if bot has gotten to withing 20 cm of the object
+                if variables["fmir"] < 0.20:
+                    # stop moving and change phase to next one
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+                    variables["phase"] = "blind to obj"
 
     # blindly moving towards object phase
     elif variables["phase"] == "blind to obj":
         # add 1 to counter, this is to get fmir buffer to be as correct as possible
-        variables["counter"] = variables["counter"] + 1
+        variables["blind_cycle_counter"] = variables["blind_cycle_counter"] + 1
 
         # if it has reached 4 new readings for the fmir buffer
-        if variables["counter"] == 4:
+        if variables["blind_cycle_counter"] == 4:
             # calculate the time goal of how long should bot move forward with said speed
             # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
             variables["timegoal"] = rospy.get_time() + (variables["fmir"] - 0.07) / 0.07
@@ -204,7 +220,7 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, 12
 
         # for when counter is above 4, meaning timegoal has been set and movement has been started
-        elif variables["counter"] > 4:
+        elif variables["blind_cycle_counter"] > 4:
             # run the p-controller to kinda try to be at the 0.07 meters / second speed used in timegoal calculation
             variables = p_speed(variables, 2, 0.07)
 
@@ -240,8 +256,11 @@ def main():
     variables["scan_progress"] = 0
     variables["current_time"] = 0
     variables["last_time"] = 0
-    variables["counter"] = 0
+    variables["move_to_obj_counter"] = 0
+    variables["blind_cycle_counter"] = 0
     variables["max_fmir"] = float("inf")
+    variables["scan_measure_start"] = ""
+
     while True:
         variables = sense(variables)
         variables = plan(variables)
