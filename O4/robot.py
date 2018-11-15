@@ -127,7 +127,7 @@ def plan(variables):
             variables["scan_progress"] = 1
 
             # if bot hasn't moved towards an object
-            if variables["move_to_obj_counter"] < 5:
+            if variables["move_to_obj_counter"] < 10:
                 # set a variable for measuring how much the bot has turned
                 variables["scan_measure_start"] = variables["left_enc"] - variables["right_enc"]
 
@@ -138,7 +138,7 @@ def plan(variables):
         variables["scan_rota_amount"] = robot.WHEEL_DIAMETER * (variables["scan_measure_start"] - (variables["left_enc"] - variables["right_enc"])) / (2 * robot.AXIS_LENGTH)
 
         # if bot has turned 1.5 turns without detecting an object
-        if variables["scan_rota_amount"] > (360 * 1.5) and variables["move_to_obj_counter"] < 5:
+        if variables["scan_rota_amount"] > (360 * 1.5) and variables["move_to_obj_counter"] < 10:
             print("MOMMY I DIDN'T DETECT AN OBJECT. WAIT, ARE YOU MY MOMMY? ARE YOU MY MOMMY?")
             variables["phase"] = "end"
             pass  # TODO: implement rotation amount tracking in line 131 else thing
@@ -174,7 +174,7 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, 12
 
             # if last time the cycle ran it was a fake object
-            if variables["move_to_obj_counter"] < 5:
+            if variables["move_to_obj_counter"] < 10:
                 variables["move_to_obj_counter"] = 0
 
         # if it is moving
