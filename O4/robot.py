@@ -349,7 +349,7 @@ def plan(variables):
         # if bot is turning right
         elif variables["are_you_zeroing"] == 2:
             # if it has turned right for a bit and it is passing the object
-            if variables["zero_right_counter"] > 10 and variables["fmir"] + 0.1 > variables["closest_obj_reading"]:
+            if variables["zero_right_counter"] > 15 and variables["fmir"] + 0.1 > variables["closest_obj_reading"]:
                 # calculate the average left encoder from both edges and start turning there
                 variables["left_encoder_goal"] = (variables["left_edge_of_obj_enc"] + variables["left_enc"]) / 2
                 variables["are_you_zeroing"] = 3
@@ -372,7 +372,7 @@ def plan(variables):
         if variables["blind_cycle_counter"] == 4:
             # calculate the time goal of how long should bot move forward with said speed
             # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
-            variables["timegoal"] = rospy.get_time() + (variables["fmir"] - 0.10) / 0.07
+            variables["timegoal"] = rospy.get_time() + (variables["fmir"] - 0.07) / 0.07
 
             # and start moving forward
             variables["left_speed"], variables["right_speed"] = 12, 12
