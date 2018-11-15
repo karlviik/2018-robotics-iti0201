@@ -127,7 +127,7 @@ def plan(variables):
             variables["scan_progress"] = 1
 
             # if bot hasn't moved towards an object
-            if variables["move_to_obj_counter"] < 10:
+            if variables["move_to_obj_counter"] < 40:
                 # set a variable for measuring how much the bot has turned
                 variables["scan_measure_start"] = variables["left_enc"] - variables["right_enc"]
 
@@ -138,7 +138,7 @@ def plan(variables):
         variables["scan_rota_amount"] = robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["right_enc"]) - variables["scan_measure_start"]) / (2 * robot.AXIS_LENGTH)
 
         # if bot has turned 1.5 turns without detecting an object
-        if variables["scan_rota_amount"] > (360 * 1.5): #and variables["move_to_obj_counter"] < 10:
+        if variables["scan_rota_amount"] > (360 * 1.5) and variables["move_to_obj_counter"] < 40:
             print(variables["move_to_obj_counter"])
             variables["phase"] = "end"
             pass  # TODO: implement rotation amount tracking in line 131 else thing
@@ -156,15 +156,34 @@ def plan(variables):
 
             # if diff is more than 20cm, then it most likely has detected an object
             if abs(diff) > 0.20:
-                # stops turning and scanning and changes phase to "move to obj"
+                # stops turning and scanning and changes phase to "verify obj"
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["scan_progress"] = 0
-                variables["phase"] = "move to obj"
+                variables["phase"] = "verify obj"
+
+                # saves the approximate object distance into the dictionary
+                variables["obj_distance"] = variables["fmir"]
 
             # if it has not detected an object and it's still scanning
             else:
                 # run the p controller function to adjust right and left wheel speeds
                 variables = p_speed(variables, 1, 0.05)
+
+    # verifying if it has detected an object or not, removes some cases of false positives
+    elif variables["phase"] == "verify obj":
+        # increment the counter for fmir buffer verifying
+        variables["obj_verify_counter"] += 1
+
+        # when buffer has gotten entirely new set of values
+        if variables["obj_verify_ounter"] == 5:
+
+            # if it most likely actually is an object, start moving towards it
+            if variables["obj_distance"] + 0.07 > variables["fmir"]:
+                variables["phase"] = "move to obj"
+
+            # if it ain't, go back to scanning
+            else:
+                variables["phase"] = "scanning"
 
     # moving to object phase
     elif variables["phase"] == "move to obj":
@@ -174,7 +193,7 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, 12
 
             # if last time the cycle ran it was a fake object
-            if variables["move_to_obj_counter"] < 10:
+            if variables["move_to_obj_counter"] < 40:
                 variables["move_to_obj_counter"] = 0
 
         # if it is moving
@@ -258,6 +277,7 @@ def main():
     variables["last_time"] = 0
     variables["move_to_obj_counter"] = 0
     variables["blind_cycle_counter"] = 0
+    variables["obj_verify_counter"] = 0
     variables["max_fmir"] = float("inf")
     variables["scan_measure_start"] = ""
 
