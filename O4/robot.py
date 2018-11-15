@@ -185,7 +185,7 @@ def plan(variables):
                 # if it has done enouch checks, then it prolly is an object and start moving towards it, zero multicheck
                 else:
                     variables["phase"] = "move to obj"
-                    variables["verify_doublecheck"] = 0
+                    variables["verify_multicheck"] = 0
 
             # if it ain't, go back to scanning
             else:
