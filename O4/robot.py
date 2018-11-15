@@ -151,7 +151,7 @@ def plan(variables):
             # output for checking the difference, wheel speeds and the buffer
             print("Differnece is: " + str(diff))
             print(variables["left_speed"], variables["right_speed"])
-            print(variables["fmir_buffer"])
+            print(variables["scan_rota_amount"], variables["fmir_buffer"])
             print("------------------------------------------------------")
 
             # if diff is more than 20cm, then it most likely has detected an object
