@@ -83,10 +83,8 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
         r_error = - target_speed - r_speed
     elif method == 2:   # moving straight
         r_error = target_speed - r_speed
-    else:
-        raise KeyError("Just some error, yo. Method has to be either 1 or 2 for p_speed")
-    variables["left_speed"] = math.ceil(variables["left_speed"] + GAIN * l_error)
-    variables["right_speed"] = math.ceil(variables["right_speed"] + GAIN * r_error)
+    variables["right_speed"] = variables["right_speed"] + round(GAIN * r_error)
+    variables["left_speed"] = variables["left_speed"] + round(GAIN * l_error)
     return variables
 
 
@@ -113,7 +111,9 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, 12
         else:
             p_speed(variables, 2, 0.1)
-            if (variables["last_fmir"] - 0.1) > variables["front_mid_ir"]:
+            if variables["max_fmir"] > variables["front_mid_ir"] + 0.1:
+                variables["max_fmir"] = variables["front_mid_ir"] + 0.1
+            if variables["max_fmir"] < variables["front_mid_ir"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "scanning"
             else:
