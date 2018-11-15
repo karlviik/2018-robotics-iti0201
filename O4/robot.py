@@ -325,7 +325,6 @@ def plan(variables):
             # change the key and start turning left slowly, also put closest object at infinite distance
             variables["are_you_zeroing"] = 1
             variables["left_speed"], variables["right_speed"] = -12, 12  # around 0.08 speed maybe?
-            variables["closest_obj_reading"] = float("inf")
             return variables
 
         # do p controlling based on what bot right now is doing (which way is turning)
@@ -428,6 +427,7 @@ def main():
     variables["closest_wall"] = float("inf")
     variables["closest_wall_encoder_diff"] = 0  # don't have to initialise this here, but doing it anyways
     variables["are_you_zeroing"] = 0
+    variables["closest_obj_reading"] = float("inf")
 
     while True:
         variables = sense(variables)
