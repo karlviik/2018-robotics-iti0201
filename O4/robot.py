@@ -398,22 +398,22 @@ def plan(variables):
             variables["dummy"] = 1
 
         # if time has elapsed and claw is prolly open, lower it
-        elif variables["claw_counter"] > variables["current_time"] and variables["dummy"] == 1:
+        elif variables["claw_counter"] < variables["current_time"] and variables["dummy"] == 1:
             variables["claw_counter"] = variables["current_time"] + 5
             robot.set_grabber_height(0)
             variables["dummy"] = 2
 
-        elif variables["claw_counter"] > variables["current_time"] and variables["dummy"] == 2:
+        elif variables["claw_counter"] < variables["current_time"] and variables["dummy"] == 2:
             variables["claw_counter"] = variables["current_time"] + 3
             robot.close_grabber(100)
             variables["dummy"] = 3
 
-        elif variables["claw_counter"] > variables["current_time"] and variables["dummy"] == 3:
+        elif variables["claw_counter"] < variables["current_time"] and variables["dummy"] == 3:
             variables["claw_counter"] = variables["current_time"] + 5
             robot.set_grabber_height(100)
             variables["dummy"] = 4
 
-        elif variables["claw_counter"] > variables["current_time"] and variables["dummy"] == 4:
+        elif variables["claw_counter"] < variables["current_time"] and variables["dummy"] == 4:
             variables["dummy"] = 0
             variables["phase"] = "end"  # TODO: the missing things
 
