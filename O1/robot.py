@@ -6,7 +6,7 @@ GAIN = 50
 
 # problems:
 #           a)  (--noise --cone) it can detect objects where there is none, making it not suitable for silver and gold
-#               as it means it would register prolly more than 3 objects with a full turn
+#               as it means it would register probably more than 3 objects with a full turn
 #
 #           b)  (--cone) it can detect the object at the very left edge and as it moves towards the object it can
 #               lose the object as cone no longer hits it, resulting in another scanning. Only happens sometimes.
