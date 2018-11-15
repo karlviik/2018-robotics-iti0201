@@ -189,7 +189,7 @@ def plan(variables):
         # if it is being run the first time
         if variables["left_speed"] == 0:
             # calculate the amount of degrees the bot has to turn
-            variables["how_much_to_turn"] = ((variables["closest_wall_encoder_diff"] - 120) - robot.WHEEL_DIAMETER * (variables["left_enc"] - variables["right_enc"]) / (2 * robot.AXIS_LENGTH)) % 360
+            variables["how_much_to_turn"] = ((variables["closest_wall_encoder_diff"] - 140) - robot.WHEEL_DIAMETER * (variables["left_enc"] - variables["right_enc"]) / (2 * robot.AXIS_LENGTH)) % 360
             variables["how_much_has_turned"] = 0
 
             # if calculated degrees are more than 180 degrees (so over half a turn clockwise)
@@ -243,7 +243,7 @@ def plan(variables):
 
             # if no object or wall has been detected, run a p-controller
             else:
-                variables = p_speed(variables, 2, 0.1)
+                variables = p_speed(variables, 2, 0.13)
 
     # verifying if it has detected an object or not, removes some cases of false positives, not all though
     elif variables["phase"] == "verify obj":
