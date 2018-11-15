@@ -238,7 +238,7 @@ def plan(variables):
                 variables["left_speed"], variables["right_speed"] = 0, 0
 
                 # also reset closest encoder and scanning start
-                variables["closest_wall_encoder_diff"] = 0
+                variables["closest_wall"] = float("inf")
                 variables["scan_measure_start"] = ""
 
             # if no object or wall has been detected, run a p-controller
