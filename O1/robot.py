@@ -5,7 +5,14 @@ import math
 GAIN = 50  # TODO: get good gain constant
 
 
-# newest version of this is not here
+# newest version of this is not here. Last updated: 12:43
+
+# problems:
+#           a)  (--noise --cone) it can detect objects where there is none, making it not suitable for silver and gold
+#               as it means it would register prolly more than 3 objects with a full turn
+#
+#           b)  (--cone) it can detect the object at the very left edge and as it moves towards the object it can
+#               lose the object as cone no longer hits it, resulting in another scanning. Only happens sometimes.
 
 
 robot = PiBot()
@@ -159,7 +166,7 @@ def main():
         variables = sense(variables)
         variables = plan(variables)
         act(variables)
-        rospy.sleep(0.07)
+        rospy.sleep(0.02)
 
 
 if __name__ == "__main__":
