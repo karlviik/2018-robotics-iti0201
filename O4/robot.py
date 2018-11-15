@@ -195,14 +195,14 @@ def plan(variables):
             if variables["how_much_to_turn"] > 180:
                 # make so it has to turn to the point counterclockwise (so that it's a shorter turn) and start turning
                 variables["how_much_to_turn"] = variables["how_much_to_turn"] - 360
-                variables["left_speed"], variables["right_speed"] = -12, 12
+                variables["left_speed"], variables["right_speed"] = -14, 14
 
                 # variables for making life easier on p controller
                 variables["left_speed_mark"], variables["right_speed_mark"], variables["p_method"] = -1, 1, 3
 
             # if the shortest path is clockwise turning
             else:
-                variables["left_speed"], variables["right_speed"] = 12, -12
+                variables["left_speed"], variables["right_speed"] = 14, -14
                 variables["left_speed_mark"], variables["right_speed_mark"], variables["p_method"] = 1, -1, 1
 
         # if it isn't first cycle
@@ -216,9 +216,29 @@ def plan(variables):
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "move straight until wall"
 
+            # if it has not turned enough, do a p controller cycle
+            else:
+                variables = p_speed(variables, variables["p_method"], 0.08)  # haven't checked if this speed is okay
+
     # phase for moving until wall, part of roaming
     elif variables["phase"] == "move straight until wall":
-        pass
+        # if it hasn't started moving straight, start doing so
+        if variables["left_speed"] == 0:
+            variables["left_speed"], variables["right_speed"] = 15, 15
+
+        # if it is already moving
+        else:
+            # if average of 2 last fmir measurements is less than 80 cm (wall or object), start scanning again
+            if (variables["last_fmir"] + variables["fmir"]) / 2 < 0.8:
+                variables["phase"] = "scanning"
+                variables["left_speed"], variables["right_speed"] = 0, 0
+
+                # also reset closest encoder
+                variables["closest_wall_encoder_diff"] = 0
+
+            # if no object or wall has been detected, run a p-controller
+            else:
+                variables = p_speed(variables, 2, 0.1)
 
     # verifying if it has detected an object or not, removes some cases of false positives, not all though
     elif variables["phase"] == "verify obj":
