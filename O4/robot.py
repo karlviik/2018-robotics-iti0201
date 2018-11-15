@@ -230,7 +230,7 @@ def plan(variables):
         # if it is already moving
         else:
             # if average of 2 last fmir measurements is less than 80 cm (wall or object), start scanning again
-            if ((variables["last_fmir"] + variables["fmir"]) / 2) < 0.8:
+            if ((variables["last_fmir"] + variables["fmir"]) / 2) < 0.6:
                 print((variables["last_fmir"] + variables["fmir"]) / 2, variables["fmir_buffer"])
                 print(variables["last_fmir"], variables["fmir"])
                 rospy.sleep(3)
