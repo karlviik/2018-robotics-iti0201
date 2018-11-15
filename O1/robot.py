@@ -38,7 +38,7 @@ def fmir_buffering(variables):
     """
     buffer = variables["fmir_buffer"]  # read buffer into var for easier writing, could remove this though
     fmir = robot.get_front_middle_ir()  # read fmir into var
-    variables["last_fmir"] = variables["fmir"] # put last allowed fmir value into "last_fmir" dict key
+    variables["last_fmir"] = variables["fmir"]  # put last allowed fmir value into "last_fmir" dict key
 
     # remove oldest and add new fmir reading
     buffer.pop(0)
@@ -59,7 +59,6 @@ def fmir_buffering(variables):
 
 def sense(variables):
     """Get left, right wheel encoders and front middle IR sensor value, put to var dict and return the dict."""
-
     # put last values into respective dict keys
     variables["last_left_enc"] = variables["left_enc"]
     variables["last_right_enc"] = variables["right_enc"]
@@ -84,7 +83,6 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     :param target_speed: speed to aim for
     :return: dictionary with new left and right wheel speeds
     """
-
     # calculate distance the bot has traveled during the past cycle
     r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
     l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
@@ -116,9 +114,47 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     return variables
 
 
+def move_to_obj(variables):
+    """
+    Move to object phase broken into a separate function to keep plan() complexity down.
+
+    :param variables: dict of variables
+    :return variables: dict of variables with new values
+    """
+    # if moving to object has not started, based on wheel speed, could do same with scanning though...
+    if variables["left_speed"] == 0:
+        # start moving
+        variables["left_speed"], variables["right_speed"] = 12, 12
+
+    # if it is moving
+    else:
+        # if current fmir value is more than 10 cm shorter than maximum allowed fmir value
+        # NOTE: max_fmir does not reset when it does "move to obj" to "scanning" to "move to obj"
+        if variables["max_fmir"] > variables["fmir"] + 0.1:
+            # then put current fmir plus 10 cm as max fmir
+            variables["max_fmir"] = variables["fmir"] + 0.1
+
+        # if current fmir is longer than allowed fmir, meaning it has lost the object or there was no object
+        if variables["max_fmir"] < variables["fmir"]:
+            # stop moving and start scanning again
+            variables["left_speed"], variables["right_speed"] = 0, 0
+            variables["phase"] = "scanning"
+
+        # for when it still has object
+        else:
+            # do p controller for adjusting speed of wheels so it'd move as straight as possible
+            p_speed(variables, 2, 0.1)
+
+            # if bot has gotten to withing 20 cm of the object
+            if variables["fmir"] < 0.20:
+                # stop moving and change phase to next one
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "blind to obj"
+    return variables
+
+
 def plan(variables):
     """Do all the planning in variable dict and then return it. Because Python."""
-
     # scanning phase
     if variables["phase"] == "scanning":
         # if condition that is filled every time scanning is started, starts the turning
@@ -151,35 +187,7 @@ def plan(variables):
 
     # moving to object phase
     elif variables["phase"] == "move to obj":
-        # if moving to object has not started, based on wheel speed, could do same with scanning though...
-        if variables["left_speed"] == 0:
-            # start moving
-            variables["left_speed"], variables["right_speed"] = 12, 12
-
-        # if it is moving
-        else:
-            # if current fmir value is more than 10 cm shorter than maximum allowed fmir value
-            # NOTE: max_fmir does not reset when it does "move to obj" to "scanning" to "move to obj"
-            if variables["max_fmir"] > variables["fmir"] + 0.1:
-                # then put current fmir plus 10 cm as max fmir
-                variables["max_fmir"] = variables["fmir"] + 0.1
-
-            # if current fmir is longer than allowed fmir, meaning it has lost the object or there was no object
-            if variables["max_fmir"] < variables["fmir"]:
-                # stop moving and start scanning again
-                variables["left_speed"], variables["right_speed"] = 0, 0
-                variables["phase"] = "scanning"
-
-            # for when it still has object
-            else:
-                # do p controller for adjusting speed of wheels so it'd move as straight as possible
-                p_speed(variables, 2, 0.1)
-
-                # if bot has gotten to withing 20 cm of the object
-                if variables["fmir"] < 0.20:
-                    # stop moving and change phase to next one
-                    variables["left_speed"], variables["right_speed"] = 0, 0
-                    variables["phase"] = "blind to obj"
+        variables = move_to_obj(variables)
 
     # blindly moving towards object phase
     elif variables["phase"] == "blind to obj":
