@@ -415,7 +415,47 @@ def plan(variables):
 
         elif variables["claw_counter"] < variables["current_time"] and variables["dummy"] == 4:
             variables["dummy"] = 0
-            variables["phase"] = "end"  # TODO: the missing things
+            variables["phase"] = "move straight until wall with extras"
+            variables["line roam phase"] = 0
+
+    # phase that is just for moving toward wall and turning a bit with line detection thrown in
+    elif variables["phase"] == "move straight until wall with extras":
+        # if it's starting moving straight, give it speeds and chance phase to 1
+        if variables["line roam phase"] == 0:
+            variables["left_speed"], variables["right_speed"] = 15, 15
+            variables["line roam phase"] = 1
+
+        # if it's moving straight already
+        elif variables["line roam phase"] == 1:  # TODO: add line checker
+            # p controller
+            variables = p_speed(variables, 2, 0.12)
+
+            # if wall is closer than 35 cm, stop and start turning phase
+            if (variables["fmir"] + variables["last_fmir"]) / 2 < 0.35:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["line roam phase"] = 2
+                variables["turning phase"] = 0
+
+        # this is the phase where the bot turns
+        elif variables["line roam phase"] == 2:
+            # if it's just starting turning
+            if variables["turning phase"] == 0:
+                # set left wheel encoder goal to turn X degrees and change turning phase to active, also set speeds
+                variables["left_enc_goal"] = variables["left_enc"] + 60 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER
+                variables["turning phase"] = 1
+                variables["left_speed"], variables["right_speed"] = 12, -12
+
+            # if is currently turning
+            elif variables["turning phase"] == 1:
+                # p controller
+                variables = p_speed(variables, 1, 0.08)
+
+                # if has turned enough
+                if variables["left_enc_goal"] < variables["left_enc"]:
+                    # reset the phase indicators and wheel speeds
+                    variables["turning phase"] = 0
+                    variables["line roam phase"] = 0
+                    variables["left_speed"], variables["right_speed"] = 0, 0
 
     # end phase, literally does nothing
     elif variables["phase"] == "end":
