@@ -135,7 +135,7 @@ def plan(variables):
             return variables
 
         # calculates how much robot has turned during scanning
-        variables["scan_rota_amount"] = robot.WHEEL_DIAMETER * (variables["scan_measure_start"] - (variables["left_enc"] - variables["right_enc"])) / (2 * robot.AXIS_LENGTH)
+        variables["scan_rota_amount"] = robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["right_enc"]) - variables["scan_measure_start"]) / (2 * robot.AXIS_LENGTH)
 
         # if bot has turned 1.5 turns without detecting an object
         if variables["scan_rota_amount"] > (360 * 1.5): #and variables["move_to_obj_counter"] < 10:
