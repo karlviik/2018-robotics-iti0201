@@ -261,10 +261,10 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = -12, 12
             variables["turning"] = 1
         elif variables["left_speed"]:  # meaning it's currently turning, therefore the phase has started
-            if variables["left_enc"] > variables["target_turn"]:
-                variables["left_speed"], variables["right_speed"] = 0, 0
-        else:
             variables = p_speed(variables, 1, 0.05)
+            if variables["left_enc"] < variables["target_turn"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "drive"
 
     elif variables["phase"] == "drive":
         if variables["driving"] == 0:
@@ -273,10 +273,9 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, 12
             variables["driving"] = 1
         elif variables["left_speed"]:
+            variables = p_speed(variables, 1, 0.05)
             if variables["left_enc"] > variables["target_drive"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
-        else:
-            variables = p_speed(variables, 1, 0.05)
     # return dictionary with all the new values
     return variables
 
