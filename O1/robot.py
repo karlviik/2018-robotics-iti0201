@@ -2,7 +2,7 @@
 import rospy
 from PiBot import PiBot
 import math
-GAIN = 20  # TODO: get good gain constant
+GAIN = 50  # TODO: get good gain constant
 
 
 # newest version of this is not here
