@@ -154,6 +154,7 @@ def main():
     variables["current_time"] = 0
     variables["last_time"] = 0
     variables["counter"] = 0
+    variables["max_fmir"] = float("inf")
     while True:
         variables = sense(variables)
         variables = plan(variables)
