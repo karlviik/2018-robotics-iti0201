@@ -187,7 +187,7 @@ def plan(variables):
         # if it is being run the first time
         if variables["left_speed"] == 0:
             # calculate the amount of degrees the bot has to turn
-            variables["how_much_to_turn"] = ((variables["closest_wall_encoder_diff"] - 140) - robot.WHEEL_DIAMETER * (variables["left_enc"] - variables["right_enc"]) / (2 * robot.AXIS_LENGTH)) % 360
+            variables["how_much_to_turn"] = ((variables["closest_wall_encoder_diff"] - 155) - robot.WHEEL_DIAMETER * (variables["left_enc"] - variables["right_enc"]) / (2 * robot.AXIS_LENGTH)) % 360
             variables["how_much_has_turned"] = 0
 
             # if calculated degrees are more than 180 degrees (so over half a turn clockwise)
