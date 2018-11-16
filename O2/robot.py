@@ -313,7 +313,7 @@ def main():
         variables = sense(variables)
         variables = plan(variables)
         act(variables)
-        rospy.sleep(0.02)
+        rospy.sleep(0.05)
 
 
 if __name__ == "__main__":
