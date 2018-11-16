@@ -1,209 +1,616 @@
-"""Fid object and move to it."""
+"""Find object and move to it. Or something."""
 import rospy
 from PiBot import PiBot
+import math
+GAIN = 50
+
+# problems:
+#           a)  (--noise --cone) it may detect objects when there is none, making it not suitable for silver and gold
+#               as it means it would register probably more than 3 objects with a full turn due to noise
+#
+#           b)  (--cone) it can detect the object at the very left edge and as it moves towards the object it can
+#               lose the object as cone no longer hits it, resulting in another scanning. Only happens sometimes.
+
+# TODO: check if all instances of "move_to_obj_counter" work properly
+# TODO: (meaning they don't break valid object detections and always trigger on fake object detections)
+
 
 robot = PiBot()
 
-set_speed = robot.set_wheels_speed
-set_rspeed = robot.set_right_wheel_speed
-set_lspeed = robot.set_left_wheel_speed
-get_flir = robot.get_front_left_ir
-get_fmir = robot.get_front_middle_ir
-get_frir = robot.get_front_right_ir
-get_lenc = robot.get_left_wheel_encoder
-get_renc = robot.get_right_wheel_encoder
 
-
-def error_correction(lspeed, rspeed, last_tlenc, last_trenc, mode, side=0):
+def fmir_buffer_init():
     """
-    Do error correction by adjusting speed by one.
+    Fill fmir buffer with average value over 10 measurements. Only done once at the beginning.
 
-    :param lspeed: current left wheel speed
-    :param rspeed: current right wheel speed
-    :param last_tlenc: last left wheel encoder when this function ran
-    :param last_trenc: last right wheel encoder when this function ran
-    :param mode: 1 for turning on the spot, 2 for moving straight forward
-    :param side: which side to turn if mode = 1
-    :return: new lspeed, rspeed, (last_)tlenc, (last_)trenc
+    :return: last_fmir, 4-element fmir buffer and fmir, all of them average values.
     """
-    trenc = get_renc()
-    tlenc = get_lenc()
-
-    if mode == 1:  # if we're doing turning at one spot (lspeed == - rspeed), minspeed -inf, maxspeed 16
-        maxspeed = 17
-    elif mode == 2:  # if we're moving straight forward (lspeed == rspeed)
-        maxspeed = 20
-
-    if abs(trenc - last_trenc) > abs(tlenc - last_tlenc):
-        if lspeed < maxspeed:
-            lspeed += 1
-        else:
-            rspeed -= 1
-    else:
-        if rspeed < maxspeed:
-            rspeed += 1
-        else:
-            lspeed -= 1
-
-    if mode == 1:
-        turn(lspeed, rspeed, side)
-    elif mode == 2:
-        set_lspeed(lspeed)
-        set_rspeed(rspeed)
-
-    return lspeed, rspeed, tlenc, trenc
-
-
-def turn(lspeed, rspeed, side):
-    """
-    Make bot turn at one spot.
-
-    :param lspeed: speed to give to left wheel
-    :param rspeed: speed to give to right wheel
-    :param side: where to turn. 0 is left, 1 is right.
-    """
-    if not side:
-        lspeed = -lspeed
-    else:
-        rspeed = -rspeed
-    robot.set_left_wheel_speed(lspeed)
-    robot.set_right_wheel_speed(rspeed)
-
-
-def turn_precise(degrees, side, speed):
-    """Do a precise turn. Not used here. Can probably delete."""
-    wheelturngoal = (degrees * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER)
-    multiplier = 1
-    lspeed, rspeed = speed, speed
-
-    last_tlenc = get_lenc()
-    last_trenc = get_renc()
-    diff = last_tlenc - last_trenc
-
-    if side == 1:
-        goal = last_tlenc - last_trenc - diff + 2 * wheelturngoal
-    else:
-        goal = last_tlenc - last_trenc - diff - 2 * wheelturngoal
-
-    if goal < (last_tlenc - last_trenc - diff):
-        multiplier = -1
-
-    turn(lspeed, rspeed, side)
-    while multiplier * (last_tlenc - last_trenc - diff) < multiplier * goal:
-        rospy.sleep(0.02)
-        lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, side)
-
-    set_speed(0)
-
-
-def scan_for_object():
-    """Scan for object."""
-    lspeed, rspeed = 15, 15  # initial speeds for left and right wheel
-    print("Started scanning")
-    last_trenc = get_renc()  # used for error correction
-    last_tlenc = get_lenc()  # used for error correction and also places where left encoder is needed
-    sectorsinfullcircle = 30  # how many sectors in full 360 degree turn
-    step = (360 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER) / sectorsinfullcircle  # how much to turn for one sector
-    degstep = step
-    wheelturngoal = last_tlenc + step  # where first sector ends
-    sectorcounter = 0  # which sector is in progress
-    total = 0  # total of all the measurements in the sector
-    closestmeasure = float("inf")  # what was the closest measurement
-    measurecounter = 0  # how many measurements have been made in sector so far
-    turn(lspeed, rspeed, 1)  # starts clockwise turning
-    lrenc = abs(last_trenc - last_tlenc)  # the encoder difference at the beginning
-
-    while sectorcounter < sectorsinfullcircle:  # does a full 360 degree turn
-        # add current fmir to total and add one to measurecounter
-        fmir = get_fmir()
-        total += fmir
-        measurecounter += 1
-        # for when bot has reached end of sector
-        if (abs(last_trenc - last_tlenc) - lrenc) > (sectorcounter + 1) * degstep * 2:  # if encoder difference has grown more than it would to scan one sector
-            tempmeasure = total / measurecounter  # average measurement of fmir during sector
-            total, measurecounter = 0, 0  # zeroes them for next sector
-
-            # if this average measure is less than current closest measure, make it the closest measure and save sector
-            if tempmeasure < closestmeasure:
-                closestmeasure = tempmeasure
-                closestdiff = (abs(last_trenc - last_tlenc) - lrenc)
-            print(closestmeasure, tempmeasure, sectorcounter)  # just printing stuff
-
-            wheelturngoal += step  # end of next sector
-            sectorcounter += 1
-        rospy.sleep(0.02)
-
-        # function for error correction
-        lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 1)
-
-    set_speed(0)  # stops the bot
-    cdiff = abs(last_trenc - last_tlenc) - lrenc  # gets current encoder difference
-    turn(lspeed, rspeed, 0)  # starts turning counterclockwise
-    while (closestdiff - 1 * step) < cdiff:  # while difference is bigger than the difference of middle of goal sector (try 1 multiplier instead of 0.5 if doesn't turn enough)
-        rospy.sleep(0.02)
-        lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 1, 0)
-        cdiff = abs(last_trenc - last_tlenc) - lrenc
-    set_speed(0)
-
-
-def move_towards_object():
-    """Move bot towards object."""
-    print("Started moving towards!")
-    rspeed, lspeed = 18, 18  # initial speeds
-
-    # get value of fmir encoder (average to combat noise)
+    # take 10 measurements, get their average and fill buffer
     total = 0
     for i in range(10):
-        total += get_fmir()
+        total += robot.get_front_middle_ir()
         rospy.sleep(0.05)
-    last_fmir = total / (i + 1)
+    fmir_average = total / (i + 1)
+    return fmir_average, [fmir_average, fmir_average, fmir_average, fmir_average], fmir_average
 
-    last_trenc = get_renc()  # for error correction
-    last_tlenc = get_lenc()  # for error correction
-    measurementcounter = 0
-    total = 0
-    set_speed(20)
+
+def fmir_buffering(variables):
+    """
+    See if fmir value is correct. If not, return last fmir.
+
+    :param variables: variables dict
+    :return: variables dict with new fmir and buffer
+    """
+    buffer = variables["fmir_buffer"]  # read buffer into var for easier writing, could remove this though
+    fmir = robot.get_front_middle_ir()  # read fmir into var
+    variables["last_fmir"] = variables["fmir"]  # put last allowed fmir value into "last_fmir" dict key
+
+    # remove oldest and add new fmir reading
+    buffer.pop(0)
+    buffer.append(fmir)
+
+    # get average fmir value from buffer
+    average = (buffer[0] + buffer[1] + buffer[2] + buffer[3]) / 4
+
+    # if new fmir reading is within the allowed deviation of average buffer value
+    if average * 0.85 < fmir < average * 1.15:
+        variables["fmir"] = fmir
+    else:
+        variables["fmir"] = variables["last_fmir"]
+
+    variables["fmir_buffer"] = buffer  # read new buffer into dictionary
+    return variables  # return the new dictionary
+
+
+def sense(variables):
+    """Get left, right wheel encoders and front middle IR sensor value, put to var dict and return the dict."""
+    # put last values into respective dict keys
+    variables["last_left_enc"] = variables["left_enc"]
+    variables["last_right_enc"] = variables["right_enc"]
+
+    # read new values in
+    variables["left_enc"] = robot.get_left_wheel_encoder()
+    variables["right_enc"] = robot.get_right_wheel_encoder()
+
+    variables = fmir_buffering(variables)  # updates "fmir", "last_fmir" and "fmir_buffer" dict keys
+
+    variables["last_time"] = variables["current_time"]  # put last time into respective dict key
+    variables["current_time"] = rospy.get_time()  # get new time
+
+    # gets line sensors
+    variables["l3 line"], variables["l2 line"], variables["l1 line"] = robot.get_leftmost_line_sensor(), robot.get_second_line_sensor_from_left(), robot.get_third_line_sensor_from_left()
+    variables["r3 line"], variables["r2 line"], variables["r1 line"] = robot.get_rightmost_line_sensor(), robot.get_second_line_sensor_from_right(), robot.get_third_line_sensor_from_right()
+    return variables
+
+
+def p_speed(variables, method, target_speed):  # target speed should be in meters/second
+    """
+    Control left and right wheel speed with P control method.
+
+    :param variables: dictionary with all the variables
+    :param method: 1 for clockwise turning, 2 for moving straight, 3 for counterclockwise turning
+    :param target_speed: speed to aim for
+    :return: dictionary with new left and right wheel speeds
+    """
+    # calculate distance the bot has traveled during the past cycle
+    r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
+    l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
+
+    # not used currently
+    variables["distance"] = (r_dist + l_dist) / 2
+
+    # time between this and last cycle
+    time_diff = variables["current_time"] - variables["last_time"]
+
+    # calculate wheel speeds based on v = s / t
+    r_speed = r_dist / time_diff
+    l_speed = l_dist / time_diff
+
+    # get left wheel speed error
+    if method == 1 or method == 2:  # clockwise turning or moving straight
+        l_error = target_speed - l_speed
+    elif method == 3:  # counterclockwise turning
+        l_error = - target_speed - l_speed
+
+    # get right wheel speed error, two separate versions because right wheel turns backwards during turning
+    if method == 1:  # clockwise turning
+        r_error = - target_speed - r_speed
+    elif method == 2 or method == 3:   # moving straight or counterclockwise turning
+        r_error = target_speed - r_speed
+
+    # calculate new right and left wheel speeds by adding rounded value of GAIN constant times wheel speed error
+    variables["right_speed"] = variables["right_speed"] + round(GAIN * r_error)
+    variables["left_speed"] = variables["left_speed"] + round(GAIN * l_error)
+
+    # return dictionary with variable dictionary with new speeds
+    return variables
+
+
+def plan(variables):
+    """Do all the planning in variable dict and then return it. Because Python."""
+    # scanning phase
+    if variables["phase"] == "scanning":
+        # if condition that is filled every time scanning is started, starts the turning
+        if variables["scan_progress"] == 0:
+            variables["left_speed"], variables["right_speed"] = 12, -12
+            variables["scan_progress"] = 1
+
+            # if the scanning is starting fresh again
+            if variables["scan_measure_start"] == "":
+                # set a variable for measuring how much the bot has turned
+                variables["scan_measure_start"] = variables["left_enc"] - variables["right_enc"]
+
+            # forceful - ish break out of plan() so can properly update scan rota amount before its checking
+            return variables
+
+        # calculates how much robot has turned during scanning
+        variables["scan_rota_amount"] = robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["right_enc"]) - variables["scan_measure_start"]) / (2 * robot.AXIS_LENGTH)
+
+        # if bot has turned 1.5 turns without detecting an object
+        if variables["scan_rota_amount"] > (360 * 1.5):
+            # start turning to roam direction phase and set wheels to stop, turn scanning off
+            variables["phase"] = "turn to roam dir"
+            variables["left_speed"], variables["right_speed"] = 0, 0
+            variables["scan_progress"] = 0
+
+        # if scanning is already in progress and hasn't turned enough
+        else:
+            # last and current fmir sensor reading difference, used for object detection
+            diff = variables["last_fmir"] - variables["fmir"]
+
+            # output for checking the difference, wheel speeds and the buffer
+            print("Differnece is: " + str(diff))
+            print(variables["left_speed"], variables["right_speed"])
+            print(variables["scan_rota_amount"], variables["fmir_buffer"])
+            print("------------------------------------------------------")
+
+            # if diff is more than 20cm, then it most likely has detected an object
+            if abs(diff) > 0.20:
+                # stops turning and scanning and changes phase to "verify obj"
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["scan_progress"] = 0
+                variables["phase"] = "verify obj"
+
+                # saves the approximate object distance into the dictionary
+                variables["obj_distance"] = variables["fmir"]
+
+            # if it has not detected an object and it's still scanning
+            else:
+                # run the p controller function to adjust right and left wheel speeds
+                variables = p_speed(variables, 1, 0.05)
+
+                # if closest wall is further away than approximate distance from current fmirs
+                if variables["closest_wall"] > ((variables["fmir"] + variables["last_fmir"]) / 2):
+                    # save the new closest wall
+                    variables["closest_wall"] = ((variables["fmir"] + variables["last_fmir"]) / 2)
+
+                    # save the bot aiming direction in degrees into a variables used for roam direction selection
+                    variables["closest_wall_encoder_diff"] = (robot.WHEEL_DIAMETER * (variables["left_enc"] - variables["right_enc"]) / (2 * robot.AXIS_LENGTH)) % 360
+
+    # phase for turning to a somewhat random direction
+    elif variables["phase"] == "turn to roam dir":
+        # if it is being run the first time
+        if variables["left_speed"] == 0:
+            # calculate the amount of degrees the bot has to turn
+            variables["how_much_to_turn"] = ((variables["closest_wall_encoder_diff"] - 135) - robot.WHEEL_DIAMETER * (variables["left_enc"] - variables["right_enc"]) / (2 * robot.AXIS_LENGTH)) % 360
+            variables["how_much_has_turned"] = 0
+
+            # if calculated degrees are more than 180 degrees (so over half a turn clockwise)
+            if variables["how_much_to_turn"] > 180:
+                # make so it has to turn to the point counterclockwise (so that it's a shorter turn) and start turning
+                variables["how_much_to_turn"] = variables["how_much_to_turn"] - 360
+                variables["left_speed"], variables["right_speed"] = -14, 14
+
+                # variables for making life easier on p controller
+                variables["left_speed_mark"], variables["right_speed_mark"], variables["p_method"] = -1, 1, 3
+
+            # if the shortest path is clockwise turning
+            else:
+                variables["left_speed"], variables["right_speed"] = 14, -14
+                variables["left_speed_mark"], variables["right_speed_mark"], variables["p_method"] = 1, -1, 1
+
+        # if it isn't first cycle
+        else:
+            # add tick turn amount (absolute) to how much it has turned
+            variables["how_much_has_turned"] += abs(robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) - (variables["right_enc"] - variables["last_right_enc"])) / (2 * robot.AXIS_LENGTH))
+
+            # if it has turned enough
+            if abs(variables["how_much_has_turned"]) > abs(variables["how_much_to_turn"]):
+                # stop turning and start moving in that direction phase
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "move straight until wall"
+
+            # if it has not turned enough, do a p controller cycle
+            else:
+                variables = p_speed(variables, variables["p_method"], 0.08)  # haven't checked if this speed is okay
+
+    # phase for moving until wall, part of roaming
+    elif variables["phase"] == "move straight until wall":
+        # if it hasn't started moving straight, start doing so
+        if variables["left_speed"] == 0:
+            variables["left_speed"], variables["right_speed"] = 15, 15
+
+        # if it is already moving
+        else:
+            # if average of 2 last fmir measurements is less than 80 cm (wall or object), start scanning again
+            if ((variables["last_fmir"] + variables["fmir"]) / 2) < 0.6:
+                print((variables["last_fmir"] + variables["fmir"]) / 2, variables["fmir_buffer"])
+                print(variables["last_fmir"], variables["fmir"])
+                print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                variables["phase"] = "scanning"
+                variables["left_speed"], variables["right_speed"] = 0, 0
+
+                # also reset closest encoder and scanning start
+                variables["closest_wall"] = float("inf")
+                variables["scan_measure_start"] = ""
+
+            # if no object or wall has been detected, run a p-controller
+            else:
+                variables = p_speed(variables, 2, 0.13)
+
+    # verifying if it has detected an object or not, removes some cases of false positives, not all though
+    elif variables["phase"] == "verify obj":
+        # increment the counter for fmir buffer verifying
+        variables["obj_verify_counter"] += 1
+
+        # when buffer has gotten entirely new set of values
+        if variables["obj_verify_counter"] == 5:
+            # if it most likely actually is an object
+            if variables["obj_distance"] * 1.1 > variables["fmir"]:
+                # if it has done less than specified amount of checks, do another one
+                if variables["verify_multicheck"] < 3:
+                    variables["verify_multicheck"] += 1
+
+                # if it has done enouch checks, then it prolly is an object and start moving towards it, zero multicheck
+                else:
+                    variables["phase"] = "move to obj"
+                    variables["verify_multicheck"] = 0
+
+            # if it ain't, go back to scanning
+            else:
+                variables["phase"] = "scanning"
+
+            # zero the counter
+            variables["obj_verify_counter"] = 0
+
+    # moving to object phase
+    elif variables["phase"] == "move to obj":
+        # if moving to object has not started, based on wheel speed, could do same with scanning though...
+        if variables["left_speed"] == 0:
+            # start moving
+            variables["left_speed"], variables["right_speed"] = 12, 12
+
+            # if last time the cycle ran it was a fake object
+            if variables["move_to_obj_counter"] < 40:
+                variables["move_to_obj_counter"] = 0
+
+        # if it is moving
+        else:
+            # increase the counter for detecting if it has actually detected an object by one
+            variables["move_to_obj_counter"] = variables["move_to_obj_counter"] + 1
+
+            # if current fmir value is more than 10 cm shorter than maximum allowed fmir value
+            # NOTE: max_fmir does not reset when it does "move to obj" to "scanning" to "move to obj"
+            if variables["max_fmir"] > variables["fmir"] + 0.1:
+                # then put current fmir plus 10 cm as max fmir
+                variables["max_fmir"] = variables["fmir"] + 0.1
+
+            # if current fmir is longer than allowed fmir, meaning it has lost the object or there was no object
+            if variables["max_fmir"] < variables["fmir"]:
+                # stop moving and start scanning again
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "scanning"
+
+                # also allows bot to spin more if it has moved towards object but has lost sight of it
+                if variables["move_to_obj_counter"] >= 40:
+                    variables["scan_measure_start"] = ""
+
+            # for when it still has object
+            else:
+                # do p controller for adjusting speed of wheels so it'd move as straight as possible
+                p_speed(variables, 2, 0.1)
+
+                # if bot has gotten to withing 20 cm of the object
+                if variables["fmir"] < 0.20:
+                    # stop moving and change phase to next one
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+                    variables["phase"] = "zero to obj"
+
+                    # also save approximate object distance into dict
+                    variables["obj_distance_for_zeroing"] = min(variables["fmir"], variables["last_fmir"])
+
+    # phase for at 20cm aiming straight at object
+    elif variables["phase"] == "zero to obj":
+        # if current fmir reading shows that it's closer than current closest obj reading, put it instead of that
+        if variables["closest_obj_reading"] > variables["fmir"]:
+            variables["closest_obj_reading"] = variables["fmir"]
+
+        # if bot isn't doing this phase yet, has to be after the closest obj for hard escape (return variables in this)
+        if variables["are_you_zeroing"] == 0:
+            # change the key and start turning left slowly, also put closest object at infinite distance
+            variables["are_you_zeroing"] = 1
+            variables["left_speed"], variables["right_speed"] = -12, 12  # around 0.08 speed maybe?
+            return variables
+
+        # do p controlling based on what bot right now is doing (which way is turning)
+        # if bot is turning left / counterclockwise
+        if variables["are_you_zeroing"] == 1 or variables["are_you_zeroing"] == 3:
+            variables = p_speed(variables, 3, 0.08)
+
+        # if bot is turning clockwise, do p controlling and also increment the counter
+        elif variables["are_you_zeroing"] == 2:
+            variables = p_speed(variables, 1, 0.08)
+            variables["zero_right_counter"] += 1
+            pass
+
+        # if bot is turning left and it is turning away from the object
+        if variables["are_you_zeroing"] == 1 and variables["fmir"] + 0.1 > variables["closest_obj_reading"]:
+            # start turning the other way, also save left encoder and zero the counter
+            variables["left_speed"], variables["right_speed"] = 12, -12
+            variables["are_you_zeroing"] = 2
+            variables["left_edge_of_obj_enc"] = variables["left_enc"]
+            variables["zero_right_counter"] = 0
+
+        # if bot is turning right
+        elif variables["are_you_zeroing"] == 2:
+            # if it has turned right for a bit and it is passing the object
+            if variables["zero_right_counter"] > 10 and variables["fmir"] + 0.1 > variables["closest_obj_reading"]:
+                # calculate the average left encoder from both edges and start turning there
+                variables["left_encoder_goal"] = (variables["left_edge_of_obj_enc"] + variables["left_enc"]) / 2
+                variables["are_you_zeroing"] = 3
+                variables["left_speed"], variables["right_speed"] = -12, 12
+
+        # if bot is turning to the middle of the object
+        elif variables["are_you_zeroing"] == 3:
+            # if has turned enough, stop turning and start moving closer blindly
+            if variables["left_enc"] < variables["left_encoder_goal"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["are_you_zeroing"] = 0  # just in case
+                variables["phase"] = "blind to obj"
+
+    # blindly moving towards object phase
+    elif variables["phase"] == "blind to obj":
+        # add 1 to counter, this is to get fmir buffer to be as correct as possible
+        variables["blind_cycle_counter"] = variables["blind_cycle_counter"] + 1
+
+        # if it has reached 4 new readings for the fmir buffer
+        if variables["blind_cycle_counter"] == 4:
+            # calculate the time goal of how long should bot move forward with said speed
+            # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
+            variables["timegoal"] = rospy.get_time() + (variables["fmir"] - 0.07) / 0.07
+
+            # and start moving forward
+            variables["left_speed"], variables["right_speed"] = 12, 12
+
+        # for when counter is above 4, meaning timegoal has been set and movement has been started
+        elif variables["blind_cycle_counter"] > 4:
+            # run the p-controller to kinda try to be at the 0.07 meters / second speed used in timegoal calculation
+            variables = p_speed(variables, 2, 0.07)
+
+            # if bot has moved more than the timegoal said
+            if variables["current_time"] > variables["timegoal"]:
+                # stop moving and start next phase
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "claw this"
+                variables["claw_counter"] = 0
+
+    # claw the object which hopefully is at correct location
+    elif variables["phase"] == "claw this":
+        # if this hasn't started, open the claw and "sleep", also create some dimmy variable
+        if variables["claw_counter"] == 0:
+            variables["claw_counter"] = variables["current_time"] + 3
+            robot.close_grabber(0)
+            variables["dummy"] = 1
+
+        # if time has elapsed and claw is prolly open, lower it
+        elif variables["claw_counter"] < variables["current_time"] and variables["dummy"] == 1:
+            variables["claw_counter"] = variables["current_time"] + 5
+            robot.set_grabber_height(0)
+            variables["dummy"] = 2
+
+        elif variables["claw_counter"] < variables["current_time"] and variables["dummy"] == 2:
+            variables["claw_counter"] = variables["current_time"] + 3
+            robot.close_grabber(100)
+            variables["dummy"] = 3
+
+        elif variables["claw_counter"] < variables["current_time"] and variables["dummy"] == 3:
+            variables["claw_counter"] = variables["current_time"] + 5
+            robot.set_grabber_height(100)
+            variables["dummy"] = 4
+
+        elif variables["claw_counter"] < variables["current_time"] and variables["dummy"] == 4:
+            variables["dummy"] = 0
+            variables["phase"] = "move straight until wall with extras"
+            variables["line roam phase"] = 0
+
+    # phase that is just for moving toward wall and turning a bit with line detection thrown in
+    elif variables["phase"] == "move straight until wall with extras":
+        # if it's starting moving straight, give it speeds and chance phase to 1
+        if variables["line roam phase"] == 0:
+            variables["left_speed"], variables["right_speed"] = 15, 15
+            variables["line roam phase"] = 1
+            variables["line detections"] = 0
+
+        # if it's moving straight already
+        elif variables["line roam phase"] == 1:
+            # p controller
+            variables = p_speed(variables, 2, 0.12)
+
+            # if any line sensor detected something
+            if variables["l3 line"] < 350 or variables["l2 line"] < 350 or variables["l1 line"] < 350 or variables["r1 line"] < 350 or variables["r2 line"] < 350 or variables["r3 line"] < 350:
+                variables["line detections"] += 1
+
+                # if it has probably detected a line
+                if variables["line detections"] == 3:
+                    # break ot of this loop and stop the bot and start next phase
+                    variables["line detections"] = 0  # just in case
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+                    variables["phase"] = "verifying line"
+                    variables["line verify phase"] = 0
+
+            # tries to filter out false positives
+            elif variables["line detections"] < 3:
+                variables["line detections"] = 0
+
+            # if wall is closer than 35 cm, stop and start turning phase
+            if (variables["fmir"] + variables["last_fmir"]) / 2 < 0.35:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["line roam phase"] = 2
+                variables["turning phase"] = 0
+
+        # this is the phase where the bot turns
+        elif variables["line roam phase"] == 2:
+            # if it's just starting turning
+            if variables["turning phase"] == 0:
+                # set left wheel encoder goal to turn X degrees and change turning phase to active, also set speeds
+                # TODO: either tune the whole roaming system or yolo the degree amount
+                variables["left_enc_goal"] = variables["left_enc"] + 65 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER
+                variables["turning phase"] = 1
+                variables["left_speed"], variables["right_speed"] = 12, -12
+
+            # if is currently turning
+            elif variables["turning phase"] == 1:
+                # p controller
+                variables = p_speed(variables, 1, 0.08)
+
+                # if has turned enough
+                if variables["left_enc_goal"] < variables["left_enc"]:
+                    # reset the phase indicators and wheel speeds
+                    variables["turning phase"] = 0
+                    variables["line roam phase"] = 0
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+
+    # verifies kinda where the line goes
+    elif variables["phase"] == "verifying line":
+        # if phase was just started
+        if variables["line verify phase"] == 0:
+            variables["left_speed"], variables["right_speed"] = 12, 12
+            variables["line verify phase"] = 1
+            variables["distance traveled"] = 0
+
+        # if it's moving forward until line or wall or 1m phase
+        elif variables["line verify phase"] == 1:
+            variables = p_speed(variables, 2, 0.08)
+            # add distance traveled during tick to total distance counter
+            variables["distance traveled"] += variables["distance"]
+
+            # TODO: maybe add another condition, like has traveled less than 5cm and still has line or something
+            # TODO: and in that case just turn 90 degrees in random direction and start from start of this phase
+            if variables["l3 line"] < 350 or variables["l2 line"] < 350 or variables["l1 line"] < 350 or variables["r1 line"] < 350 or variables["r2 line"] < 350 or variables["r3 line"] < 350:
+                variables["line detections"] += 1
+
+                # if it has probably detected a line
+                if variables["line detections"] == 3:
+                    # break ot of this loop and stop the bot and start next phase
+                    variables["line detections"] = 0  # just in case
+                    variables["line verify phase"] = 3
+
+            # tries to filter out false positives
+            elif variables["line detections"] < 3:
+                variables["line detections"] = 0
+
+            # if has traveled a meter or wall is closer than 25cm
+            elif variables["distance traveled"] > 1 or (variables["fmir"] + variables["last_fmir"]) / 2 < 0.25:
+                # start next phase, start turning and also get turning goal for 180 degree turn
+                variables["line verify phase"] = 2
+            variables["left_enc_goal"] = variables["left_enc"] - 180 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER
+            variables["left_speed"], variables["right_speed"] = - 12, 12
+
+        # turning 180 degrees phase
+        elif variables["line verify phase"] == 2 or variables["line verify phase"] == 3:
+            variables = p_speed(variables, 3, 0.08)
+            # if has turned 180 degrees, either start moving forward until line or go to phase 4
+            if variables["left_enc_goal"] > variables["left_enc"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                if variables["line verify phase"] == 2:
+                    variables["line verify phase"] = 0
+                else:
+                    variables["line verify phase"] = 4
+                    variables["distance traveled"] = 0
+                    variables["distance goal"] = 0.05
+                    variables["left_speed"], variables["right_speed"] = 12, 12
+
+        # phase for getting inside the lines
+        elif variables["line verify phase"] == 4:
+            variables = p_speed(variables, 2, 0.08)
+            variables["distance traveled"] += variables["distance"]
+
+            # if it has traveled enough
+            if variables["distance traveled"] > variables["distance goal"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "place object down"
+                variables["object placing down phase"] = 0
+
+    # placing object down
+    elif variables["phase"] == "place object down":
+        # if this hasn't started, open the claw and "sleep", also create some dimmy variable
+        if variables["object placing down phase"] == 0:
+            variables["object placing down phase"] = variables["current_time"] + 3
+            robot.set_grabber_height(0)
+            variables["dummy"] = 1
+
+        # if time has elapsed and claw is prolly open, lower it
+        elif variables["object placing down phase"] < variables["current_time"] and variables["dummy"] == 1:
+            variables["object placing down phase"] = variables["current_time"] + 5
+            robot.close_grabber(0)
+            variables["dummy"] = 2
+
+        elif variables["object placing down phase"] < variables["current_time"] and variables["dummy"] == 2:
+            variables["object placing down phase"] = variables["current_time"] + 3
+            robot.close_grabber(100)
+            variables["dummy"] = 3
+
+        elif variables["object placing down phase"] < variables["current_time"] and variables["dummy"] == 3:
+            variables["object placing down phase"] = variables["current_time"] + 5
+            robot.set_grabber_height(100)
+            variables["dummy"] = 4
+
+        elif variables["object placing down phase"] < variables["current_time"] and variables["dummy"] == 4:
+            variables["dummy"] = 0
+            variables["phase"] = "end"
+
+    # end phase, literally does nothing
+    elif variables["phase"] == "end":
+        pass
+
+    # return dictionary with all the new values
+    return variables
+
+
+def act(variables):
+    """Change left and right wheel speed based on plan()."""
+    robot.set_left_wheel_speed(variables["left_speed"])
+    robot.set_right_wheel_speed(variables["right_speed"])
+
+
+def main():
+    """Create some variables used in the loop and then run the loop of sense, plan, act."""
+    variables = dict()
+    variables["left_speed"] = 0
+    variables["right_speed"] = 0
+    variables["left_enc"] = robot.get_left_wheel_encoder()
+    variables["right_enc"] = robot.get_right_wheel_encoder()
+    variables["last_fmir"], variables["fmir_buffer"], variables["fmir"] = fmir_buffer_init()
+    variables["phase"] = "scanning"
+    variables["scan_progress"] = 0
+    variables["current_time"] = 0
+    variables["last_time"] = 0
+    variables["move_to_obj_counter"] = 0
+    variables["blind_cycle_counter"] = 0
+    variables["obj_verify_counter"] = 0
+    variables["max_fmir"] = float("inf")
+    variables["scan_measure_start"] = ""
+    variables["verify_multicheck"] = 0
+    variables["closest_wall"] = float("inf")
+    variables["closest_wall_encoder_diff"] = 0  # don't have to initialise this here, but doing it anyways
+    variables["are_you_zeroing"] = 0
+    variables["closest_obj_reading"] = float("inf")
+
     while True:
-        # get average value of fmir over 10 steps
-        measurementcounter += 1
-        print(measurementcounter)
-        total += get_fmir()
-        if measurementcounter == 10:
-            fmir = total / measurementcounter
-            print(fmir)
-            total, measurementcounter = 0, 0
-            if fmir < 0.22:  # if new value places bot at closer than this value
-                set_speed(0)
-                return True
-            if fmir > last_fmir:  # if last value is somehow smaller than new value, meaning lost object.
-                set_speed(0)
-                return False
-        rospy.sleep(0.02)
-        lspeed, rspeed, last_tlenc, last_trenc = error_correction(lspeed, rspeed, last_tlenc, last_trenc, 2)
-
-
-def get_object_to_mid():
-    robot.close_grabber(0)
-    robot.set_grabber_height(0)
-    rospy.sleep(2)
-    set_speed(20)
-    rospy.sleep(0.3)
-    set_speed(0)
-    robot.close_grabber(100)
-    rospy.sleep(2)
-    robot.set_grabber_height(100)
-    rospy.sleep(2)
-
+        variables = sense(variables)
+        variables = plan(variables)
+        act(variables)
+        rospy.sleep(0.03)
 
 
 if __name__ == "__main__":
-    while True:
-        print("I should have started!")
-        scan_for_object()
-        if move_towards_object():  # if movement reached object correctly
-            print("Has science gone too far?")
-            # get value of fmir encoder (average to combat noise)
-            distance = get_object_to_mid()
-            #move_to_object(distance)
-            #roam_for_line()
-            break
+    main()
