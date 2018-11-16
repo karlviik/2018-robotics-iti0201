@@ -438,12 +438,14 @@ def plan(variables):
             # if any line sensor detected something
             if variables["l3 line"] < 350 or variables["l2 line"] < 350 or variables["l1 line"] < 350 or variables["r1 line"] < 350 or variables["r2 line"] < 350 or variables["r3 line"] < 350:
                 variables["line detections"] += 1
+
+                # if it has probably detected a line
                 if variables["line detections"] == 3:
-                    # TODO: break out of here
+                    # break ot of this loop and stop the bot and start next phase
                     variables["line detections"] = 0  # just in case
                     variables["left_speed"], variables["right_speed"] = 0, 0
                     variables["phase"] = "verifying line"
-                    pass
+                    variables["line verify phase"] = 0
 
             # tries to filter out false positives
             elif variables["line detections"] < 3:
@@ -476,6 +478,95 @@ def plan(variables):
                     variables["turning phase"] = 0
                     variables["line roam phase"] = 0
                     variables["left_speed"], variables["right_speed"] = 0, 0
+
+    # verifies kinda where the line goes
+    elif variables["phase"] == "verifying line":
+        # if phase was just started
+        if variables["line verify phase"] == 0:
+            variables["left_speed"], variables["right_speed"] = 12, 12
+            variables["line verify phase"] = 1
+            variables["distance traveled"] = 0
+
+        # if it's moving forward until line or wall or 1m phase
+        elif variables["line verify phase"] == 1:
+            variables = p_speed(variables, 2, 0.08)
+            # add distance traveled during tick to total distance counter
+            variables["distance traveled"] += variables["distance"]
+
+            # TODO: maybe add another condition, like has traveled less than 5cm and still has line or something
+            # TODO: and in that case just turn 90 degrees in random direction and start from start of this phase
+            if variables["l3 line"] < 350 or variables["l2 line"] < 350 or variables["l1 line"] < 350 or variables["r1 line"] < 350 or variables["r2 line"] < 350 or variables["r3 line"] < 350:
+                variables["line detections"] += 1
+
+                # if it has probably detected a line
+                if variables["line detections"] == 3:
+                    # break ot of this loop and stop the bot and start next phase
+                    variables["line detections"] = 0  # just in case
+                    variables["line verify phase"] = 3
+
+            # tries to filter out false positives
+            elif variables["line detections"] < 3:
+                variables["line detections"] = 0
+
+            # if has traveled a meter or wall is closer than 25cm
+            elif variables["distance traveled"] > 1 or (variables["fmir"] + variables["last_fmir"]) / 2 < 0.25:
+                # start next phase, start turning and also get turning goal for 180 degree turn
+                variables["line verify phase"] = 2
+            variables["left_enc_goal"] = variables["left_enc"] - 180 * robot.AXIS_LENGTH / robot.WHEEL_DIAMETER
+            variables["left_speed"], variables["right_speed"] = - 12, 12
+
+        # turning 180 degrees phase
+        elif variables["line verify phase"] == 2 or variables["line verify phase"] == 3:
+            variables = p_speed(variables, 3, 0.08)
+            # if has turned 180 degrees, either start moving forward until line or go to phase 4
+            if variables["left_enc_goal"] > variables["left_enc"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                if variables["line verify phase"] == 2:
+                    variables["line verify phase"] = 0
+                else:
+                    variables["line verify phase"] = 4
+                    variables["distance traveled"] = 0
+                    variables["distance goal"] = 0.05
+                    variables["left_speed"], variables["right_speed"] = 12, 12
+
+        # phase for getting inside the lines
+        elif variables["line verify phase"] == 4:
+            variables = p_speed(variables, 2, 0.08)
+            variables["distance traveled"] += variables["distance"]
+
+            # if it has traveled enough
+            if variables["distance traveled"] > variables["distance goal"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "place object down"
+                variables["object placing down phase"] = 0
+
+    # placing object down
+    elif variables["phase"] == "place object down":
+        # if this hasn't started, open the claw and "sleep", also create some dimmy variable
+        if variables["object placing down phase"] == 0:
+            variables["object placing down phase"] = variables["current_time"] + 3
+            robot.set_grabber_height(0)
+            variables["dummy"] = 1
+
+        # if time has elapsed and claw is prolly open, lower it
+        elif variables["object placing down phase"] < variables["current_time"] and variables["dummy"] == 1:
+            variables["object placing down phase"] = variables["current_time"] + 5
+            robot.close_grabber(0)
+            variables["dummy"] = 2
+
+        elif variables["object placing down phase"] < variables["current_time"] and variables["dummy"] == 2:
+            variables["object placing down phase"] = variables["current_time"] + 3
+            robot.close_grabber(100)
+            variables["dummy"] = 3
+
+        elif variables["object placing down phase"] < variables["current_time"] and variables["dummy"] == 3:
+            variables["object placing down phase"] = variables["current_time"] + 5
+            robot.set_grabber_height(100)
+            variables["dummy"] = 4
+
+        elif variables["object placing down phase"] < variables["current_time"] and variables["dummy"] == 4:
+            variables["dummy"] = 0
+            variables["phase"] = "end"
 
     # end phase, literally does nothing
     elif variables["phase"] == "end":
