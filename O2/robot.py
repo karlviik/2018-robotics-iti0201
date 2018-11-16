@@ -19,7 +19,7 @@ def fmir_buffer_init():
         total += robot.get_front_middle_ir()
         rospy.sleep(0.05)
     fmir_average = total / (i + 1)
-    return fmir_average, [fmir_average, fmir_average, fmir_average], fmir_average
+    return fmir_average, [fmir_average, fmir_average, fmir_average, fmir_average], fmir_average
 
 
 def fmir_buffering(variables):
@@ -38,7 +38,7 @@ def fmir_buffering(variables):
     buffer.append(fmir)
 
     # get average fmir value from buffer
-    average = (buffer[0] + buffer[1] + buffer[2]) / 3
+    average = (buffer[0] + buffer[1] + buffer[2] + buffer[3]) / 4
 
     # if new fmir reading is within the allowed deviation of average buffer value
     if average * 0.85 < fmir < average * 1.15:
@@ -86,7 +86,7 @@ def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target s
     l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
 
     # not used currently
-    # variables["distance"] = (r_dist + l_dist) / 2
+    variables["distance"] = (r_dist + l_dist) / 2
 
     # time between this and last cycle
     time_diff = variables["current_time"] - variables["last_time"]
@@ -94,7 +94,6 @@ def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target s
     # calculate wheel speeds based on v = s / t
     r_speed = r_dist / time_diff
     l_speed = l_dist / time_diff
-    variables["l_speed"], variables["r_speed"] = l_speed, r_speed
 
     # get left wheel speed error
     if method == 1 or method == 2:  # clockwise turning or moving straight
@@ -120,63 +119,58 @@ def decide(variables, left_distance, left_encoder, left_second_encoder, middle_d
            right_distance, right_encoder, right_second_encoder):
     print(left_distance, left_encoder, left_second_encoder, middle_distance, middle_encoder, middle_second_encoder,
            right_distance, right_encoder, right_second_encoder)
-    print("ümbermõõt", variables["wheel circumference"])
     if right_distance < middle_distance and middle_distance > left_distance:
         arc_length = ((right_encoder - left_second_encoder) * variables["wheel circumference"]) / 360
+        print("arc_length", arc_length)
         angle_between_two_closest_objects = arc_length / (robot.AXIS_LENGTH / 2)
+        print("angle between two closest objects", angle_between_two_closest_objects)
         distance_between_two_closest_objects = sqrt(
             left_distance ** 2 + right_distance ** 2 - 2 * left_distance * right_distance * cos(
                 angle_between_two_closest_objects))
-        beta = asin((left_distance * sin(
-            angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
-        d = sqrt((distance_between_two_closest_objects / 2) ** 2 + right_distance ** 2 - 2 * (
-                distance_between_two_closest_objects / 2) * right_distance * cos(beta))  # palju sõitma peab mediaanini
 
     elif left_distance < right_distance and middle_distance < right_distance:
         arc_length = ((middle_encoder - left_second_encoder) * variables["wheel circumference"]) / 360
+        print("arc_length", arc_length)
         angle_between_two_closest_objects = arc_length / (robot.AXIS_LENGTH / 2)
+        print("angle between two closest objects", angle_between_two_closest_objects)
         distance_between_two_closest_objects = sqrt(
             left_distance ** 2 + middle_distance ** 2 - 2 * left_distance * middle_distance * cos(
                 angle_between_two_closest_objects))
-        beta = asin((left_distance * sin(
-            angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
-        d = sqrt((distance_between_two_closest_objects / 2) ** 2 + middle_distance ** 2 - 2 * (
-                distance_between_two_closest_objects / 2) * middle_distance * cos(beta))  # palju sõitma peab mediaanini
 
     else:
         arc_length = ((right_encoder - middle_second_encoder) * variables["wheel circumference"]) / 360
+        print("arc_length", arc_length)
         angle_between_two_closest_objects = arc_length / (robot.AXIS_LENGTH / 2)
+        print("angle between two closest objects", angle_between_two_closest_objects)
         distance_between_two_closest_objects = sqrt(
             middle_distance ** 2 + right_distance ** 2 - 2 * middle_distance * right_distance * cos(
                 angle_between_two_closest_objects))
-        beta = asin((left_distance * sin(
-            angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
-        d = sqrt((distance_between_two_closest_objects / 2) ** 2 + right_distance ** 2 - 2 * (
-                distance_between_two_closest_objects / 2) * right_distance * cos(beta))  # palju sõitma peab mediaanini
 
     if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
         # TODO "phase" = drive to other side of triangle
         return variables
     else:
-        print("arc_length", arc_length)
-        print("angle between two closest objects", angle_between_two_closest_objects)
+        beta = asin((left_distance * sin(
+            angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
         print("beta", beta)
+        d = sqrt((distance_between_two_closest_objects / 2) ** 2 + right_distance ** 2 - 2 * (
+                    distance_between_two_closest_objects / 2) * right_distance * cos(
+            beta))  # palju ta sõtma peab mediaanini
         print("d", d)
-        # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan radiaanides
-        gamma = asin(((distance_between_two_closest_objects / 2) * sin(beta)) / d)
-        gamma = (180 * gamma / pi) % 360
+        gamma = asin(((distance_between_two_closest_objects / 2) * sin(
+            beta)) / d)  # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan radiaanides
+        gamma = 180 * gamma / pi
         print("gamma", gamma)
         distance = (pi * robot.AXIS_LENGTH) * (gamma / 360)
         degrees_to_spin = (360 * distance / variables["wheel circumference"])
         target = right_second_encoder - degrees_to_spin
         print("target", target)
         variables["target_turn"] = target
-        variables["distance"] = d
+        variables["distance"] = distance
         variables["phase"] = "turn"
         return variables
 
-# TODO second 360 scan, find furthest object, turn to it, drive 2/1
-# TODO in gold second 360 scan uses rear ir scanner
+
 def plan(variables):
     """Do all the planning in variable dict and then return it. Because Python."""
     object_count = variables["object_count"]
@@ -194,8 +188,7 @@ def plan(variables):
             diff = variables["last_fmir"] - variables["fmir"]
 
             # run p controller
-            variables = p_speed(variables, 1, 0.035)
-            print("lspeed", variables["l_speed"], "rspeed", variables["r_speed"])
+            variables = p_speed(variables, 1, 0.05)
 
             # output for checking the difference, wheel speeds and the buffer
             print("Differnece is: " + str(diff))
@@ -204,30 +197,30 @@ def plan(variables):
             print("------------------------------------------------------")
 
             # if diff is more than 20cm, then it most likely has detected an object
-            if diff > 0.20 and object_count == 0 and on_object == 0:
-                variables["first_object_first_distance"] = variables["fmir"] # + robot.AXIS_LENGTH / 2
+            if abs(diff) > 0.20 and object_count == 0 and on_object == 0:
+                variables["first_object_first_distance"] = variables["last_fmir"] + robot.AXIS_LENGTH / 2
                 variables["first_object_first_encoder"] = variables["last_left_enc"]
                 variables["object_count"] = 1
                 variables["on_object"] = 1
-            elif (diff < -0.20 or variables["fmir"] > variables["first_object_first_distance"] + 0.05) and object_count == 1 and on_object == 1:
+            elif abs(diff) > 0.20 and object_count == 1 and on_object == 1:
                 variables["first_object_second_distance"] = variables["fmir"] + robot.AXIS_LENGTH / 2  # vb pole vaja, kuna vale
                 variables["first_object_second_encoder"] = variables["last_left_enc"]
                 variables["on_object"] = 0
-            elif diff > 0.20 and object_count == 1 and on_object == 0:
-                variables["second_object_first_distance"] = variables["fmir"] # + robot.AXIS_LENGTH / 2
+            elif abs(diff) > 0.20 and object_count == 1 and on_object == 0:
+                variables["second_object_first_distance"] = variables["last_fmir"] + robot.AXIS_LENGTH / 2
                 variables["second_object_first_encoder"] = variables["last_left_enc"]
                 variables["object_count"] = 2
                 variables["on_object"] = 1
-            elif (diff < -0.20 or variables["fmir"] > variables["second_object_first_distance"] + 0.05) and object_count == 2 and on_object == 1:
+            elif abs(diff) > 0.20 and object_count == 2 and on_object == 1:
                 variables["second_object_second_distance"] = variables["fmir"] + robot.AXIS_LENGTH / 2  # vb pole vaja, kuna vale
                 variables["second_object_second_encoder"] = variables["last_left_enc"]
                 variables["on_object"] = 0
-            elif diff > 0.20 and object_count == 2 and on_object == 0:
-                variables["third_object_first_distance"] = variables["fmir"] # + robot.AXIS_LENGTH / 2
+            elif abs(diff) > 0.20 and object_count == 2 and on_object == 0:
+                variables["third_object_first_distance"] = variables["last_fmir"] + robot.AXIS_LENGTH / 2
                 variables["third_object_first_encoder"] = variables["last_left_enc"]
                 variables["object_count"] = 3
                 variables["on_object"] = 1
-            elif (diff < -0.20 or variables["fmir"] > variables["third_object_first_distance"] + 0.05) and object_count == 3 and on_object == 1:
+            elif abs(diff) > 0.20 and object_count == 3 and on_object == 1:
                 variables["third_object_second_distance"] = variables["fmir"] + robot.AXIS_LENGTH / 2  # vb pole vaja, kuna vale
                 variables["third_object_second_encoder"] = variables["last_left_enc"]
                 variables["on_object"] = 0
@@ -235,7 +228,7 @@ def plan(variables):
                 variables["scan_progress"] = 0
                 variables["phase"] = "decide"
 
-    # decide, which object is which and what to do
+    # moving to object phase
     elif variables["phase"] == "decide":
         arc_length_1 = ((variables["second_object_first_encoder"] - variables["first_object_second_encoder"]) * variables["wheel circumference"]) / 360
         angle_between_second_and_first = arc_length_1 / (robot.AXIS_LENGTH / 2)
@@ -248,29 +241,27 @@ def plan(variables):
         else:  # first left, second, middle, third right
             variables = decide(variables, variables["first_object_first_distance"], variables["first_object_first_encoder"], variables["first_object_second_encoder"], variables["second_object_first_distance"], variables["second_object_first_encoder"], variables["second_object_second_encoder"], variables["third_object_first_distance"], variables["third_object_first_encoder"], variables["third_object_second_encoder"])
 
-    # turn to median, between the two closest objects
+    # turn to median
     elif variables["phase"] == "turn":
         if variables["turning"] == 0:
             variables["left_speed"], variables["right_speed"] = -12, 12
             variables["turning"] = 1
         elif variables["left_speed"]:  # meaning it's currently turning, therefore the phase has started
-            variables = p_speed(variables, 3, 0.035)
+            variables = p_speed(variables, 3, 0.05)
             print("leftenc", variables["left_enc"])
             if variables["left_enc"] < variables["target_turn"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "drive"
 
-    # drive to median, between the two closest objects
     elif variables["phase"] == "drive":
         if variables["driving"] == 0:
-            degrees_to_target = 360 * variables["distance"] / (pi * robot.WHEEL_DIAMETER)
-            print("left enc", variables["left_enc"], "deg to target", degrees_to_target, "distance", variables["distance"], "wheel dia", robot.WHEEL_DIAMETER)
-            variables["target_drive"] = variables["left_enc"] + degrees_to_target
+            degrees_to_target = 360 * (pi * robot.AXIS_LENGTH) * variables["distance"]
+            variables["target_drive"] = variables["last_left_enc"] + degrees_to_target
             variables["left_speed"], variables["right_speed"] = 12, 12
             variables["driving"] = 1
-        else:
+        elif variables["left_speed"]:
             print("left_enc", variables["left_enc"], "target_drive", variables["target_drive"])
-            variables = p_speed(variables, 2, 0.035)
+            variables = p_speed(variables, 2, 0.05)
             if variables["left_enc"] > variables["target_drive"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
     # return dictionary with all the new values
@@ -302,9 +293,6 @@ def main():
     variables["last_time"] = 0
     variables["counter"] = 0
     variables["max_fmir"] = float("inf")
-    variables["first_object_first_distance"] = float("inf")
-    variables["second_object_first_distance"] = float("inf")
-    variables["third_object_first_distance"] = float("inf")
     while True:
         variables = sense(variables)
         variables = plan(variables)
