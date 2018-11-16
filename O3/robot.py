@@ -118,8 +118,9 @@ def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target s
 
 def decide(variables, left_distance, left_encoder, left_second_encoder, middle_distance, middle_encoder, middle_second_encoder,
            right_distance, right_encoder, right_second_encoder):
+    """Decide, which object is which and what to do."""
     print(left_distance, left_encoder, left_second_encoder, middle_distance, middle_encoder, middle_second_encoder,
-           right_distance, right_encoder, right_second_encoder)
+          right_distance, right_encoder, right_second_encoder)
     print("ümbermõõt", variables["wheel circumference"])
     if right_distance < middle_distance and middle_distance > left_distance:
         arc_length = ((right_encoder - left_second_encoder) * variables["wheel circumference"]) / 360
@@ -130,7 +131,7 @@ def decide(variables, left_distance, left_encoder, left_second_encoder, middle_d
         beta = asin((left_distance * sin(
             angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
         d = sqrt((distance_between_two_closest_objects / 2) ** 2 + right_distance ** 2 - 2 * (
-                distance_between_two_closest_objects / 2) * right_distance * cos(beta))  # palju sõitma peab mediaanini
+            distance_between_two_closest_objects / 2) * right_distance * cos(beta))  # palju sõitma peab mediaanini
 
     elif left_distance < right_distance and middle_distance < right_distance:
         arc_length = ((middle_encoder - left_second_encoder) * variables["wheel circumference"]) / 360
@@ -141,7 +142,7 @@ def decide(variables, left_distance, left_encoder, left_second_encoder, middle_d
         beta = asin((left_distance * sin(
             angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
         d = sqrt((distance_between_two_closest_objects / 2) ** 2 + middle_distance ** 2 - 2 * (
-                distance_between_two_closest_objects / 2) * middle_distance * cos(beta))  # palju sõitma peab mediaanini
+            distance_between_two_closest_objects / 2) * middle_distance * cos(beta))  # palju sõitma peab mediaanini
 
     else:
         arc_length = ((right_encoder - middle_second_encoder) * variables["wheel circumference"]) / 360
@@ -152,7 +153,7 @@ def decide(variables, left_distance, left_encoder, left_second_encoder, middle_d
         beta = asin((left_distance * sin(
             angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
         d = sqrt((distance_between_two_closest_objects / 2) ** 2 + right_distance ** 2 - 2 * (
-                distance_between_two_closest_objects / 2) * right_distance * cos(beta))  # palju sõitma peab mediaanini
+            distance_between_two_closest_objects / 2) * right_distance * cos(beta))  # palju sõitma peab mediaanini
 
     if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
         # TODO "phase" = drive to other side of triangle
@@ -177,6 +178,8 @@ def decide(variables, left_distance, left_encoder, left_second_encoder, middle_d
 
 # TODO second 360 scan, find furthest object, turn to it, drive 2/1
 # TODO in gold second 360 scan uses rear ir scanner
+
+
 def plan(variables):
     """Do all the planning in variable dict and then return it. Because Python."""
     object_count = variables["object_count"]
@@ -205,7 +208,7 @@ def plan(variables):
 
             # if diff is more than 20cm, then it most likely has detected an object
             if diff > 0.20 and object_count == 0 and on_object == 0:
-                variables["first_object_first_distance"] = variables["fmir"] # + robot.AXIS_LENGTH / 2
+                variables["first_object_first_distance"] = variables["fmir"]  # + robot.AXIS_LENGTH / 2
                 variables["first_object_first_encoder"] = variables["last_left_enc"]
                 variables["object_count"] = 1
                 variables["on_object"] = 1
@@ -214,7 +217,7 @@ def plan(variables):
                 variables["first_object_second_encoder"] = variables["last_left_enc"]
                 variables["on_object"] = 0
             elif diff > 0.20 and object_count == 1 and on_object == 0:
-                variables["second_object_first_distance"] = variables["fmir"] # + robot.AXIS_LENGTH / 2
+                variables["second_object_first_distance"] = variables["fmir"]  # + robot.AXIS_LENGTH / 2
                 variables["second_object_first_encoder"] = variables["last_left_enc"]
                 variables["object_count"] = 2
                 variables["on_object"] = 1
@@ -223,7 +226,7 @@ def plan(variables):
                 variables["second_object_second_encoder"] = variables["last_left_enc"]
                 variables["on_object"] = 0
             elif diff > 0.20 and object_count == 2 and on_object == 0:
-                variables["third_object_first_distance"] = variables["fmir"] # + robot.AXIS_LENGTH / 2
+                variables["third_object_first_distance"] = variables["fmir"]  # + robot.AXIS_LENGTH / 2
                 variables["third_object_first_encoder"] = variables["last_left_enc"]
                 variables["object_count"] = 3
                 variables["on_object"] = 1
@@ -242,7 +245,7 @@ def plan(variables):
         arc_length_2 = ((variables["third_object_first_encoder"] - variables["second_object_second_encoder"]) * variables["wheel circumference"]) / 360
         angle_between_third_and_second = arc_length_2 / (robot.AXIS_LENGTH / 2)
         if angle_between_second_and_first > 120:  # second left, third middle, first right
-            variables = decide(variables, variables["second_object_first_distance"], variables["second_object_first_encoder"], variables["second_object_second_encoder"], variables["third_object_first_distance"],  variables["third_object_first_encoder"], variables["third_object_second_encoder"], variables["first_object_first_distance"], variables["first_object_first_encoder"], variables["first_object_second_encoder"])
+            variables = decide(variables, variables["second_object_first_distance"], variables["second_object_first_encoder"], variables["second_object_second_encoder"], variables["third_object_first_distance"], variables["third_object_first_encoder"], variables["third_object_second_encoder"], variables["first_object_first_distance"], variables["first_object_first_encoder"], variables["first_object_second_encoder"])
         elif angle_between_third_and_second > 120:  # third left, first middle, second right
             variables = decide(variables, variables["third_object_first_distance"], variables["third_object_first_encoder"], variables["third_object_second_encoder"], variables["first_object_first_distance"], variables["first_object_first_encoder"], variables["first_object_second_encoder"], variables["second_object_first_distance"], variables["second_object_first_encoder"], variables["second_object_second_encoder"])
         else:  # first left, second, middle, third right
