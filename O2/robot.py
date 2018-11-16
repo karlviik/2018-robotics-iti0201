@@ -67,15 +67,20 @@ def sense(variables):
     return variables
 
 
-def p_speed(variables, method, target_speed):  # target speed should be in meters/second
+def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target speed should be in meters/second
     """
     Control left and right wheel speed with P control method.
 
     :param variables: dictionary with all the variables
     :param method: 1 for clockwise turning, 2 for moving straight, 3 for counterclockwise turning
-    :param target_speed: speed to aim for
+    :param l_target_speed: left wheel speed to aim for
+    :param r_target_speed: right wheel speed to aim for. If missing, assume it's same as left
     :return: dictionary with new left and right wheel speeds
     """
+    # if no r target speed was given, then prolly not needed and make them equal
+    if r_target_speed is None:
+        r_target_speed = l_target_speed
+
     # calculate distance the bot has traveled during the past cycle
     r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
     l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
@@ -92,15 +97,15 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
 
     # get left wheel speed error
     if method == 1 or method == 2:  # clockwise turning or moving straight
-        l_error = target_speed - l_speed
+        l_error = l_target_speed - l_speed
     elif method == 3:  # counterclockwise turning
-        l_error = - target_speed - l_speed
+        l_error = - l_target_speed - l_speed
 
     # get right wheel speed error, two separate versions because right wheel turns backwards during turning
     if method == 1:  # clockwise turning
-        r_error = - target_speed - r_speed
+        r_error = - r_target_speed - r_speed
     elif method == 2 or method == 3:   # moving straight or counterclockwise turning
-        r_error = target_speed - r_speed
+        r_error = r_target_speed - r_speed
 
     # calculate new right and left wheel speeds by adding rounded value of GAIN constant times wheel speed error
     variables["right_speed"] = variables["right_speed"] + round(GAIN * r_error)
@@ -112,81 +117,58 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
 
 def decide(variables, left_distance, left_encoder, left_second_encoder, middle_distance, middle_encoder, middle_second_encoder,
            right_distance, right_encoder, right_second_encoder):
+    print(left_distance, left_encoder, left_second_encoder, middle_distance, middle_encoder, middle_second_encoder,
+           right_distance, right_encoder, right_second_encoder)
     if right_distance < middle_distance and middle_distance > left_distance:
         arc_length = ((right_encoder - left_second_encoder) * variables["wheel circumference"]) / 360
+        print("arc_length", arc_length)
         angle_between_two_closest_objects = arc_length / (robot.AXIS_LENGTH / 2)
+        print("angle between two closest objects", angle_between_two_closest_objects)
         distance_between_two_closest_objects = sqrt(
             left_distance ** 2 + right_distance ** 2 - 2 * left_distance * right_distance * cos(
                 angle_between_two_closest_objects))
-        if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
-            # TODO "phase" = drive to other side of triangle
-            return variables
-        else:
-            beta = asin((left_distance * sin(
-                angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
-            d = sqrt((distance_between_two_closest_objects / 2) ** 2 + right_distance ** 2 - 2 * (
-                        distance_between_two_closest_objects / 2) * right_distance * cos(
-                beta))  # palju ta sõtma peab mediaanini
-            gamma = asin(((distance_between_two_closest_objects / 2) * sin(
-                beta)) / d)  # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan radiaanides
-            gamma = 180 * gamma / pi
-            distance = (pi * robot.AXIS_LENGTH) * (gamma / 360)
-            degrees_to_spin = (360 * distance / variables["wheel circumference"])
-            target = right_second_encoder - degrees_to_spin
-            variables["target_turn"] = target
-            variables["distance"] = distance
-            variables["phase"] = "turn"
-            return variables
+
     elif left_distance < right_distance and middle_distance < right_distance:
         arc_length = ((middle_encoder - left_second_encoder) * variables["wheel circumference"]) / 360
+        print("arc_length", arc_length)
         angle_between_two_closest_objects = arc_length / (robot.AXIS_LENGTH / 2)
+        print("angle between two closest objects", angle_between_two_closest_objects)
         distance_between_two_closest_objects = sqrt(
             left_distance ** 2 + middle_distance ** 2 - 2 * left_distance * middle_distance * cos(
                 angle_between_two_closest_objects))
-        if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
-            # TODO "phase" = drive to other side of triangle
-            return variables
-        else:
-            beta = asin((left_distance * sin(
-                angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
-            d = sqrt((distance_between_two_closest_objects / 2) ** 2 + right_distance ** 2 - 2 * (
-                        distance_between_two_closest_objects / 2) * right_distance * cos(
-                beta))  # palju ta sõtma peab mediaanini
-            gamma = asin(((distance_between_two_closest_objects / 2) * sin(
-                beta)) / d)  # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan radiaanides
-            gamma = 180 * gamma / pi
-            distance = (pi * robot.AXIS_LENGTH) * (gamma / 360)
-            degrees_to_spin = (360 * distance / variables["wheel circumference"])
-            target = right_second_encoder - degrees_to_spin
-            variables["target_turn"] = target
-            variables["distance"] = distance
-            variables["phase"] = "turn"
-            return variables
+
     else:
         arc_length = ((right_encoder - middle_second_encoder) * variables["wheel circumference"]) / 360
+        print("arc_length", arc_length)
         angle_between_two_closest_objects = arc_length / (robot.AXIS_LENGTH / 2)
+        print("angle between two closest objects", angle_between_two_closest_objects)
         distance_between_two_closest_objects = sqrt(
             middle_distance ** 2 + right_distance ** 2 - 2 * middle_distance * right_distance * cos(
                 angle_between_two_closest_objects))
-        if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
-            # TODO "phase" = drive to other side of triangle
-            return variables
-        else:
-            beta = asin((left_distance * sin(
-                angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
-            d = sqrt((distance_between_two_closest_objects / 2) ** 2 + right_distance ** 2 - 2 * (
-                        distance_between_two_closest_objects / 2) * right_distance * cos(
-                beta))  # palju ta sõtma peab mediaanini
-            gamma = asin(((distance_between_two_closest_objects / 2) * sin(
-                beta)) / d)  # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan radiaanides
-            gamma = 180 * gamma / pi
-            distance = (pi * robot.AXIS_LENGTH) * (gamma / 360)
-            degrees_to_spin = (360 * distance / variables["wheel circumference"])
-            target = right_second_encoder - degrees_to_spin
-            variables["target_turn"] = target
-            variables["distance"] = distance
-            variables["phase"] = "turn"
-            return variables
+
+    if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:  # kui robot läbi ei mahu +5cm roboti laiusele
+        # TODO "phase" = drive to other side of triangle
+        return variables
+    else:
+        beta = asin((left_distance * sin(
+            angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
+        print("beta", beta)
+        d = sqrt((distance_between_two_closest_objects / 2) ** 2 + right_distance ** 2 - 2 * (
+                    distance_between_two_closest_objects / 2) * right_distance * cos(
+            beta))  # palju ta sõtma peab mediaanini
+        print("d", d)
+        gamma = asin(((distance_between_two_closest_objects / 2) * sin(
+            beta)) / d)  # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan radiaanides
+        gamma = 180 * gamma / pi
+        print("gamma", gamma)
+        distance = (pi * robot.AXIS_LENGTH) * (gamma / 360)
+        degrees_to_spin = (360 * distance / variables["wheel circumference"])
+        target = right_second_encoder - degrees_to_spin
+        print("target", target)
+        variables["target_turn"] = target
+        variables["distance"] = distance
+        variables["phase"] = "turn"
+        return variables
 
 
 def plan(variables):
@@ -266,6 +248,7 @@ def plan(variables):
             variables["turning"] = 1
         elif variables["left_speed"]:  # meaning it's currently turning, therefore the phase has started
             variables = p_speed(variables, 3, 0.05)
+            print("leftenc", variables["left_enc"])
             if variables["left_enc"] < variables["target_turn"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "drive"
@@ -277,6 +260,7 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, 12
             variables["driving"] = 1
         elif variables["left_speed"]:
+            print("left_enc", variables["left_enc"], "target_drive", variables["target_drive"])
             variables = p_speed(variables, 2, 0.05)
             if variables["left_enc"] > variables["target_drive"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
