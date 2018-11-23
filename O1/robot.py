@@ -199,6 +199,7 @@ def plan(variables):
             avg = (variables["fmir_buffer"][0] + variables["fmir_buffer"][1] + variables["fmir_buffer"][2] +
                    variables["fmir_buffer"][3]) / 4
             degrees_to_target = 360 * (avg - 0.05) / (math.pi * robot.WHEEL_DIAMETER)
+            print("deg to target:", degrees_to_target, "average dist:", avg)
             variables["target_drive"] = variables["left_enc"] + degrees_to_target
 
             # and start moving forward
