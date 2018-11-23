@@ -1,0 +1,167 @@
+Executing student code...
+Differnece is: 0.0
+10 -10
+[1.1023379999999998, 1.1023379999999998, 1.102338, 1.102338]
+------------------------------------------------------
+Differnece is: 2.220446049250313e-16
+6 -10
+[1.1023379999999998, 1.102338, 1.102338, 1.1023379999999998]
+------------------------------------------------------
+Differnece is: 0.0
+5 -9
+[1.102338, 1.102338, 1.1023379999999998, 0.5685829153388859]
+------------------------------------------------------
+Differnece is: 0.0
+5 -9
+[1.102338, 1.1023379999999998, 0.5685829153388859, 0.4728414311931417]
+------------------------------------------------------
+Differnece is: 0.0
+6 -9
+[1.1023379999999998, 0.5685829153388859, 0.4728414311931417, 0.3955004964255842]
+------------------------------------------------------
+Differnece is: 0.0
+6 -10
+[0.5685829153388859, 0.4728414311931417, 0.3955004964255842, 0.34226647477680017]
+------------------------------------------------------
+Differnece is: 0.0
+7 -11
+[0.4728414311931417, 0.3955004964255842, 0.34226647477680017, 0.31141490831514834]
+------------------------------------------------------
+Differnece is: 0.0
+8 -11
+[0.3955004964255842, 0.34226647477680017, 0.31141490831514834, 0.274495298455982]
+------------------------------------------------------
+Differnece is: 0.0
+8 -12
+[0.34226647477680017, 0.31141490831514834, 0.274495298455982, 0.24818450836448977]
+------------------------------------------------------
+Differnece is: 0.8679923503368385
+9 -12
+[0.31141490831514834, 0.274495298455982, 0.24818450836448977, 0.23434564966316124]
+------------------------------------------------------
+Moving to obj, max fmir and fmir:  inf 0.24818450836448977
+Moving to obj, max fmir and fmir:  0.3481845083644898 0.24818450836448977
+Moving to obj, max fmir and fmir:  0.3481845083644898 0.24818450836448977
+Moving to obj, max fmir and fmir:  0.3481845083644898 0.24818450836448977
+Moving to obj, max fmir and fmir:  0.3481845083644898 0.24818450836448977
+Moving to obj, max fmir and fmir:  0.3481845083644898 1.0962573355037801
+Differnece is: 0.0
+10 -10
+[1.102338, 1.0962573355037801, 0.3795444889943736, 0.1948051417597041]
+------------------------------------------------------
+Differnece is: 0.0
+6 -11
+[1.0962573355037801, 0.3795444889943736, 0.1948051417597041, 0.15053093123983596]
+------------------------------------------------------
+Differnece is: 0.0
+1 -11
+[0.3795444889943736, 0.1948051417597041, 0.15053093123983596, 0.14084318678872335]
+------------------------------------------------------
+Differnece is: 0.9550473978511141
+0 -10
+[0.1948051417597041, 0.15053093123983596, 0.14084318678872335, 0.141209937652666]
+------------------------------------------------------
+Moving to obj, max fmir and fmir:  0.3481845083644898 0.14084318678872335
+deg to target: 419.8027321347314 average dist: 0.14158674855773584
+left_enc 256 target_drive 667.8027321347314 12 12
+left_enc 260 target_drive 667.8027321347314 11 10
+left_enc 264 target_drive 667.8027321347314 11 7
+left_enc 268 target_drive 667.8027321347314 11 5
+left_enc 272 target_drive 667.8027321347314 11 5
+left_enc 272 target_drive 667.8027321347314 11 5
+left_enc 276 target_drive 667.8027321347314 12 6
+left_enc 276 target_drive 667.8027321347314 12 7
+left_enc 280 target_drive 667.8027321347314 13 8
+left_enc 284 target_drive 667.8027321347314 13 9
+left_enc 284 target_drive 667.8027321347314 13 10
+left_enc 288 target_drive 667.8027321347314 14 10
+left_enc 292 target_drive 667.8027321347314 14 11
+left_enc 296 target_drive 667.8027321347314 14 11
+left_enc 296 target_drive 667.8027321347314 14 11
+left_enc 300 target_drive 667.8027321347314 15 11
+left_enc 304 target_drive 667.8027321347314 15 12
+left_enc 308 target_drive 667.8027321347314 15 12
+left_enc 308 target_drive 667.8027321347314 15 12
+left_enc 312 target_drive 667.8027321347314 16 11
+left_enc 316 target_drive 667.8027321347314 16 10
+left_enc 324 target_drive 667.8027321347314 16 8
+left_enc 336 target_drive 667.8027321347314 15 7
+left_enc 352 target_drive 667.8027321347314 13 7
+left_enc 372 target_drive 667.8027321347314 11 7
+left_enc 388 target_drive 667.8027321347314 8 8
+left_enc 396 target_drive 667.8027321347314 6 9
+left_enc 396 target_drive 667.8027321347314 5 9
+left_enc 396 target_drive 667.8027321347314 6 10
+left_enc 396 target_drive 667.8027321347314 7 11
+left_enc 396 target_drive 667.8027321347314 8 11
+left_enc 400 target_drive 667.8027321347314 9 11
+left_enc 400 target_drive 667.8027321347314 9 12
+left_enc 404 target_drive 667.8027321347314 10 12
+left_enc 404 target_drive 667.8027321347314 10 12
+left_enc 408 target_drive 667.8027321347314 11 12
+left_enc 408 target_drive 667.8027321347314 11 13
+left_enc 412 target_drive 667.8027321347314 12 13
+left_enc 412 target_drive 667.8027321347314 12 13
+left_enc 416 target_drive 667.8027321347314 13 13
+left_enc 424 target_drive 667.8027321347314 13 13
+left_enc 428 target_drive 667.8027321347314 12 12
+left_enc 436 target_drive 667.8027321347314 12 10
+left_enc 440 target_drive 667.8027321347314 11 7
+left_enc 448 target_drive 667.8027321347314 11 5
+left_enc 456 target_drive 667.8027321347314 10 4
+left_enc 456 target_drive 667.8027321347314 9 5
+left_enc 456 target_drive 667.8027321347314 10 6
+left_enc 460 target_drive 667.8027321347314 11 7
+left_enc 460 target_drive 667.8027321347314 11 7
+left_enc 464 target_drive 667.8027321347314 12 8
+left_enc 468 target_drive 667.8027321347314 12 9
+left_enc 468 target_drive 667.8027321347314 12 10
+left_enc 472 target_drive 667.8027321347314 13 10
+left_enc 476 target_drive 667.8027321347314 13 10
+left_enc 480 target_drive 667.8027321347314 13 10
+left_enc 484 target_drive 667.8027321347314 13 10
+left_enc 492 target_drive 667.8027321347314 13 11
+left_enc 496 target_drive 667.8027321347314 12 11
+left_enc 500 target_drive 667.8027321347314 12 10
+left_enc 504 target_drive 667.8027321347314 12 10
+left_enc 512 target_drive 667.8027321347314 12 9
+left_enc 524 target_drive 667.8027321347314 11 8
+left_enc 532 target_drive 667.8027321347314 9 8
+left_enc 540 target_drive 667.8027321347314 8 8
+left_enc 540 target_drive 667.8027321347314 7 8
+left_enc 540 target_drive 667.8027321347314 8 9
+left_enc 544 target_drive 667.8027321347314 9 9
+left_enc 544 target_drive 667.8027321347314 9 10
+left_enc 544 target_drive 667.8027321347314 10 10
+left_enc 548 target_drive 667.8027321347314 11 11
+left_enc 552 target_drive 667.8027321347314 11 11
+left_enc 552 target_drive 667.8027321347314 11 11
+left_enc 556 target_drive 667.8027321347314 12 10
+left_enc 560 target_drive 667.8027321347314 12 10
+left_enc 564 target_drive 667.8027321347314 12 10
+left_enc 568 target_drive 667.8027321347314 12 11
+left_enc 568 target_drive 667.8027321347314 12 11
+left_enc 572 target_drive 667.8027321347314 13 12
+left_enc 576 target_drive 667.8027321347314 13 12
+left_enc 580 target_drive 667.8027321347314 13 12
+left_enc 584 target_drive 667.8027321347314 13 12
+left_enc 592 target_drive 667.8027321347314 13 12
+left_enc 600 target_drive 667.8027321347314 12 11
+left_enc 604 target_drive 667.8027321347314 11 10
+left_enc 608 target_drive 667.8027321347314 11 9
+left_enc 612 target_drive 667.8027321347314 11 8
+left_enc 616 target_drive 667.8027321347314 11 8
+left_enc 616 target_drive 667.8027321347314 11 9
+left_enc 620 target_drive 667.8027321347314 12 9
+left_enc 624 target_drive 667.8027321347314 12 10
+left_enc 624 target_drive 667.8027321347314 12 11
+left_enc 628 target_drive 667.8027321347314 13 11
+left_enc 632 target_drive 667.8027321347314 13 11
+left_enc 632 target_drive 667.8027321347314 13 11
+left_enc 636 target_drive 667.8027321347314 14 12
+left_enc 640 target_drive 667.8027321347314 14 12
+left_enc 644 target_drive 667.8027321347314 14 12
+left_enc 648 target_drive 667.8027321347314 14 12
+left_enc 652 target_drive 667.8027321347314 14 12
+left_enc 656 target_drive 667.8027321347314 14 11
+left_enc 860 target_drive 667.8027321347314 15 12
