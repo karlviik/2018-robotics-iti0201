@@ -199,6 +199,7 @@ def plan(variables):
                    variables["fmir_buffer"][3]) / 4
             if avg > variables["avg"]:
                 variables["avg"] = avg
+            print("avg and buffer:", avg, variables["fmir_buffer"])
 
         # if it has reached 4 new readings for the fmir buffer
         if variables["counter"] == 5 and variables["other_counter"] >= 10:
