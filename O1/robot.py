@@ -191,13 +191,20 @@ def plan(variables):
     elif variables["phase"] == "blind to obj":
         # add 1 to counter, this is to get fmir buffer to be as correct as possible
         variables["counter"] = variables["counter"] + 1
-
-        # if it has reached 4 new readings for the fmir buffer
-        if variables["counter"] == 4:
-            # calculate the time goal of how long should bot move forward with said speed
-            # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
+        if variables["counter"] == 4 and variables["other_counter"] <= 10:
+            variables["other_counter"] += 1
+            if variables["other_counter"] != 10:
+                variables["counter"] = 0
             avg = (variables["fmir_buffer"][0] + variables["fmir_buffer"][1] + variables["fmir_buffer"][2] +
                    variables["fmir_buffer"][3]) / 4
+            if avg > variables["avg"]:
+                variables["avg"] = avg
+
+        # if it has reached 4 new readings for the fmir buffer
+        if variables["counter"] == 5 and variables["other_counter"] >= 10:
+            # calculate the time goal of how long should bot move forward with said speed
+            # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
+            avg = variables["avg"]
             degrees_to_target = 360 * avg / (math.pi * robot.WHEEL_DIAMETER)
             print("deg to target:", degrees_to_target, "average dist:", avg)
             variables["l_target_drive"] = variables["left_enc"] + degrees_to_target
@@ -209,7 +216,7 @@ def plan(variables):
             rospy.sleep(3)
 
         # for when counter is above 4, meaning timegoal has been set and movement has been started
-        elif variables["counter"] > 4:
+        elif variables["counter"] > 5 and variables["other_counter"] >= 10:
             print("left_enc", variables["left_enc"], "target_drive", variables["l_target_drive"], variables["left_speed"], variables["right_speed"])
             variables = p_speed(variables, 2, 0.02)
             if variables["left_enc"] > variables["l_target_drive"] and variables["right_enc"] > variables["r_target_drive"]:
@@ -243,6 +250,8 @@ def main():
     variables["current_time"] = 0
     variables["last_time"] = 0
     variables["counter"] = 0
+    variables["other_counter"] = 0
+    variables["avg"] = 0
     variables["max_fmir"] = float("inf")
     while True:
         variables = sense(variables)
