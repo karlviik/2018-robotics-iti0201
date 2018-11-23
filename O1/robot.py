@@ -196,25 +196,21 @@ def plan(variables):
         if variables["counter"] == 4:
             # calculate the time goal of how long should bot move forward with said speed
             # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
-            variables["timegoal"] = rospy.get_time() + (variables["fmir"] - 0.07) / 0.07
+            avg = (variables["fmir_buffer"][0] + variables["fmir_buffer"][1] + variables["fmir_buffer"][2] +
+                   variables["fmir_buffer"][3]) / 4
+            degrees_to_target = 360 * (avg - 0.05) / (math.pi * robot.WHEEL_DIAMETER)
+            variables["target_drive"] = variables["left_enc"] + degrees_to_target
 
             # and start moving forward
             variables["left_speed"], variables["right_speed"] = 12, 12
 
         # for when counter is above 4, meaning timegoal has been set and movement has been started
         elif variables["counter"] > 4:
-            if variables["driving"] == 0:
-                avg = (variables["fmir_buffer"][0] + variables["fmir_buffer"][1] + variables["fmir_buffer"][2] + variables["fmir_buffer"][3]) / 4
-                degrees_to_target = 360 * (avg - 0.05) / (math.pi * robot.WHEEL_DIAMETER)
-                variables["target_drive"] = variables["left_enc"] + degrees_to_target
-                variables["left_speed"], variables["right_speed"] = 12, 12
-                variables["driving"] = 1
-            else:
-                print("left_enc", variables["left_enc"], "target_drive", variables["target_drive"])
-                variables = p_speed(variables, 2, 0.03)
-                if variables["left_enc"] > variables["target_drive"]:
-                    variables["left_speed"], variables["right_speed"] = 0, 0
-                    variables["phase"] = "end"
+            print("left_enc", variables["left_enc"], "target_drive", variables["target_drive"])
+            variables = p_speed(variables, 2, 0.03)
+            if variables["left_enc"] > variables["target_drive"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "end"
 
     # end phase, literally does nothing
     elif variables["phase"] == "end":
@@ -244,7 +240,6 @@ def main():
     variables["last_time"] = 0
     variables["counter"] = 0
     variables["max_fmir"] = float("inf")
-    variables["driving"] = 0
     while True:
         variables = sense(variables)
         variables = plan(variables)
