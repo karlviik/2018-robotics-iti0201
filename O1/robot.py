@@ -125,6 +125,7 @@ def move_to_obj(variables):
 
     # if it is moving
     else:
+        print("Moving to obj, max fmir and fmir: ", variables["max_fmir"], variables["fmir"])
         # if current fmir value is more than 10 cm shorter than maximum allowed fmir value
         # NOTE: max_fmir does not reset when it does "move to obj" to "scanning" to "move to obj"
         if variables["max_fmir"] > variables["fmir"] + 0.1:
@@ -196,7 +197,7 @@ def plan(variables):
             # calculate the time goal of how long should bot move forward with said speed
             # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
             variables["timegoal"] = rospy.get_time() + (variables["fmir"] - 0.07) / 0.07
-
+            print("Gonna move straight for some time now:", variables["timegoal"])
             # and start moving forward
             variables["left_speed"], variables["right_speed"] = 12, 12
 
@@ -204,7 +205,7 @@ def plan(variables):
         elif variables["counter"] > 4:
             # run the p-controller to kinda try to be at the 0.07 meters / second speed used in timegoal calculation
             variables = p_speed(variables, 2, 0.07)
-
+            print("left and right speeds:", variables["left_speed"], variables["right_speed"])
             # if bot has moved more than the timegoal said
             if variables["current_time"] > variables["timegoal"]:
                 # stop moving and start end phase
