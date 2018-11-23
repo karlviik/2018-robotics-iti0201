@@ -244,6 +244,7 @@ def main():
     variables["last_time"] = 0
     variables["counter"] = 0
     variables["max_fmir"] = float("inf")
+    variables["driving"] = 0
     while True:
         variables = sense(variables)
         variables = plan(variables)
