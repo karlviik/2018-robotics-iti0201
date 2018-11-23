@@ -241,8 +241,6 @@ def main():
     variables["last_time"] = 0
     variables["counter"] = 0
     variables["max_fmir"] = float("inf")
-    robot.close_grabber(100)
-    robot.set_grabber_height(100)
     while True:
         variables = sense(variables)
         variables = plan(variables)
