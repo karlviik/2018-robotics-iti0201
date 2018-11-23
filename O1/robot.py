@@ -38,6 +38,8 @@ def fmir_buffering(variables):
     """
     buffer = variables["fmir_buffer"]  # read buffer into var for easier writing, could remove this though
     fmir = robot.get_front_middle_ir()  # read fmir into var
+    if fmir > 1.2:
+        fmir = 1.2
     variables["last_fmir"] = variables["fmir"]  # put last allowed fmir value into "last_fmir" dict key
 
     # remove oldest and add new fmir reading
