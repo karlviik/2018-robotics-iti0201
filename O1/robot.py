@@ -207,8 +207,8 @@ def plan(variables):
 
         # for when counter is above 4, meaning timegoal has been set and movement has been started
         elif variables["counter"] > 4:
-            print("left_enc", variables["left_enc"], "target_drive", variables["target_drive"])
-            variables = p_speed(variables, 2, 0.03)
+            print("left_enc", variables["left_enc"], "target_drive", variables["target_drive"], variables["left_speed"], variables["right_speed"])
+            variables = p_speed(variables, 2, 0.02)
             if variables["left_enc"] > variables["target_drive"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "end"
