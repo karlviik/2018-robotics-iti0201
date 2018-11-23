@@ -125,7 +125,7 @@ def move_to_obj(variables):
 
     # if it is moving
     else:
-        print("Moving to obj, max fmir and fmir: ", variables["max_fmir"], variables["fmir"])
+        print("Moving to obj, max fmir and fmir: ", variables["max_fmir"], variables["fmir"], variables["fmir_buffer"])
         # if current fmir value is more than 10 cm shorter than maximum allowed fmir value
         # NOTE: max_fmir does not reset when it does "move to obj" to "scanning" to "move to obj"
         if variables["max_fmir"] > variables["fmir"] + 0.1:
@@ -245,7 +245,7 @@ def main():
         variables = sense(variables)
         variables = plan(variables)
         act(variables)
-        rospy.sleep(0.02)
+        rospy.sleep(0.05) # was 0.02
 
 
 if __name__ == "__main__":
