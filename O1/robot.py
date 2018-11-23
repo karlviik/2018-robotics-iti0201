@@ -181,7 +181,7 @@ def plan(variables):
             # if it has not detected an object and it's still scanning
             else:
                 # run the p controller function to adjust right and left wheel speeds
-                variables = p_speed(variables, 1, 0.02)
+                variables = p_speed(variables, 1, 0.015)
 
     # moving to object phase
     elif variables["phase"] == "move to obj":
