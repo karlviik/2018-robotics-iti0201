@@ -196,7 +196,7 @@ def plan(variables):
         if variables["counter"] == 4:
             # calculate the time goal of how long should bot move forward with said speed
             # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
-            variables["timegoal"] = rospy.get_time() + (variables["fmir"] - 0.07) / 0.07
+            variables["encgoal"] = variables["left_enc"] + # rospy.get_time() + (variables["fmir"] - 0.07) / 0.07
             print("Gonna move straight for some time now:", variables["timegoal"])
             # and start moving forward
             variables["left_speed"], variables["right_speed"] = 12, 12
@@ -204,7 +204,7 @@ def plan(variables):
         # for when counter is above 4, meaning timegoal has been set and movement has been started
         elif variables["counter"] > 4:
             # run the p-controller to kinda try to be at the 0.07 meters / second speed used in timegoal calculation
-            variables = p_speed(variables, 2, 0.07)
+            variables = p_speed(variables, 2, 0.04)
             print("left and right speeds:", variables["left_speed"], variables["right_speed"])
             # if bot has moved more than the timegoal said
             if variables["current_time"] > variables["timegoal"]:
