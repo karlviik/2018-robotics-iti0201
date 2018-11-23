@@ -121,7 +121,7 @@ def move_to_obj(variables):
     # if moving to object has not started, based on wheel speed, could do same with scanning though...
     if variables["left_speed"] == 0:
         # start moving
-        variables["left_speed"], variables["right_speed"] = 12, 12
+        variables["left_speed"], variables["right_speed"] = 10, 10
 
     # if it is moving
     else:
@@ -141,7 +141,7 @@ def move_to_obj(variables):
         # for when it still has object
         else:
             # do p controller for adjusting speed of wheels so it'd move as straight as possible
-            p_speed(variables, 2, 0.1)
+            p_speed(variables, 2, 0.02)
 
             # if bot has gotten to withing 20 cm of the object
             if variables["fmir"] < 0.20:
