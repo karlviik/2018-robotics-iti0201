@@ -198,9 +198,11 @@ def plan(variables):
             # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
             avg = (variables["fmir_buffer"][0] + variables["fmir_buffer"][1] + variables["fmir_buffer"][2] +
                    variables["fmir_buffer"][3]) / 4
-            degrees_to_target = 360 * (avg - 0.05) / (math.pi * robot.WHEEL_DIAMETER)
+            degrees_to_target = 360 * avg / (math.pi * robot.WHEEL_DIAMETER)
             print("deg to target:", degrees_to_target, "average dist:", avg)
-            variables["target_drive"] = variables["left_enc"] + degrees_to_target
+            variables["l_target_drive"] = variables["left_enc"] + degrees_to_target
+            variables["r_target_drive"] = variables["right_enc"] + degrees_to_target
+
 
             # and start moving forward
             variables["left_speed"], variables["right_speed"] = 10, 10
@@ -210,7 +212,7 @@ def plan(variables):
         elif variables["counter"] > 4:
             print("left_enc", variables["left_enc"], "target_drive", variables["target_drive"], variables["left_speed"], variables["right_speed"])
             variables = p_speed(variables, 2, 0.02)
-            if variables["left_enc"] > variables["target_drive"]:
+            if variables["left_enc"] > variables["l_target_drive"] and variables["right_enc"] > variables["r_target_drive"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "end"
 
