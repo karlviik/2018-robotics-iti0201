@@ -157,7 +157,7 @@ def plan(variables):
     if variables["phase"] == "scanning":
         # if condition that is filled every time scanning is started, starts the turning
         if variables["scan_progress"] == 0:
-            variables["left_speed"], variables["right_speed"] = 12, -12
+            variables["left_speed"], variables["right_speed"] = 10, -10
             variables["scan_progress"] = 1
 
         # if scanning is already in progress
@@ -172,7 +172,7 @@ def plan(variables):
             print("------------------------------------------------------")
 
             # if diff is more than 20cm, then it most likely has detected an object
-            if abs(diff) > 0.20:
+            if abs(diff) > 0.30:
                 # stops turning and scanning and changes phase to "move to obj"
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["scan_progress"] = 0
@@ -181,7 +181,7 @@ def plan(variables):
             # if it has not detected an object and it's still scanning
             else:
                 # run the p controller function to adjust right and left wheel speeds
-                variables = p_speed(variables, 1, 0.05)
+                variables = p_speed(variables, 1, 0.02)
 
     # moving to object phase
     elif variables["phase"] == "move to obj":
