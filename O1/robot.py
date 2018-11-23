@@ -141,7 +141,7 @@ def move_to_obj(variables):
         # for when it still has object
         else:
             # do p controller for adjusting speed of wheels so it'd move as straight as possible
-            p_speed(variables, 2, 0.02)
+            p_speed(variables, 2, 0.015)
 
             # if bot has gotten to withing 20 cm of the object
             if variables["fmir"] < 0.20:
@@ -203,7 +203,7 @@ def plan(variables):
             variables["target_drive"] = variables["left_enc"] + degrees_to_target
 
             # and start moving forward
-            variables["left_speed"], variables["right_speed"] = 12, 12
+            variables["left_speed"], variables["right_speed"] = 10, 10
 
         # for when counter is above 4, meaning timegoal has been set and movement has been started
         elif variables["counter"] > 4:
