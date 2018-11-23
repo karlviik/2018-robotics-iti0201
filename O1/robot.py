@@ -204,6 +204,7 @@ def plan(variables):
 
             # and start moving forward
             variables["left_speed"], variables["right_speed"] = 10, 10
+            rospy.sleep(3)
 
         # for when counter is above 4, meaning timegoal has been set and movement has been started
         elif variables["counter"] > 4:
