@@ -307,7 +307,7 @@ def plan(variables):
             # for when it still has object
             else:
                 # do p controller for adjusting speed of wheels so it'd move as straight as possible
-                p_speed(variables, 2, 0.03)
+                p_speed(variables, 2, 0.05)
 
                 # if bot has gotten to withing 20 cm of the object
                 if variables["fmir"] < 0.20:
