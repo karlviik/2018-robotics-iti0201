@@ -307,7 +307,7 @@ def plan(variables):
             # for when it still has object
             else:
                 # do p controller for adjusting speed of wheels so it'd move as straight as possible
-                p_speed(variables, 2, 0.1)
+                p_speed(variables, 2, 0.03)
 
                 # if bot has gotten to withing 20 cm of the object
                 if variables["fmir"] < 0.20:
@@ -334,11 +334,11 @@ def plan(variables):
         # do p controlling based on what bot right now is doing (which way is turning)
         # if bot is turning left / counterclockwise
         if variables["are_you_zeroing"] == 1 or variables["are_you_zeroing"] == 3:
-            variables = p_speed(variables, 3, 0.08)
+            variables = p_speed(variables, 3, 0.02)
 
         # if bot is turning clockwise, do p controlling and also increment the counter
         elif variables["are_you_zeroing"] == 2:
-            variables = p_speed(variables, 1, 0.08)
+            variables = p_speed(variables, 1, 0.02)
             variables["zero_right_counter"] += 1
             pass
 
@@ -384,7 +384,7 @@ def plan(variables):
         # for when counter is above 4, meaning timegoal has been set and movement has been started
         elif variables["blind_cycle_counter"] > 4:
             # run the p-controller to kinda try to be at the 0.07 meters / second speed used in timegoal calculation
-            variables = p_speed(variables, 2, 0.07)
+            variables = p_speed(variables, 2, 0.03)
 
             # if bot has moved more than the timegoal said
             if variables["current_time"] > variables["timegoal"]:
