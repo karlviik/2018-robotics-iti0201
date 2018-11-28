@@ -176,7 +176,7 @@ def plan(variables):
             # if it has not detected an object and it's still scanning
             else:
                 # run the p controller function to adjust right and left wheel speeds
-                variables = p_speed(variables, 1, 0.05)
+                variables = p_speed(variables, 1, 0.02)
 
                 # if closest wall is further away than approximate distance from current fmirs
                 if variables["closest_wall"] > ((variables["fmir"] + variables["last_fmir"]) / 2):
