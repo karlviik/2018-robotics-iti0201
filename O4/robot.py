@@ -359,11 +359,12 @@ def plan(variables):
             if variables["goal"] < 0.07:
                 # stop robot
                 variables["left_speed"], variables["right_speed"] = 0, 0
+                act(variables)
 
-                # pick up object, 4 lines of code instead of 40!
+                # pick up object, 4 lines of code instead of 20!
                 robot.close_grabber(100)
-                rospy.sleep(2)
-                robot.set_grabber_height(0)
+                rospy.sleep(1)
+                robot.set_grabber_height(100)
                 rospy.sleep(3)
 
                 # TODO: do stuff to determine if line was behind. if so, turn around and move straight
