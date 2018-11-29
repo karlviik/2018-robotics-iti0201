@@ -120,6 +120,12 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     variables["right_speed"] = variables["right_speed"] + round(GAIN * r_error)
     variables["left_speed"] = variables["left_speed"] + round(GAIN * l_error)
 
+    # to avoid getting stuck in simulator
+    if variables["right_speed"] < 11:
+        variables["right_speed"] = 11
+    if variables["left_speed"] < 11:
+        variables["left_speed"] = 11
+
     # return dictionary with variable dictionary with new speeds
     return variables
 
