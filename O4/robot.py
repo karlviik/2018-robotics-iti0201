@@ -84,6 +84,10 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     :param target_speed: speed to aim for
     :return: dictionary with new left and right wheel speeds
     """
+    # just a check to not do anything if speed is 0 or last speed was 0
+    if (variables["right_speed"] == 0 and variables["left_speed"] == 0) or (variables["last_left_enc"] == variables["left_enc"] and variables["last_right_enc"] == variables["right_enc"]):
+        return variables
+
     # calculate distance the bot has traveled during the past cycle
     r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
     l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
@@ -134,7 +138,7 @@ def plan(variables):
 
             # restart universal counter and initial detection subphase flag
             variables["counter"] = 0
-            variables["init_detect"] = False
+            variables["flag"] = False
 
             # if scan phase is being restarted from beginning
             if variables["init2"]:
@@ -164,17 +168,16 @@ def plan(variables):
                 print("-----------------------------------------------------------------------------")
 
                 # if difference is more than 20cm (only detects going onto object for simplicity) and subphase is not active
-                if diff > 0.2 and not variables["init_detect"]:
-                    # continue scanning, but activate a subphase in this phase
-                    variables["init_detect"] = True
+                if diff > 0.2:
+                    # continue scanning, but activate a subphase in this phase. Reset counter just in case
+                    variables["flag"] = True
+                    variables["counter"] = 0  # in case the 20cm diff comes from error and true obj is right after
 
                     # save suspected object distance into a variable
                     variables["obj_distance"] = variables["fmir"]
 
                 # if subphase is active
-                elif variables["init_detect"]:
-                    # TODO: this counter method can mess up if the 20cm diff was from 2x noise and during the 4 measures
-                    # TODO: the real object gets into the range. Can happen rarely.
+                elif variables["flag"]:
                     # add 1 to counter
                     variables["counter"] += 1
 
@@ -182,22 +185,26 @@ def plan(variables):
                     if variables["counter"] >= 4:
                         # if object is still in the cone, within 7 cm
                         if abs(variables["fmir"] - variables["obj_distance"]) < 0.07:
-                            # TODO: check if it would be needed to input object verification in here
-                            # just in case save the lesser of the 2 into object distance
-                            variables["obj_distance"] = min([variables["fmir"], variables["obj_distance"]])
-
-                            # stop bot and start zeroing to object phase by trying to detect the edges
+                            # stop the robot
                             variables["left_speed"], variables["right_speed"] = 0, 0
-                            variables["phase"] = "zero_to_obj"
-                            variables["init1"], variables["init2"] = True, False
 
-                            # forceful exit to avoid p controller
-                            return variables
+                            # after it has done numerous checks and is sure it is object, continue
+                            if variables["counter"] >= 15:
+                                # just in case save the lesser of the 2 into object distance
+                                variables["obj_distance"] = min([variables["fmir"], variables["obj_distance"]])
+
+                                # start zeroing to object phase by trying to detect the edges
+                                variables["phase"] = "zero_to_obj"
+                                variables["init1"], variables["init2"] = True, False
 
                         # if it prolly is not an object, zero counter and cancel subphase
                         else:
                             variables["counter"] = 0
-                            variables["init_detect"] = False
+                            variables["flag"] = False
+
+                            # if bot was stopped, start again
+                            if variables["right_speed"] == 0:
+                                variables["left_speed"], variables["right_speed"] = 12, -12
 
                 # if no object has been detected and it's just scanning as normal
                 else:
