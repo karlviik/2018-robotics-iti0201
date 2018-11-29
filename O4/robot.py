@@ -85,7 +85,8 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     :return: dictionary with new left and right wheel speeds
     """
     # just a check to not do anything if speed is 0 or last speed was 0
-    if (variables["right_speed"] == 0 and variables["left_speed"] == 0) or (variables["last_left_enc"] == variables["left_enc"] and variables["last_right_enc"] == variables["right_enc"]):
+    if (variables["right_speed"] == 0 and variables["left_speed"] == 0) or variables["p_ignore"]:
+        variables["p_ignore"] = False
         return variables
 
     # calculate distance the bot has traveled during the past cycle
@@ -119,12 +120,6 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
     # calculate new right and left wheel speeds by adding rounded value of GAIN constant times wheel speed error
     variables["right_speed"] = variables["right_speed"] + round(GAIN * r_error)
     variables["left_speed"] = variables["left_speed"] + round(GAIN * l_error)
-
-    # to avoid getting stuck in simulator
-    if variables["right_speed"] < 11:
-        variables["right_speed"] = 11
-    if variables["left_speed"] < 11:
-        variables["left_speed"] = 11
 
     # return dictionary with variable dictionary with new speeds
     return variables
@@ -211,6 +206,7 @@ def plan(variables):
                             # if bot was stopped, start again
                             if variables["right_speed"] == 0:
                                 variables["left_speed"], variables["right_speed"] = 12, -12
+                                variables["p_ignore"] = True
 
                 # if no object has been detected and it's just scanning as normal
                 else:
