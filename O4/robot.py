@@ -279,6 +279,8 @@ def plan(variables):
     elif variables["phase"] == "blind_to_obj":
         pass
 
+    return variables
+
 
 
 
