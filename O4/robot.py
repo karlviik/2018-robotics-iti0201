@@ -313,6 +313,7 @@ def main():
     variables["init1"] = True  # used extensively for marking if plan phase is being run first time or not
     variables["init2"] = True  # used for marking if plan phase is being run from start or continues after interruption
     variables["flag"] = False  # may be used somewhere
+    variables["p_ignore"] = False  # used to get p controller not to control
 
     variables["scan_progress"] = 0 #don't need?
     variables["current_time"] = 0
