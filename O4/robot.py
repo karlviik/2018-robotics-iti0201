@@ -337,21 +337,40 @@ def plan(variables):
         # initialisation
         if variables["init1"]:
             variables["init1"] = False
+            # put grabber to position, no senseplanact because this is 3 lines of code instead of 30
             robot.close_grabber(0)
             robot.set_grabber_height(0)
-            rospy.sleep(3)
+            rospy.sleep(2)
+
+            # set goal as current distance from object (bad key name, but less keys in dict)
             variables["goal"] = variables["fmir"]
-            variables["left_speed"], variables["right_speed"] = 12, 12
+            # and start moving straight
+            variables["left_speed"], variables["right_speed"] = 13, 13
+
+        # if not initialisation
         else:
+            # do p controlling
             variables = p_speed(variables, 2, 0.03)
+
+            # substract moved distance during tick from the "goal" aka approximate distance from object
             variables["goal"] -= variables["distance"]
+
+            # if robot is approximately 7 cm away from object
             if variables["goal"] < 0.07:
-                variables["phase"] = "end"
+                # stop robot
                 variables["left_speed"], variables["right_speed"] = 0, 0
 
+                # pick up object, 4 lines of code instead of 40!
+                robot.close_grabber(100)
+                rospy.sleep(2)
+                robot.set_grabber_height(0)
+                rospy.sleep(3)
+
+                # TODO: do stuff to determine if line was behind. if so, turn around and move straight
+                # TODO: if no line, start phase where move straight until wall and do stuff
+                variables["phase"] = "end"
+
     return variables
-
-
 
 
 def act(variables):
