@@ -248,8 +248,11 @@ def plan(variables):
             # p control this, thanks
             variables = p_speed(variables, 1, 0.02)
 
+            print(variables["fmir"], variables["fmir_buffer"])
+
             # if it has exited the object, save the degrees and +1 counter to go to next subphase
             if variables["fmir"] - 0.1 > variables["obj_distance"]:
+                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH STARTING TO TURN LEFT NOW AAAAAAAAAH")
                 variables["r_edge"] = variables["rota_progress"]
                 variables["counter"] = 1
                 variables["left_speed"], variables["right_speed"] = -12, 12
@@ -259,6 +262,8 @@ def plan(variables):
             # p controller for counterclockwise turning
             variables = p_speed(variables, 3, 0.02)
 
+            print(variables["fmir"], variables["fmir_buffer"])
+
             # if flag is not true, turn it true if it has gone back to object from passing it.
             if not variables["flag"]:
                 if variables["fmir"] - 0.1 < variables["obj_distance"]:
@@ -267,6 +272,7 @@ def plan(variables):
             # if it has gone back to obj, start detecting for left edge
             # if has detected that it's off object again, save edge degrees and activate next subphase. Calculate goal
             elif variables["fmir"] - 0.1 > variables["obj_distance"]:
+                print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOH STARTING TO TORN BACK TO CENTER OOOOOOH")
                 variables["l_edge"] = variables["rota_progress"]
                 variables["counter"] = 2
                 variables["goal"] = (variables["l_edge"] + variables["r_edge"]) / 2
