@@ -212,7 +212,7 @@ def plan(variables):
                     # TODO: implement something to assist with roaming direction choosing
 
                 # do p controller for speed correction
-                variables = p_speed(variables, 1, 0.02)
+                variables = p_speed(variables, 1, 0.022)
 
     # zeroing to object at long-ish distance (like up to 80cm... Hopefully)
     elif variables["phase"] == "zero_to_obj":  # init2 false: next is move to obj. True: next is blind to obj
