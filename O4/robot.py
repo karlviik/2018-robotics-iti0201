@@ -123,7 +123,7 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
 def plan(variables):
     """Do all the mathsy planning."""
     # scanning phase
-    if variables["phase"] == "scannig":
+    if variables["phase"] == "scanning":
         # initialisation
         if variables["init1"]:
             # make so next time it isn't triggered
