@@ -138,9 +138,10 @@ def plan(variables):
             # start turning clockwise
             variables["left_speed"], variables["right_speed"] = 12, -12
 
-            # restart universal counter and initial detection subphase flag
+            # restart universal counter and initial detection subphase flag and closest wall
             variables["counter"] = 0
             variables["flag"] = False
+            variables["closest_wall"] = float("inf")
 
             # if scan phase is being restarted from beginning
             if variables["init2"]:
@@ -153,9 +154,20 @@ def plan(variables):
             variables["scan_progress"] += variables["turn_amount"]
 
             # if bot has turned multiplier amount of turns without detecting an object
-            if False:  # if variables["scan_progress"] > (360 * [MULTIPLIER]):
-                pass
-            # TODO: put jump to roaming phase here. Currently it turns infinitely. Need force return to avoid pcontrol
+            if variables["scan_progress"] > (360 * 1.5):
+                # stop bot
+                variables["left_speed"], variables["right_speed"] = 0, 0
+
+                # calculate how much it has to turn to be 120 degrees from closest wall
+                goal = variables["scan_progress"] - (variables["closest_wall_deg"] + 120)
+                if abs(goal) > 180:
+                    goal = goal % 360
+                variables["goal"] = goal
+
+                # mark next phase as turning and the phase after that as roam straight
+                variables["next_phase"] = "roam_straight"
+                variables["phase"] = "turn"
+                variables["init1"] = True
 
             # if scanning has not reached the limit
             else:
@@ -214,11 +226,51 @@ def plan(variables):
 
                 # if no object has been detected and it's just scanning as normal
                 else:
-                    pass
-                    # TODO: implement something to assist with roaming direction choosing
+                    # if closest wall is further away than approximate distance from current fmirs
+                    if variables["closest_wall"] > ((variables["fmir_buffer_avg"] + variables["fmir"] + variables["last_fmir"]) / 3):
+                        # save the new closest wall
+                        variables["closest_wall"] = ((variables["fmir_buffer_avg"] + variables["fmir"] + variables["last_fmir"]) / 3)
+
+                        # save the bot aiming direction in degrees into a variables used for roam direction selection
+                        variables["closest_wall_deg"] = variables["scan_progress"]
 
                 # do p controller for speed correction
                 variables = p_speed(variables, 1, 0.025)
+
+    # turns bot in desired direction desired amount. Wants "goal" and "init1" and "next_phase"
+    if variables["phase"] == "turn":
+        # initialisation
+        if variables["init1"]:
+            variables["init1"] = False
+            # zero the turn amount
+            variables["turn_progress"] = 0
+            # if goal is positive aka clockwise
+            if variables["goal"] > 0:
+                # set speeds as so and p controller key also as so
+                variables["p-key"] = 1
+                variables["left_speed"], variables["right_speed"] = 12, -12
+
+            # if goal is negative aka counterclockwise
+            if variables["goal"] < 0:
+                # set speeds and p controller as so
+                variables["p-key"] = 3
+                variables["left_speed"], variables["right_speed"] = -12, 12
+
+        # if not initialisation
+        else:
+            # do p controlling and update how much bot has turned
+            variables = p_speed(variables, variables["p-key"], 0.025)
+            variables["turn_progress"] += variables["turn_amount"]
+
+            # if has turned enough, stop bot and go to next phase
+            if abs(variables["goal"]) - abs(variables["turn_progress"]) < 0:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = variables["next_phase"]
+                variables["init1"], variables["init2"] = True, True
+
+    # TODO: this
+    elif variables["phase"] == "roam_straight":
+        pass
 
     # zeroing to object at long-ish distance (like up to 80cm... Hopefully)
     elif variables["phase"] == "zero_to_obj":  # init2 false: next is move to obj. True: next is blind to obj
@@ -311,6 +363,10 @@ def plan(variables):
 
         # if it's not initialisation
         else:
+            # if has been on line, save it into a flag
+            if variables["l3"] < 500 or variables["l2"] < 500 or variables["l1"] < 500 or variables["r1"] < 500 or variables["r2"] < 500 or variables["r3"] < 500:
+                variables["line"] = True
+
             # if current fmir is at least 10cm shorter than max allowed fmir
             if variables["max_distance"] > variables["fmir"] + 0.1:
                 # then put current fmir plus 10 cm as max distance
@@ -350,6 +406,10 @@ def plan(variables):
 
         # if not initialisation
         else:
+            # if has been on line, save it into a flag
+            if variables["l3"] < 500 or variables["l2"] < 500 or variables["l1"] < 500 or variables["r1"] < 500 or variables["r2"] < 500 or variables["r3"] < 500:
+                variables["line"] = True
+
             # do p controlling
             variables = p_speed(variables, 2, 0.03)
 
