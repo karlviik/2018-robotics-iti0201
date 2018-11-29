@@ -272,9 +272,9 @@ def plan(variables):
     elif variables["phase"] == "move_to_obj":
         if variables["init1"]:
             variables["init1"] = False
-            variables["left_speed"], variables["right_speed"] = 12, 12
+            variables["left_speed"], variables["right_speed"] = 16, 16
         else:
-            p_speed(variables, 2, 0.03)
+            p_speed(variables, 2, 0.06)
 
     elif variables["phase"] == "blind_to_obj":
         pass
