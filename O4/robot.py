@@ -189,7 +189,7 @@ def plan(variables):
                         print("fmir:         ", variables["fmir"])
                         print("obj distance: ", variables["obj_distance"])
                         print("their diff:   ", abs(variables["fmir"] - variables["obj_distance"]))
-                        if abs(variables["fmir"] - variables["obj_distance"]) < 0.1:
+                        if abs(variables["fmir"] - variables["obj_distance"]) < 0.15:
                             # stop the robot
                             variables["left_speed"], variables["right_speed"] = 0, 0
 
@@ -251,7 +251,7 @@ def plan(variables):
             print(variables["fmir"], variables["fmir_buffer"])
 
             # if it has exited the object, save the degrees and +1 counter to go to next subphase
-            if variables["fmir"] - 0.1 > variables["obj_distance"]:
+            if variables["fmir"] - 0.15 > variables["obj_distance"]:
                 print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH STARTING TO TURN LEFT NOW AAAAAAAAAH")
                 variables["r_edge"] = variables["rota_progress"]
                 variables["counter"] = 1
