@@ -298,6 +298,7 @@ def plan(variables):
     # TODO: add line detection in here
     elif variables["phase"] == "move_to_obj":
         # initialisation
+        print(variables["l3"], variables["l2"], variables["l1"], variables["r1"], variables["r2"], variables["r3"])
         if variables["init1"]:
             variables["init1"] = False
             variables["p_ignore"] = True
