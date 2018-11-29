@@ -187,7 +187,7 @@ def plan(variables):
                         # if object is still in the cone, within 7 cm
                         print("fmir:         ", variables["fmir"])
                         print("obj distance: ", variables["obj_distance"])
-                        print("their diff:   ", abs(variables["fmir"] - variables["obj_distance"])
+                        print("their diff:   ", abs(variables["fmir"] - variables["obj_distance"]))
                         if abs(variables["fmir"] - variables["obj_distance"]) < 0.07:
                             # stop the robot
                             variables["left_speed"], variables["right_speed"] = 0, 0
