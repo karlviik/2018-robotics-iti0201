@@ -6,6 +6,7 @@ GAIN = 50
 
 robot = PiBot()
 
+
 def fmir_buffer_init():
     """
     Fill fmir buffer with average value over 10 measurements. Only done once at the beginning.
@@ -69,6 +70,15 @@ def sense(variables):
     variables["last_time"] = variables["current_time"]  # put last time into respective dict key
     variables["current_time"] = rospy.get_time()  # get new time
 
+    # calculate distance the bot has traveled during the past cycle
+    r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
+    l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
+
+    # save to variables
+    variables["distance"] = (r_dist + l_dist) / 2
+    variables["r_distance"] = r_dist
+    variables["l_distance"] = l_dist
+
     # gets line sensors
     variables["l3"], variables["l2"], variables["l1"] = robot.get_leftmost_line_sensor(), robot.get_second_line_sensor_from_left(), robot.get_third_line_sensor_from_left()
     variables["r3"], variables["r2"], variables["r1"] = robot.get_rightmost_line_sensor(), robot.get_second_line_sensor_from_right(), robot.get_third_line_sensor_from_right()
@@ -89,21 +99,12 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
         variables["p_ignore"] = False
         return variables
 
-    # calculate distance the bot has traveled during the past cycle
-    r_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["right_enc"] - variables["last_right_enc"]) / 360)
-    l_dist = math.pi * robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["last_left_enc"]) / 360)
-
-    # not used currently
-    variables["distance"] = (r_dist + l_dist) / 2
-    variables["r_distance"] = r_dist
-    variables["l_distance"] = l_dist
-
     # time between this and last cycle
     time_diff = variables["current_time"] - variables["last_time"]
 
     # calculate wheel speeds based on v = s / t
-    r_speed = r_dist / time_diff
-    l_speed = l_dist / time_diff
+    r_speed = variables["r_distance"] / time_diff
+    l_speed = variables["l_distance"] / time_diff
 
     # get left wheel speed error
     if method == 1 or method == 2:  # clockwise turning or moving straight
@@ -221,13 +222,17 @@ def plan(variables):
 
     # zeroing to object at long-ish distance (like up to 80cm... Hopefully)
     elif variables["phase"] == "zero_to_obj":  # init2 false: next is move to obj. True: next is blind to obj
-        # initialisation
+        # initialisation, needs "obj_distance" from external or takes fmir if it's smaller
         if variables["init1"]:
             # cancel it
             variables["init1"] = False
 
             # put flag to false
             variables["flag"] = False
+
+            # takes obj distance as fmir if it's shorter
+            if variables["obj_distance"] > variables["fmir"]:
+                variables["obj_distance"] = variables["fmir"]
 
             # restart counter and start turning clockwise until obj is lost. Also zero rota progress. Force exit
             variables["counter"] = 0
@@ -283,15 +288,60 @@ def plan(variables):
                     variables["phase"] = "blind_to_obj"
                 variables["init1"], variables["init2"] = True, True
 
+    # move towards object until within 20cm
+    # TODO: add line detection in here
     elif variables["phase"] == "move_to_obj":
+        # initialisation
         if variables["init1"]:
             variables["init1"] = False
-            variables["left_speed"], variables["right_speed"] = 16, 16
-        else:
-            p_speed(variables, 2, 0.06)
+            variables["p_ignore"] = True
 
+            # get max_distance, used for cases where object is lost
+            variables["max_distance"] = variables["fmir"]
+
+            # start moving straight
+            variables["left_speed"], variables["right_speed"] = 16, 16
+
+        # if it's not initialisation
+        else:
+            # if current fmir is at least 10cm shorter than max allowed fmir
+            if variables["max_distance"] > variables["fmir"] + 0.1:
+                # then put current fmir plus 10 cm as max distance
+                variables["max_distance"] = variables["fmir"] + 0.1
+
+            # if object has been lost, start scanning again
+            if variables["max_distance"] < variables["fmir"]:
+                variables["init1"], variables["init2"] = True, True
+                variables["phase"] = "scanning"
+                variables["left_speed"], variables["right_speed"] = 0, 0
+
+            # if it still has the object
+            else:
+                # if bot is within 20cm of the object, stop bot and start zeroing
+                if variables["fmir"] < 0.20:
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+                    variables["phase"] = "zero_to_obj"
+                    variables["init1"], variables["init2"] = True, True
+
+        # do p controlling
+        variables = p_speed(variables, 2, 0.06)
+
+    # blindly move towards object to a certain distance
     elif variables["phase"] == "blind_to_obj":
-        pass
+        # initialisation
+        if variables["init1"]:
+            variables["init1"] = False
+            robot.close_grabber(0)
+            robot.set_grabber_height(0)
+            rospy.sleep(3)
+            variables["goal"] = variables["fmir"]
+            variables["left_speed"], variables["right_speed"] = 12, 12
+        else:
+            variables = p_speed(variables, 2, 0.03)
+            variables["goal"] -= variables["distance"]
+            if variables["goal"] < 0.07:
+                variables["phase"] = "end"
+                variables["left_speed"], variables["right_speed"] = 0, 0
 
     return variables
 
