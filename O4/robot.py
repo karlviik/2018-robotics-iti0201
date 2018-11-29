@@ -268,9 +268,30 @@ def plan(variables):
                 variables["phase"] = variables["next_phase"]
                 variables["init1"], variables["init2"] = True, True
 
-    # TODO: this
+    # moves straight until wall or distance and starts scanning again
     elif variables["phase"] == "roam_straight":
-        pass
+        # initialisation
+        if variables["init1"]:
+            variables["init1"] = False
+
+            # reset how much it has to move straight and give it speeds to move straight
+            variables["goal"] = 1.25
+            variables["left_speed"], variables["right_speed"] = 15, 15
+
+        # if not initialisation
+        else:
+            # p controller
+            variables = p_speed(variables, 2, 0.04)
+
+            # substract traveled distance from goal
+            variables["goal"] -= variables["distance"]
+
+            # if goal has been reached or wall or some object is within 60 cm
+            if variables["goal"] < 0 or (variables["fmir"] < 0.6 and variables["last_fmir"] < 0.6):
+                # stop bot and start scanning
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "scanning"
+                variables["init1"], variables["init2"] = True, True
 
     # zeroing to object at long-ish distance (like up to 80cm... Hopefully)
     elif variables["phase"] == "zero_to_obj":  # init2 false: next is move to obj. True: next is blind to obj
