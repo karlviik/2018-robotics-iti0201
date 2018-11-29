@@ -303,7 +303,7 @@ def plan(variables):
             variables["p_ignore"] = True
 
             # get max_distance, used for cases where object is lost
-            variables["max_distance"] = variables["fmir"]
+            variables["max_distance"] = variables["fmir"] + 0.1
 
             # start moving straight
             variables["left_speed"], variables["right_speed"] = 16, 16
