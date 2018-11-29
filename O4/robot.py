@@ -266,12 +266,12 @@ def plan(variables):
 
             # if flag is not true, turn it true if it has gone back to object from passing it.
             if not variables["flag"]:
-                if variables["fmir"] - 0.1 < variables["obj_distance"]:
+                if variables["fmir"] - 0.15 < variables["obj_distance"]:
                     variables["flag"] = True
 
             # if it has gone back to obj, start detecting for left edge
             # if has detected that it's off object again, save edge degrees and activate next subphase. Calculate goal
-            elif variables["fmir"] - 0.1 > variables["obj_distance"]:
+            elif variables["fmir"] - 0.15 > variables["obj_distance"]:
                 print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOH STARTING TO TORN BACK TO CENTER OOOOOOH")
                 variables["l_edge"] = variables["rota_progress"]
                 variables["counter"] = 2
