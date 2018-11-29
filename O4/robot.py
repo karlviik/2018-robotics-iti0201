@@ -164,7 +164,7 @@ def plan(variables):
             print("------------------------------------------------------")
 
             # if diff is more than 20cm, then it most likely has detected an object
-            if abs(diff) > 0.20:
+            if abs(diff) > 2.20:
                 # stops turning and scanning and changes phase to "verify obj"
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["scan_progress"] = 0
