@@ -173,6 +173,8 @@ def plan(variables):
 
                 # if subphase is active
                 elif variables["init_detect"]:
+                    # TODO: this counter method can mess up if the 20cm diff was from 2x noise and during the 4 measures
+                    # TODO: the real object gets into the range. Can happen rarely.
                     # add 1 to counter
                     variables["counter"] += 1
 
