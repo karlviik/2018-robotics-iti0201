@@ -230,7 +230,7 @@ def plan(variables):
             variables = p_speed(variables, 1, 0.02)
 
             # if it has exited the object, save the degrees and +1 counter to go to next subphase
-            if variables["fmir"] + 0.1 > variables["obj_distance"]:
+            if variables["fmir"] - 0.1 > variables["obj_distance"]:
                 variables["r_edge"] = variables["rota_progress"]
                 variables["counter"] = 1
                 variables["left_speed"], variables["right_speed"] = -12, 12
@@ -242,12 +242,12 @@ def plan(variables):
 
             # if flag is not true, turn it true if it has gone back to object from passing it.
             if not variables["flag"]:
-                if variables["fmir"] + 0.1 < variables["obj_distance"]:
+                if variables["fmir"] - 0.1 < variables["obj_distance"]:
                     variables["flag"] = True
 
             # if it has gone back to obj, start detecting for left edge
             # if has detected that it's off object again, save edge degrees and activate next subphase. Calculate goal
-            elif variables["fmir"] + 0.1 > variables["obj_distance"]:
+            elif variables["fmir"] - 0.1 > variables["obj_distance"]:
                 variables["l_edge"] = variables["rota_progress"]
                 variables["counter"] = 2
                 variables["goal"] = (variables["l_edge"] + variables["r_edge"]) / 2
