@@ -64,7 +64,6 @@ def sense(variables):
     # calculate how much robot has turned during the tick in degrees, clockwise
     variables["turn_amount"] = robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["right_enc"]) - (variables["last_left_enc"] - variables["last_right_enc"])) / (2 * robot.AXIS_LENGTH)
 
-
     variables = fmir_buffering(variables)  # updates "fmir", "last_fmir", "fmir_buffer_avg" and "fmir_buffer" dict keys
 
     variables["last_time"] = variables["current_time"]  # put last time into respective dict key
