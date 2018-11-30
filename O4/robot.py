@@ -80,8 +80,8 @@ def sense(variables):
     variables["l_distance"] = l_dist
 
     # gets line sensors
-    variables["l3"], variables["l2"], variables["l1"] = robot.get_leftmost_line_sensor(), robot.get_second_line_sensor_from_left(), robot.get_third_line_sensor_from_left()
-    variables["r3"], variables["r2"], variables["r1"] = robot.get_rightmost_line_sensor(), robot.get_second_line_sensor_from_right(), robot.get_third_line_sensor_from_right()
+    variables["l1"], variables["l2"], variables["l3"] = robot.get_leftmost_line_sensor(), robot.get_second_line_sensor_from_left(), robot.get_third_line_sensor_from_left()
+    variables["r1"], variables["r2"], variables["r3"] = robot.get_rightmost_line_sensor(), robot.get_second_line_sensor_from_right(), robot.get_third_line_sensor_from_right()
     return variables
 
 
@@ -667,7 +667,6 @@ def plan(variables):
         else:
             variables["counter"] += 1
             variables["left_speed"], variables["right_speed"] = -17, -17
-            variables["p-key"] = 2
             variables["lspeed"], variables["rspeed"] = -0.08, -0.08
             if variables["l3"] < 500 and variables["r3"] < 500:
                 pass
@@ -676,22 +675,18 @@ def plan(variables):
                 if variables["l2"] < 500 or variables["l1"] < 500:
                     variables["left_speed"], variables["right_speed"] = 17, -17
                     variables["lspeed"], variables["rspeed"] = 0.08, -0.08
-                    variables["p-key"] = 2
                     variables["lastside"] = 0
                 elif variables["r2"] < 500 or variables["r1"] < 500:
                     variables["left_speed"], variables["right_speed"] = -17, 17
                     variables["lspeed"], variables["rspeed"] = -0.08, 0.08
-                    variables["p-key"] = 2
                     variables["lastside"] = 1
                 else:
                     if variables["lastside"]:
                         variables["left_speed"], variables["right_speed"] = -17, 17
                         variables["lspeed"], variables["rspeed"] = -0.08, 0.08
-                        variables["p-key"] = 2
                     else:
                         variables["left_speed"], variables["right_speed"] = 17, -17
                         variables["lspeed"], variables["rspeed"] = 0.08, -0.08
-                        variables["p-key"] = 2
             elif variables["l3"] > 500:
                 variables["left_speed"] = -14
                 variables["lspeed"] = -0.05
@@ -713,7 +708,7 @@ def plan(variables):
                     else:
                         variables["goal"] = -80
 
-            variables = p_speed(variables, variables["p-key"], variables["lspeed"], variables["rspeed"])
+            variables = p_speed(variables, 2, variables["lspeed"], variables["rspeed"])
 
     # place it downnnnn
     elif variables["phase"] == "place_obj_down":
