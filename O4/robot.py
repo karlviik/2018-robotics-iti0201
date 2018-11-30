@@ -533,7 +533,7 @@ def plan(variables):
                 variables["left_speed"], variables["right_speed"] = 0, 0
 
                 # calculate how much it has to turn to be 80 degrees from closest wall
-                goal = variables["scan_progress"] - (variables["closest_wall_deg"] + 80)
+                goal = (variables["closest_wall_deg"] + 80) % 360
                 if abs(goal) > 180:
                     goal = goal % 360
                 variables["goal"] = goal
