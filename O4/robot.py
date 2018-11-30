@@ -658,30 +658,43 @@ def plan(variables):
             variables["counter"] = 0
             variables["lastside"] = 1
             variables["turn_progress"] = 0
-         # if not initialisation
+
+        # if not initialisation
         else:
             variables["counter"] += 1
             variables["left_speed"], variables["right_speed"] = -17, -17
+            variables["p-key"] = 2
+            variables["lspeed"], variables["rspeed"] = -0.08, -0.08
             if variables["l3"] < 500 and variables["r3"] < 500:
                 pass
             elif variables["l3"] > 500 and variables["r3"] > 500:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 if variables["l2"] < 500 or variables["l1"] < 500:
                     variables["left_speed"], variables["right_speed"] = 17, -17
+                    variables["lspeed"], variables["rspeed"] = 0.08, -0.08
+                    variables["p-key"] = 1
                     variables["lastside"] = 0
                 elif variables["r2"] < 500 or variables["r1"] < 500:
                     variables["left_speed"], variables["right_speed"] = -17, 17
+                    variables["lspeed"], variables["rspeed"] = -0.08, 0.08
+                    variables["p-key"] = 3
                     variables["lastside"] = 1
                 else:
                     if variables["lastside"]:
                         variables["left_speed"], variables["right_speed"] = -17, 17
+                        variables["lspeed"], variables["rspeed"] = -0.08, 0.08
+                        variables["p-key"] = 3
                     else:
                         variables["left_speed"], variables["right_speed"] = 17, -17
+                        variables["lspeed"], variables["rspeed"] = 0.08, -0.08
+                        variables["p-key"] = 1
             elif variables["l3"] > 500:
                 variables["left_speed"] = -14
+                variables["lspeed"] = -0.05
                 variables["lastside"] = 1
             elif variables["r3"] > 500:
                 variables["right_speed"] = -14
+                variables["rspeed"] = -0.05
                 variables["lastside"] = 0
 
             if variables["counter"] > 300:
@@ -696,6 +709,7 @@ def plan(variables):
                     else:
                         variables["goal"] = -80
 
+    # place it downnnnn
     elif variables["phase"] == "place_obj_down":
         robot.set_grabber_height(0)
         rospy.sleep(3)
