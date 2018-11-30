@@ -604,8 +604,8 @@ def plan(variables):
                     variables["counter"] += 1
 
                     # if counter has reached that and still is that case, then can start sweeping
-                    if variables["counter"] >= 10:
-                        if variables["fmir"] < variables["last_fmir"] < variables["wall_distance"]:
+                    if variables["counter"] >= 5:
+                        if variables["fmir"] <= variables["last_fmir"] <= variables["wall_distance"]:
                             variables["left_speed"], variables["right_speed"] = 0, 0
                             variables["init1"], variables["init2"] = True, True
                             variables["phase"] = "turn"
