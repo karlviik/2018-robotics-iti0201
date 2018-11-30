@@ -661,27 +661,27 @@ def plan(variables):
          # if not initialisation
         else:
             variables["counter"] += 1
-            variables["left_speed"], variables["right_speed"] = 20, 20
+            variables["left_speed"], variables["right_speed"] = -17, -17
             if variables["l3"] < 500 and variables["r3"] < 500:
                 pass
             elif variables["l3"] > 500 and variables["r3"] > 500:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 if variables["l2"] < 500 or variables["l1"] < 500:
-                    variables["left_speed"], variables["right_speed"] = 20, -20
+                    variables["left_speed"], variables["right_speed"] = 17, -17
                     variables["lastside"] = 0
                 elif variables["r2"] < 500 or variables["r1"] < 500:
-                    variables["left_speed"], variables["right_speed"] = -20, 20
+                    variables["left_speed"], variables["right_speed"] = -17, 17
                     variables["lastside"] = 1
                 else:
                     if variables["lastside"]:
-                        variables["left_speed"], variables["right_speed"] = -20, 20
+                        variables["left_speed"], variables["right_speed"] = -17, 17
                     else:
-                        variables["left_speed"], variables["right_speed"] = 20, -20
+                        variables["left_speed"], variables["right_speed"] = 17, -17
             elif variables["l3"] > 500:
-                variables["left_speed"] = 16
+                variables["left_speed"] = 14
                 variables["lastside"] = 1
             elif variables["r3"] > 500:
-                variables["right_speed"] = 16
+                variables["right_speed"] = 14
                 variables["lastside"] = 0
 
             if variables["counter"] > 300:
