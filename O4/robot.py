@@ -497,12 +497,9 @@ def plan(variables):
                 # if counter has reached that and still is that case, then can start sweeping
                 if variables["counter"] >= 10:
                     if variables["fmir"] < variables["last_fmir"] < variables["wall_distance"]:
-                        variables["goal"] = 80
                         variables["left_speed"], variables["right_speed"] = 0, 0
                         variables["init1"], variables["init2"] = True, True
-                        variables["phase"] = "turn"
-                        variables["next_phase"] = "sweep"
-                        variables["init3"] = True
+                        variables["phase"] = "zero_to_wall"
 
                     # if that is not the case, turn flag to false
                     else:
@@ -545,6 +542,7 @@ def plan(variables):
                 variables["next_phase"] = "sweep"
                 variables["phase"] = "turn"
                 variables["init1"] = True
+                variables["init3"] = True
 
             # if scanning has not reached the limit
             else:
