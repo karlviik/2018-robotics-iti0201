@@ -60,7 +60,7 @@ while True:
     speed(30)
     while linel3() < 300 and liner3() < 300:
         rospy.sleep(0.025)
-    if linel3() > 700 and liner3() > 700:  # prolly better to use whiles instead of ifs to not do useless tasks but tried it and sometimes it spun wrong
+    if linel3() > 700 and liner3() > 700:
         speed(0)
         if linel2() < 300 or linel1() < 300:
             turn(-30)
@@ -73,7 +73,7 @@ while True:
                 turn(30)
             else:
                 turn(-30)
-    elif linel3() > 700:  # these can't really use while loops anyways
+    elif linel3() > 700:
         speedr(23)
         lastside = 1
     elif liner3() > 700:

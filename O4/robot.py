@@ -526,7 +526,7 @@ def plan(variables):
         else:
             # add turn amount in degrees to scan progress
             variables["scan_progress"] += variables["turn_amount"]
-            print(variables["closest_wall"])
+            print(variables["scan_progress"], variables["closest_wall"], variables["closest_wall_deg"])
             # if bot has turned multiplier amount of turns
             if variables["scan_progress"] > (360 * 1):
                 # stop bot
@@ -537,6 +537,7 @@ def plan(variables):
                 if abs(goal) > 180:
                     goal = goal % 360
                 variables["goal"] = goal
+                print(variables["goal"])
 
                 # mark next phase as sweep
                 variables["next_phase"] = "sweep"
