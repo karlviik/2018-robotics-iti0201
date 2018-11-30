@@ -203,19 +203,19 @@ def check_object(variables):
             elif variables["third_object_second_encoder"] < variables["left_enc"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["has_checked"] = 1
-        elif variables["left_enc"] < variables["first_object_first_encoder"] and variables["object_count"] == 1:
+        elif variables["object_count"] == 1 and variables["left_enc"] < variables["first_object_first_encoder"]:
             variables["left_speed"], variables["right_speed"] = 0, 0
             variables["has_checked"] = 0
             variables["init"] = True
             variables["object_count"] = 0
             variables["on_object"] = 0
-        elif variables["left_enc"] < variables["second_object_first_encoder"] and variables["object_count"] == 2:
+        elif variables["object_count"] == 2 and variables["left_enc"] < variables["second_object_first_encoder"]:
             variables["left_speed"], variables["right_speed"] = 0, 0
             variables["has_checked"] = 0
             variables["init"] = True
             variables["object_count"] = 1
             variables["on_object"] = 0
-        elif variables["left_enc"] < variables["third_object_first_encoder"] and variables["object_count"] == 3:
+        elif variables["object_count"] == 3 and variables["left_enc"] < variables["third_object_first_encoder"]:
             variables["left_speed"], variables["right_speed"] = 0, 0
             variables["has_checked"] = 0
             variables["init"] = True
