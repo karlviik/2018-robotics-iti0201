@@ -649,8 +649,60 @@ def plan(variables):
                     # make long true as next one will be long
                     variables["long"] = True
 
+    # if following line
     elif variables["phase"] == "line_follow":
-        pass
+        # initialisation
+        if variables["init1"]:
+            variables["init1"] = False
+            variables["flag"] = False
+            variables["counter"] = 0
+            variables["lastside"] = 1
+            variables["turn_progress"] = 0
+         # if not initialisation
+        else:
+            variables["counter"] += 1
+            variables["left_speed"], variables["right_speed"] = 20, 20
+            if variables["l3"] < 500 and variables["r3"] < 500:
+                pass
+            elif variables["l3"] > 500 and variables["r3"] > 500:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                if variables["l2"] < 500 or variables["l1"] < 500:
+                    variables["left_speed"], variables["right_speed"] = 20, -20
+                    variables["lastside"] = 0
+                elif variables["r2"] < 500 or variables["r1"] < 500:
+                    variables["left_speed"], variables["right_speed"] = -20, 20
+                    variables["lastside"] = 1
+                else:
+                    if variables["lastside"]:
+                        variables["left_speed"], variables["right_speed"] = -20, 20
+                    else:
+                        variables["left_speed"], variables["right_speed"] = 20, -20
+            elif variables["l3"] > 500:
+                variables["left_speed"] = 16
+                variables["lastside"] = 1
+            elif variables["r3"] > 500:
+                variables["right_speed"] = 16
+                variables["lastside"] = 0
+
+            if variables["counter"] > 300:
+                variables["turn_progress"] += variables["turn_amount"]
+                if variables["counter"] > 500:
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+                    variables["phase"] = "turn"
+                    variables["next_phase"] = "place_obj_down"
+                    if variables["turn_progress"] > 0:
+                        variables["goal"] = 80
+                    else:
+                        variables["goal"] = -80
+
+    elif variables["phase"] == "place_obj_down":
+        robot.set_grabber_height(0)
+        rospy.sleep(3)
+        robot.close_grabber(0)
+        rospy.sleep(2)
+        robot.set_grabber_height(100)
+        rospy.sleep(3)
+        variables["phase"] = ""
 
     return variables
 

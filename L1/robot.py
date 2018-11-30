@@ -15,42 +15,22 @@ liner3 = robot.get_third_line_sensor_from_left
 
 
 def speed(perc):
-    """
-    Set wheel speeds, but treats backwards as forwards and vice versa. Mostly for shorter typing.
-
-    :param perc: percentage
-    :return: nada
-    """
+    """Set wheel speeds, but treats backwards as forwards and vice versa. Mostly for shorter typing."""
     robot.set_wheels_speed(-perc)
 
 
 def speedl(perc):
-    """
-    Set right wheel speed as negative of perc(entage) because treating back as front.
-
-    :param perc: percentage
-    :return: nada
-    """
+    """Set right wheel speed as negative of perc(entage) because treating back as front."""
     robot.set_right_wheel_speed(-perc)
 
 
 def speedr(perc):
-    """
-    Set left wheel speed as negative or perc(entage) because treating back as front.
-
-    :param perc: percentage
-    :return: nada
-    """
+    """Set left wheel speed as negative or perc(entage) because treating back as front."""
     robot.set_left_wheel_speed(-perc)
 
 
 def turn(perc):  # negative speed turns left, positive right
-    """
-    Make the robot turn in a stationary position. Positive input turns right and negative left when treating front as back.
-
-    :param perc: percentage
-    :return: nada
-    """
+    """Make the robot turn in a stationary position. Positive input turns right and negative left when treating front as back."""
     speedr(-perc)
     speedl(perc)
 
