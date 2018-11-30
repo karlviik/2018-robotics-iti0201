@@ -737,26 +737,13 @@ def main():
     variables["left_enc"] = robot.get_left_wheel_encoder()
     variables["right_enc"] = robot.get_right_wheel_encoder()
     variables["last_fmir"], variables["fmir_buffer"], variables["fmir"] = fmir_buffer_init()
-    variables["phase"] = "line_follow" # "scanning"
+    variables["phase"] = "scanning"
     variables["init1"] = True  # used extensively for marking if plan phase is being run first time or not
     variables["init2"] = True  # used for marking if plan phase is being run from start or continues after interruption
     variables["flag"] = False  # may be used somewhere
     variables["p_ignore"] = False  # used to get p controller not to control
     variables["line"] = False
-
-    variables["scan_progress"] = 0 #don't need?
     variables["current_time"] = 0
-    variables["last_time"] = 0
-    variables["move_to_obj_counter"] = 0
-    variables["blind_cycle_counter"] = 0
-    variables["obj_verify_counter"] = 0
-    variables["max_fmir"] = float("inf")
-    variables["scan_measure_start"] = ""
-    variables["verify_multicheck"] = 0
-    variables["closest_wall"] = float("inf")
-    variables["closest_wall_encoder_diff"] = 0  # don't have to initialise this here, but doing it anyways
-    variables["are_you_zeroing"] = 0
-    variables["closest_obj_reading"] = float("inf")
 
     while True:
         variables = sense(variables)
