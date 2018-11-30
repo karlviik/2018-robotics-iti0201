@@ -678,10 +678,10 @@ def plan(variables):
                     else:
                         variables["left_speed"], variables["right_speed"] = 17, -17
             elif variables["l3"] > 500:
-                variables["left_speed"] = 14
+                variables["left_speed"] = -14
                 variables["lastside"] = 1
             elif variables["r3"] > 500:
-                variables["right_speed"] = 14
+                variables["right_speed"] = -14
                 variables["lastside"] = 0
 
             if variables["counter"] > 300:
@@ -690,6 +690,7 @@ def plan(variables):
                     variables["left_speed"], variables["right_speed"] = 0, 0
                     variables["phase"] = "turn"
                     variables["next_phase"] = "place_obj_down"
+                    variables["init1"] = True
                     if variables["turn_progress"] > 0:
                         variables["goal"] = 80
                     else:
