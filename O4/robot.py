@@ -85,7 +85,7 @@ def sense(variables):
     return variables
 
 
-def p_speed(variables, method, target_speed):  # target speed should be in meters/second. "distance", "r/l_distance"
+def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target speed should be in meters/second. "distance", "r/l_distance"
     """
     Control left and right wheel speed with P control method.
 
@@ -99,6 +99,10 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
         variables["p_ignore"] = False
         return variables
 
+    # if no r target speed was given, then prolly not needed and make them equal
+    if r_target_speed is None:
+        r_target_speed = l_target_speed
+
     # time between this and last cycle
     time_diff = variables["current_time"] - variables["last_time"]
 
@@ -108,15 +112,15 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
 
     # get left wheel speed error
     if method == 1 or method == 2:  # clockwise turning or moving straight
-        l_error = target_speed - l_speed
+        l_error = l_target_speed - l_speed
     elif method == 3:  # counterclockwise turning
-        l_error = - target_speed - l_speed
+        l_error = - l_target_speed - l_speed
 
     # get right wheel speed error, two separate versions because right wheel turns backwards during turning
     if method == 1:  # clockwise turning
-        r_error = - target_speed - r_speed
+        r_error = - r_target_speed - r_speed
     elif method == 2 or method == 3:   # moving straight or counterclockwise turning
-        r_error = target_speed - r_speed
+        r_error = r_target_speed - r_speed
 
     # calculate new right and left wheel speeds by adding rounded value of GAIN constant times wheel speed error
     variables["right_speed"] = variables["right_speed"] + round(GAIN * r_error)
@@ -708,6 +712,8 @@ def plan(variables):
                         variables["goal"] = 80
                     else:
                         variables["goal"] = -80
+
+            variables = p_speed(variables, variables["p-key"], variables["lspeed"], variables["rspeed"])
 
     # place it downnnnn
     elif variables["phase"] == "place_obj_down":
