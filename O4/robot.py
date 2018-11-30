@@ -736,7 +736,7 @@ def main():
     variables["left_enc"] = robot.get_left_wheel_encoder()
     variables["right_enc"] = robot.get_right_wheel_encoder()
     variables["last_fmir"], variables["fmir_buffer"], variables["fmir"] = fmir_buffer_init()
-    variables["phase"] = "scanning"
+    variables["phase"] = "line_follow" # "scanning"
     variables["init1"] = True  # used extensively for marking if plan phase is being run first time or not
     variables["init2"] = True  # used for marking if plan phase is being run from start or continues after interruption
     variables["flag"] = False  # may be used somewhere
