@@ -676,22 +676,22 @@ def plan(variables):
                 if variables["l2"] < 500 or variables["l1"] < 500:
                     variables["left_speed"], variables["right_speed"] = 17, -17
                     variables["lspeed"], variables["rspeed"] = 0.08, -0.08
-                    variables["p-key"] = 1
+                    variables["p-key"] = 2
                     variables["lastside"] = 0
                 elif variables["r2"] < 500 or variables["r1"] < 500:
                     variables["left_speed"], variables["right_speed"] = -17, 17
                     variables["lspeed"], variables["rspeed"] = -0.08, 0.08
-                    variables["p-key"] = 3
+                    variables["p-key"] = 2
                     variables["lastside"] = 1
                 else:
                     if variables["lastside"]:
                         variables["left_speed"], variables["right_speed"] = -17, 17
                         variables["lspeed"], variables["rspeed"] = -0.08, 0.08
-                        variables["p-key"] = 3
+                        variables["p-key"] = 2
                     else:
                         variables["left_speed"], variables["right_speed"] = 17, -17
                         variables["lspeed"], variables["rspeed"] = 0.08, -0.08
-                        variables["p-key"] = 1
+                        variables["p-key"] = 2
             elif variables["l3"] > 500:
                 variables["left_speed"] = -14
                 variables["lspeed"] = -0.05
