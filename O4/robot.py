@@ -483,7 +483,7 @@ def plan(variables):
             variables = p_speed(variables, 2, 0.07)
 
             # if last fmir is closer than 40 cm and fmir is closer
-            if variables["fmir"] <= variables["last_fmir"] < 0.4:
+            if variables["fmir"] <= variables["last_fmir"] < 0.4 and not variables["flag"]:
                 # turn flag to true and start counter
                 variables["flag"] = True
                 variables["counter"] = 1
