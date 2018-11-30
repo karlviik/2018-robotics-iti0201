@@ -497,7 +497,7 @@ def plan(variables):
                 # if counter has reached that and still is that case, then can start sweeping
                 if variables["counter"] >= 10:
                     if variables["fmir"] < variables["last_fmir"] < variables["wall_distance"]:
-                        variables["goal"] = 90
+                        variables["goal"] = 80
                         variables["left_speed"], variables["right_speed"] = 0, 0
                         variables["init1"], variables["init2"] = True, True
                         variables["phase"] = "turn"
@@ -507,6 +507,57 @@ def plan(variables):
                     # if that is not the case, turn flag to false
                     else:
                         variables["flag"] = False
+
+    # zero to wall?
+    elif variables["phase"] == "zero_to_wall":
+        # initialisation
+        if variables["init1"]:
+            # make so next time it isn't triggered
+            variables["init1"] = False
+
+            # start turning clockwise
+            variables["left_speed"], variables["right_speed"] = 12, -12
+
+            # restart universal counter and initial detection subphase flag and closest wall
+            variables["counter"] = 0
+            variables["closest_wall"] = float("inf")
+
+            # restart scan progress to 0
+            variables["scan_progress"] = 0
+
+        # if it's not initialisation
+        else:
+            # add turn amount in degrees to scan progress
+            variables["scan_progress"] += variables["turn_amount"]
+
+            # if bot has turned multiplier amount of turns
+            if variables["scan_progress"] > (360 * 1):
+                # stop bot
+                variables["left_speed"], variables["right_speed"] = 0, 0
+
+                # calculate how much it has to turn to be 80 degrees from closest wall
+                goal = variables["scan_progress"] - (variables["closest_wall_deg"] + 80)
+                if abs(goal) > 180:
+                    goal = goal % 360
+                variables["goal"] = goal
+
+                # mark next phase as sweep
+                variables["next_phase"] = "sweep"
+                variables["phase"] = "turn"
+                variables["init1"] = True
+
+            # if scanning has not reached the limit
+            else:
+                # if closest wall is further away than approximate distance from current fmirs
+                if variables["closest_wall"] > ((variables["fmir_buffer_avg"] + variables["fmir"] + variables["last_fmir"]) / 3):
+                    # save the new closest wall
+                    variables["closest_wall"] = ((variables["fmir_buffer_avg"] + variables["fmir"] + variables["last_fmir"]) / 3)
+
+                    # save the bot aiming direction in degrees into a variables used for roam direction selection
+                    variables["closest_wall_deg"] = variables["scan_progress"]
+
+                # do p controller for speed correction
+                variables = p_speed(variables, 1, 0.025)
 
     # if is sweeping time
     elif variables["phase"] == "sweep":
@@ -537,12 +588,12 @@ def plan(variables):
                 return variables
 
             # do some p controlling
-            variables = p_speed(variables, 2, 0.07)
+            variables = p_speed(variables, 2, 0.09)
 
             # if it's doing the long sweep
             if variables["long"]:
                 # if last fmir is closer than 40 cm and fmir is closer
-                if variables["fmir"] <= variables["last_fmir"] < 0.4:
+                if variables["fmir"] <= variables["last_fmir"] < 0.4 and not variables["flag"]:
                     # turn flag to true and start counter
                     variables["flag"] = True
                     variables["counter"] = 1
@@ -563,9 +614,9 @@ def plan(variables):
 
                             # if next turn is right
                             if variables["right"]:
-                                variables["goal"] = 90
+                                variables["goal"] = 80
                             else:
-                                variables["goal"] = -90
+                                variables["goal"] = -80
 
                             # make long false as next one will be short movement straight
                             variables["long"] = False
@@ -590,10 +641,10 @@ def plan(variables):
 
                     # if next turn is right
                     if variables["right"]:
-                        variables["goal"] = 90
+                        variables["goal"] = 80
                         variables["right"] = False
                     else:
-                        variables["goal"] = -90
+                        variables["goal"] = -80
                         variables["right"] = True
 
                     # make long true as next one will be long
