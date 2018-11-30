@@ -704,9 +704,9 @@ def plan(variables):
                     variables["next_phase"] = "place_obj_down"
                     variables["init1"] = True
                     if variables["turn_progress"] > 0:
-                        variables["goal"] = 80
-                    else:
                         variables["goal"] = -80
+                    else:
+                        variables["goal"] = 80
 
             variables = p_speed(variables, 2, variables["lspeed"], variables["rspeed"])
 
