@@ -238,7 +238,7 @@ def plan(variables):
                 variables = p_speed(variables, 1, 0.025)
 
     # turns bot in desired direction desired amount. Wants "goal" and "init1" and "next_phase"
-    if variables["phase"] == "turn":
+    elif variables["phase"] == "turn":
         # initialisation
         if variables["init1"]:
             variables["init1"] = False
@@ -281,7 +281,7 @@ def plan(variables):
         # if not initialisation
         else:
             # p controller
-            variables = p_speed(variables, 2, 0.04)
+            variables = p_speed(variables, 2, 0.07)
 
             # substract traveled distance from goal
             variables["goal"] -= variables["distance"]
@@ -368,7 +368,6 @@ def plan(variables):
                 variables["init1"], variables["init2"] = True, True
 
     # move towards object until within 20cm
-    # TODO: add line detection in here
     elif variables["phase"] == "move_to_obj":
         # initialisation
         print(variables["l3"], variables["l2"], variables["l1"], variables["r1"], variables["r2"], variables["r3"])
@@ -449,9 +448,159 @@ def plan(variables):
                 robot.set_grabber_height(100)
                 rospy.sleep(3)
 
-                # TODO: do stuff to determine if line was behind. if so, turn around and move straight
-                # TODO: if no line, start phase where move straight until wall and do stuff
-                variables["phase"] = "end"
+                # if line was behind, turn 180 degrees and start moving straight
+                if variables["line"]:
+                    variables["phase"] = "turn"
+                    variables["next_phase"] = "move_until_wall"
+                    variables["goal"] = 180
+                    variables["init1"], variables["init2"] = True, False
+
+                # if no line was behind, just start moving until wall
+                else:
+                    variables["phase"] = "move_until_wall"
+                    variables["init1"], variables["init2"] = True, False
+
+    # move straight until wall while detecting for a line
+    elif variables["phase"] == "move_until_wall":
+        # initialisation
+        if variables["init1"]:
+            variables["init1"] = False
+            variables["flag"] = False
+
+            # start moving
+            variables["left_speed"], variables["right_speed"] = 15, 15
+
+        # if not initialisation
+        else:
+            # if has detected a line, stop bot and start line following
+            if variables["l3"] < 500 or variables["l2"] < 500 or variables["l1"] < 500 or variables["r1"] < 500 or variables["r2"] < 500 or variables["r3"] < 500:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "line_follow"
+                variables["init1"], variables["init2"] = True, True
+                return variables
+
+            # do some p controlling
+            variables = p_speed(variables, 2, 0.07)
+
+            # if last fmir is closer than 40 cm and fmir is closer
+            if variables["fmir"] <= variables["last_fmir"] < 0.4:
+                # turn flag to true and start counter
+                variables["flag"] = True
+                variables["counter"] = 1
+                variables["wall_distance"] = variables["fmir"]
+
+            # if flag is true'd
+            elif variables["flag"]:
+                # increment counter
+                variables["counter"] += 1
+
+                # if counter has reached that and still is that case, then can start sweeping
+                if variables["counter"] >= 10:
+                    if variables["fmir"] < variables["last_fmir"] < variables["wall_distance"]:
+                        variables["goal"] = 90
+                        variables["left_speed"], variables["right_speed"] = 0, 0
+                        variables["init1"], variables["init2"] = True, True
+                        variables["phase"] = "turn"
+                        variables["next_phase"] = "sweep"
+                        variables["init3"] = True
+
+                    # if that is not the case, turn flag to false
+                    else:
+                        variables["flag"] = False
+
+    # if is sweeping time
+    elif variables["phase"] == "sweep":
+        # initialisation
+        if variables["init1"]:
+            variables["init1"] = False
+            variables["flag"] = False
+
+            # set goal for moving straight
+            variables["goal"] = 0.2
+
+            # start moving
+            variables["left_speed"], variables["right_speed"] = 15, 15
+
+            # if init3 is true, create some bools
+            if variables["init3"]:
+                variables["init3"] = False
+                variables["long"] = True
+                variables["right"] = True
+
+        # if not initialisation
+        else:
+            # if has detected a line, stop bot and start line following
+            if variables["l3"] < 500 or variables["l2"] < 500 or variables["l1"] < 500 or variables["r1"] < 500 or variables["r2"] < 500 or variables["r3"] < 500:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = "line_follow"
+                variables["init1"], variables["init2"] = True, True
+                return variables
+
+            # do some p controlling
+            variables = p_speed(variables, 2, 0.07)
+
+            # if it's doing the long sweep
+            if variables["long"]:
+                # if last fmir is closer than 40 cm and fmir is closer
+                if variables["fmir"] <= variables["last_fmir"] < 0.4:
+                    # turn flag to true and start counter
+                    variables["flag"] = True
+                    variables["counter"] = 1
+                    variables["wall_distance"] = variables["fmir"]
+
+                # if flag is true'd
+                elif variables["flag"]:
+                    # increment counter
+                    variables["counter"] += 1
+
+                    # if counter has reached that and still is that case, then can start sweeping
+                    if variables["counter"] >= 10:
+                        if variables["fmir"] < variables["last_fmir"] < variables["wall_distance"]:
+                            variables["left_speed"], variables["right_speed"] = 0, 0
+                            variables["init1"], variables["init2"] = True, True
+                            variables["phase"] = "turn"
+                            variables["next_phase"] = "sweep"
+
+                            # if next turn is right
+                            if variables["right"]:
+                                variables["goal"] = 90
+                            else:
+                                variables["goal"] = -90
+
+                            # make long false as next one will be short movement straight
+                            variables["long"] = False
+
+                        # if that is not the case, turn flag to false
+                        else:
+                            variables["flag"] = False
+
+            # if it's short move
+            else:
+                # decrement goal by distance traveled
+                variables["goal"] -= variables["distance"]
+
+                # TODO: add some check for wall
+                # if it has reached the distance
+                if variables["goal"] < 0:
+                    # stop bot and turn
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+                    variables["init1"], variables["init2"] = True, True
+                    variables["phase"] = "turn"
+                    variables["next_phase"] = "sweep"
+
+                    # if next turn is right
+                    if variables["right"]:
+                        variables["goal"] = 90
+                        variables["right"] = False
+                    else:
+                        variables["goal"] = -90
+                        variables["right"] = True
+
+                    # make long true as next one will be long
+                    variables["long"] = True
+
+    elif variables["phase"] == "line_follow":
+        pass
 
     return variables
 
