@@ -102,7 +102,7 @@ def p_speed(variables, l_target_speed, r_target_speed=None):  # target speed sho
         return variables
 
     # check to skip this if last speeds were in the other direction
-    if variables["right_speed"] / variables["last_right_speed"] < 0 or variables["left_speed"] / variables["last_left_speed"] < 0:
+    if variables["last_right_speed"] / variables["right_speed"] <= 0 or variables["last_left_speed"] / variables["left_speed"] <= 0:
         return variables
 
     if variables["right_speed"] < 0 < variables["left_speed"]:
