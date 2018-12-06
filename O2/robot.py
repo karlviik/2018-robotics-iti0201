@@ -53,6 +53,10 @@ def fmir_buffering(variables):
 
 def sense(variables):
     """Get left, right wheel encoders and front middle IR sensor value, put to var dict and return the dict."""
+    # read these things in.
+    variables["last_left_speed"] = variables["left_speed"]
+    variables["last_right_speed"] = variables["right_speed"]
+
     # put last values into respective dict keys
     variables["last_left_enc"] = variables["left_enc"]
     variables["last_right_enc"] = variables["right_enc"]
@@ -82,7 +86,7 @@ def sense(variables):
     return variables
 
 
-def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target speed should be in meters/second
+def p_speed(variables, l_target_speed, r_target_speed=None):  # target speed should be in meters/second
     """
     Control left and right wheel speed with P control method.
 
@@ -97,10 +101,16 @@ def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target s
         variables["p_ignore"] = False
         return variables
 
+    # check to skip this if last speeds were in the other direction
+    if variables["right_speed"] / variables["last_right_speed"] < 0 or variables["left_speed"] / variables["last_left_speed"] < 0:
+        return variables
+
     if variables["right_speed"] < 0 < variables["left_speed"]:
         method = 1
     elif variables["right_speed"] > 0 > variables["left_speed"]:
         method = 3
+    else:
+        method = 2
 
     # if no r target speed was given, then prolly not needed and make them equal
     if r_target_speed is None:
@@ -112,8 +122,6 @@ def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target s
     # calculate wheel speeds based on v = s / t
     r_speed = variables["r_distance"] / time_diff
     l_speed = variables["l_distance"] / time_diff
-
-    variables["l_speed"], variables["r_speed"] = l_speed, r_speed
 
     # get left wheel speed error
     if method == 1 or method == 2:  # clockwise turning or moving straight
@@ -190,7 +198,6 @@ def check_object(variables):
         print("set speed")
     else:
         diff = variables["last_fmir"] - variables["fmir"]
-        variables = p_speed(variables, 3, 0.035)                          # EI KEERA, KAS VIGANE ?
         print("diff", diff)
         print(variables["left_enc"], variables["first_object_first_encoder"], variables["object_count"])
         # if it detects a object while turning back
@@ -249,29 +256,7 @@ def check_object(variables):
                 variables["turning"] = 0
                 variables["turn_back"] = 0
                 variables["on_object_ch1eck"] = 0
-    """
-        elif variables["first_object_second_encoder"] < variables["left_enc"] and variables["turn_back"] == 2:
-            variables["left_speed"], variables["right_speed"] = 0, 0
-            print("speed 0(turn back)")
-            variables["has_checked"] = 1
-            variables["turning"] = 0
-            variables["turn_back"] = 0
-            variables["on_object_check"] = 0
-        elif variables["second_object_second_encoder"] < variables["left_enc"] and variables["turn_back"] == 2:
-            variables["left_speed"], variables["right_speed"] = 0, 0
-            print("speed 0(turn back)")
-            variables["has_checked"] = 1
-            variables["turning"] = 0
-            variables["turn_back"] = 0
-            variables["on_object_check"] = 0
-        elif variables["third_object_second_encoder"] < variables["left_enc"] and variables["turn_back"] == 2:
-            variables["left_speed"], variables["right_speed"] = 0, 0
-            print("speed 0(turn back)")
-            variables["has_checked"] = 1
-            variables["turning"] = 0
-            variables["turn_back"] = 0
-            variables["on_object_check"] = 0
-    """
+
     return variables
 
 
@@ -292,7 +277,6 @@ def plan(variables):
             # last and current fmir sensor reading difference, used for object detection
             diff = variables["last_fmir"] - variables["fmir"]
             # run p controller
-            variables = p_speed(variables, 1, 0.035)
             # print("Differnece is: " + str(diff))
             # print(variables["left_speed"], variables["right_speed"])
             # print(variables["fmir_buffer"])
@@ -399,7 +383,6 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = -12, 12
             variables["turning"] = 1
         elif variables["left_speed"]:  # meaning it's currently turning, therefore the phase has started
-            variables = p_speed(variables, 3, 0.035)
             if variables["left_enc"] < variables["target_turn"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "drive"
@@ -412,7 +395,6 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, 12
             variables["driving"] = 1
         else:
-            variables = p_speed(variables, 2, 0.035)
             print(variables["left_enc"], variables["target_drive"])
             if variables["left_enc"] > variables["target_drive"]:
                 print("Goes here! Noice!")
@@ -425,6 +407,9 @@ def plan(variables):
                     variables["phase"] = "scanning"
                 else:
                     variables["phase"] = "end"
+
+    # do p controller
+    variables = p_speed(variables, 0.03)
     # return dictionary with all the new values
     return variables
 
@@ -438,7 +423,9 @@ def act(variables):
 def main():
     """Create some variables used in the loop and then run the loop of sense, plan, act."""
     variables = dict()
-    variables["p_ignore"] = False
+    variables["p_ignore"] = True
+    variables["left_speed"] = -1
+    variables["right_speed"] = -1
     variables["init"] = True
     variables["wheel circumference"] = robot.WHEEL_DIAMETER * pi
     variables["turn_back"] = 0  # if it should turn back after it has checked

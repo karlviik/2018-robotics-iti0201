@@ -122,20 +122,20 @@ class Robot:
         time_diff = self.cu_time - self.la_time
 
         # calculate wheel speeds based on v = s / t
-        r_speed = self.r_dist / time_diff
-        l_speed = self.l_dist / time_diff
+        r_veloc = self.r_dist / time_diff
+        l_veloc = self.l_dist / time_diff
 
         # get left wheel speed error
         if method == 1 or method == 2:  # clockwise turning or moving straight
-            l_error = l_target_speed - l_speed
+            l_error = l_target_speed - l_veloc
         else:  # elif method == 3 or method == 4:  # counterclockwise turning or moving backwards
-            l_error = - l_target_speed - l_speed
+            l_error = - l_target_speed - l_veloc
 
         # get right wheel speed error, two separate versions because right wheel turns backwards during turning
         if method == 1 or method == 4:  # clockwise turning or moving backwards
-            r_error = - r_target_speed - r_speed
+            r_error = - r_target_speed - r_veloc
         else:  # elif method == 2 or method == 3:  # moving straight or counterclockwise turning
-            r_error = r_target_speed - r_speed
+            r_error = r_target_speed - r_veloc
 
         # calculate new right and left wheel speeds by adding rounded value of GAIN constant times wheel speed error
         self.r_speed = self.r_speed + round(self.gain * r_error)
