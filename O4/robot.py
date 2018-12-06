@@ -64,7 +64,6 @@ def sense(variables):
     # calculate how much robot has turned during the tick in degrees, clockwise
     variables["turn_amount"] = robot.WHEEL_DIAMETER * ((variables["left_enc"] - variables["right_enc"]) - (variables["last_left_enc"] - variables["last_right_enc"])) / (2 * robot.AXIS_LENGTH)
 
-
     variables = fmir_buffering(variables)  # updates "fmir", "last_fmir", "fmir_buffer_avg" and "fmir_buffer" dict keys
 
     variables["last_time"] = variables["current_time"]  # put last time into respective dict key
@@ -80,12 +79,12 @@ def sense(variables):
     variables["l_distance"] = l_dist
 
     # gets line sensors
-    variables["l3"], variables["l2"], variables["l1"] = robot.get_leftmost_line_sensor(), robot.get_second_line_sensor_from_left(), robot.get_third_line_sensor_from_left()
-    variables["r3"], variables["r2"], variables["r1"] = robot.get_rightmost_line_sensor(), robot.get_second_line_sensor_from_right(), robot.get_third_line_sensor_from_right()
+    variables["l1"], variables["l2"], variables["l3"] = robot.get_leftmost_line_sensor(), robot.get_second_line_sensor_from_left(), robot.get_third_line_sensor_from_left()
+    variables["r1"], variables["r2"], variables["r3"] = robot.get_rightmost_line_sensor(), robot.get_second_line_sensor_from_right(), robot.get_third_line_sensor_from_right()
     return variables
 
 
-def p_speed(variables, method, target_speed):  # target speed should be in meters/second. "distance", "r/l_distance"
+def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target speed should be in meters/second. "distance", "r/l_distance"
     """
     Control left and right wheel speed with P control method.
 
@@ -99,6 +98,10 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
         variables["p_ignore"] = False
         return variables
 
+    # if no r target speed was given, then prolly not needed and make them equal
+    if r_target_speed is None:
+        r_target_speed = l_target_speed
+
     # time between this and last cycle
     time_diff = variables["current_time"] - variables["last_time"]
 
@@ -108,15 +111,15 @@ def p_speed(variables, method, target_speed):  # target speed should be in meter
 
     # get left wheel speed error
     if method == 1 or method == 2:  # clockwise turning or moving straight
-        l_error = target_speed - l_speed
+        l_error = l_target_speed - l_speed
     elif method == 3:  # counterclockwise turning
-        l_error = - target_speed - l_speed
+        l_error = - l_target_speed - l_speed
 
     # get right wheel speed error, two separate versions because right wheel turns backwards during turning
     if method == 1:  # clockwise turning
-        r_error = - target_speed - r_speed
+        r_error = - r_target_speed - r_speed
     elif method == 2 or method == 3:   # moving straight or counterclockwise turning
-        r_error = target_speed - r_speed
+        r_error = r_target_speed - r_speed
 
     # calculate new right and left wheel speeds by adding rounded value of GAIN constant times wheel speed error
     variables["right_speed"] = variables["right_speed"] + round(GAIN * r_error)
@@ -658,30 +661,38 @@ def plan(variables):
             variables["counter"] = 0
             variables["lastside"] = 1
             variables["turn_progress"] = 0
-         # if not initialisation
+
+        # if not initialisation
         else:
             variables["counter"] += 1
             variables["left_speed"], variables["right_speed"] = -17, -17
+            variables["lspeed"], variables["rspeed"] = -0.08, -0.08
             if variables["l3"] < 500 and variables["r3"] < 500:
                 pass
             elif variables["l3"] > 500 and variables["r3"] > 500:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 if variables["l2"] < 500 or variables["l1"] < 500:
                     variables["left_speed"], variables["right_speed"] = 17, -17
+                    variables["lspeed"], variables["rspeed"] = 0.08, -0.08
                     variables["lastside"] = 0
                 elif variables["r2"] < 500 or variables["r1"] < 500:
                     variables["left_speed"], variables["right_speed"] = -17, 17
+                    variables["lspeed"], variables["rspeed"] = -0.08, 0.08
                     variables["lastside"] = 1
                 else:
                     if variables["lastside"]:
                         variables["left_speed"], variables["right_speed"] = -17, 17
+                        variables["lspeed"], variables["rspeed"] = -0.08, 0.08
                     else:
                         variables["left_speed"], variables["right_speed"] = 17, -17
+                        variables["lspeed"], variables["rspeed"] = 0.08, -0.08
             elif variables["l3"] > 500:
                 variables["left_speed"] = -14
+                variables["lspeed"] = -0.05
                 variables["lastside"] = 1
             elif variables["r3"] > 500:
                 variables["right_speed"] = -14
+                variables["rspeed"] = -0.05
                 variables["lastside"] = 0
 
             if variables["counter"] > 300:
@@ -692,10 +703,13 @@ def plan(variables):
                     variables["next_phase"] = "place_obj_down"
                     variables["init1"] = True
                     if variables["turn_progress"] > 0:
-                        variables["goal"] = 80
-                    else:
                         variables["goal"] = -80
+                    else:
+                        variables["goal"] = 80
 
+            variables = p_speed(variables, 2, variables["lspeed"], variables["rspeed"])
+
+    # place it downnnnn
     elif variables["phase"] == "place_obj_down":
         robot.set_grabber_height(0)
         rospy.sleep(3)
@@ -728,20 +742,7 @@ def main():
     variables["flag"] = False  # may be used somewhere
     variables["p_ignore"] = False  # used to get p controller not to control
     variables["line"] = False
-
-    variables["scan_progress"] = 0 #don't need?
     variables["current_time"] = 0
-    variables["last_time"] = 0
-    variables["move_to_obj_counter"] = 0
-    variables["blind_cycle_counter"] = 0
-    variables["obj_verify_counter"] = 0
-    variables["max_fmir"] = float("inf")
-    variables["scan_measure_start"] = ""
-    variables["verify_multicheck"] = 0
-    variables["closest_wall"] = float("inf")
-    variables["closest_wall_encoder_diff"] = 0  # don't have to initialise this here, but doing it anyways
-    variables["are_you_zeroing"] = 0
-    variables["closest_obj_reading"] = float("inf")
 
     while True:
         variables = sense(variables)
