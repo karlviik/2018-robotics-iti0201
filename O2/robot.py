@@ -97,6 +97,11 @@ def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target s
         variables["p_ignore"] = False
         return variables
 
+    if variables["right_speed"] < 0 < variables["left_speed"]:
+        method = 1
+    elif variables["right_speed"] > 0 > variables["left_speed"]:
+        method = 3
+
     # if no r target speed was given, then prolly not needed and make them equal
     if r_target_speed is None:
         r_target_speed = l_target_speed
@@ -128,6 +133,7 @@ def p_speed(variables, method, l_target_speed, r_target_speed=None):  # target s
 
     # return dictionary with variable dictionary with new speeds
     return variables
+
 
 # TODO Kui leiab kaks objekti siis läheb nende kahe vahele
 def decide(variables, median_list):
@@ -179,48 +185,93 @@ def turn_to_object(variables, median_list):
 def check_object(variables):
     if variables["turning"] == 0:
         variables["left_speed"], variables["right_speed"] = -12, 12
+        print("speed -12, 12 (check turn)")
         variables["turning"] = 1
+        print("set speed")
     else:
         diff = variables["last_fmir"] - variables["fmir"]
-        variables = p_speed(variables, 1, 0.035)
-        if diff > 0.20 and variables["on_object_check"]:
+        variables = p_speed(variables, 3, 0.035)                          # EI KEERA, KAS VIGANE ?
+        print("diff", diff)
+        print(variables["left_enc"], variables["first_object_first_encoder"], variables["object_count"])
+        # if it detects a object while turning back
+        if diff > 0.20 and variables["on_object_check"] == 0:
+            print("diff>0.2")
             variables["object_first_distance_check"] = variables["fmir"]
             variables["object_first_encoder_check"] = variables["last_left_enc"]
             variables["on_object_check"] = 1
         elif diff < -0.20 and variables["on_object_check"] == 1:
+            print("diff<-0.2")
             variables["object_second_distance_check"] = variables["fmir"]
             variables["object_second_encoder_check"] = variables["last_left_enc"]
-            variables["on_object_check"] = 0
             variables["left_speed"], variables["right_speed"] = 0, 0
-            if variables["turn_back"] == 0:
-                variables["left_speed"], variables["right_speed"] = 12, -12
-            elif variables["first_object_second_encoder"] < variables["left_enc"]:
-                variables["left_speed"], variables["right_speed"] = 0, 0
-                variables["has_checked"] = 1
-            elif variables["second_object_second_encoder"] < variables["left_enc"]:
-                variables["left_speed"], variables["right_speed"] = 0, 0
-                variables["has_checked"] = 1
-            elif variables["third_object_second_encoder"] < variables["left_enc"]:
-                variables["left_speed"], variables["right_speed"] = 0, 0
-                variables["has_checked"] = 1
-        elif variables["object_count"] == 1 and variables["left_enc"] < variables["first_object_first_encoder"]:
+            print("speed 0 (diff check)")
+            variables["turn_back"] = 1
+        # if it doesnt detect a object, change values back and continue (+15 kraadi bufferi lagi pärast)
+        elif variables["object_count"] == 1 and variables["left_enc"] + 15 < variables["first_object_first_encoder"]: # DOES NOT WORK FOR SOME REASON (object count on 1)
+            print("goes here") # Ei lähe siia, kuigi peaks, kui ei ole objekt
             variables["left_speed"], variables["right_speed"] = 0, 0
+            print("speed 0 (true object)")
             variables["has_checked"] = 0
             variables["init"] = True
             variables["object_count"] = 0
             variables["on_object"] = 0
-        elif variables["object_count"] == 2 and variables["left_enc"] < variables["second_object_first_encoder"]:
+            variables["turning"] = 0
+        elif variables["object_count"] == 2 and variables["left_enc"] + 15 < variables["second_object_first_encoder"]:
             variables["left_speed"], variables["right_speed"] = 0, 0
+            print("speed 0 (true object)")
             variables["has_checked"] = 0
             variables["init"] = True
             variables["object_count"] = 1
             variables["on_object"] = 0
-        elif variables["object_count"] == 3 and variables["left_enc"] < variables["third_object_first_encoder"]:
+            variables["turning"] = 0
+        elif variables["object_count"] == 3 and variables["left_enc"] + 15 < variables["third_object_first_encoder"]:
             variables["left_speed"], variables["right_speed"] = 0, 0
+            print("speed 0 (true object)")
             variables["has_checked"] = 0
             variables["init"] = True
             variables["object_count"] = 2
             variables["on_object"] = 0
+            variables["turning"] = 0
+        # turning back if the object is there (Teha abifunktsiooniks)
+        if variables["turn_back"] == 1:
+            variables["left_speed"], variables["right_speed"] = 12, -12
+            print("speed 12 -12(turn back)")
+            variables["turn_back"] = 2
+
+        # this is part that replaces the following comment
+        elif variables["turn_back"] == 2:
+            if variables["first_object_second_encoder"] < variables["left_enc"] or \
+                    variables["second_object_second_encoder"] < variables["left_enc"] or \
+                    variables["third_object_second_encoder"] < variables["left_enc"]:
+                print("speed 0(turn back)")
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["has_checked"] = 1
+                variables["turning"] = 0
+                variables["turn_back"] = 0
+                variables["on_object_ch1eck"] = 0
+    """
+        elif variables["first_object_second_encoder"] < variables["left_enc"] and variables["turn_back"] == 2:
+            variables["left_speed"], variables["right_speed"] = 0, 0
+            print("speed 0(turn back)")
+            variables["has_checked"] = 1
+            variables["turning"] = 0
+            variables["turn_back"] = 0
+            variables["on_object_check"] = 0
+        elif variables["second_object_second_encoder"] < variables["left_enc"] and variables["turn_back"] == 2:
+            variables["left_speed"], variables["right_speed"] = 0, 0
+            print("speed 0(turn back)")
+            variables["has_checked"] = 1
+            variables["turning"] = 0
+            variables["turn_back"] = 0
+            variables["on_object_check"] = 0
+        elif variables["third_object_second_encoder"] < variables["left_enc"] and variables["turn_back"] == 2:
+            variables["left_speed"], variables["right_speed"] = 0, 0
+            print("speed 0(turn back)")
+            variables["has_checked"] = 1
+            variables["turning"] = 0
+            variables["turn_back"] = 0
+            variables["on_object_check"] = 0
+    """
     return variables
 
 
@@ -234,6 +285,7 @@ def plan(variables):
         if variables["init"]:
             variables["init"] = False
             variables["left_speed"], variables["right_speed"] = 12, -12
+            print("speed 12 -12(init)")
 
         # if scanning is already in progress
         else:
@@ -241,10 +293,10 @@ def plan(variables):
             diff = variables["last_fmir"] - variables["fmir"]
             # run p controller
             variables = p_speed(variables, 1, 0.035)
-            print("Differnece is: " + str(diff))
-            print(variables["left_speed"], variables["right_speed"])
-            print(variables["fmir_buffer"])
-            print("------------------------------------------------------")
+            # print("Differnece is: " + str(diff))
+            # print(variables["left_speed"], variables["right_speed"])
+            # print(variables["fmir_buffer"])
+            # print("------------------------------------------------------")
 
             # if diff is more than 20cm, then it most likely has detected an object
             if diff > 0.20 and object_count == 0 and on_object == 0:
@@ -254,8 +306,10 @@ def plan(variables):
                 variables["on_object"] = 1
                 print("1 <--------------------------------------------")
             elif (diff < -0.20 or variables["fmir"] > variables["first_object_first_distance"] + 0.05) and object_count == 1 and on_object == 1:
-                variables["first_object_second_encoder"] = variables["left_enc"]
-                variables["left_speed"], variables["right_speed"] = 0, 0
+                if variables["turning"] == 0:
+                    variables["first_object_second_encoder"] = variables["left_enc"]
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+                    print("speed 0(diff)")
                 variables = check_object(variables)
                 if variables["has_checked"] == 1:
                     variables["first_object_distance"] = (variables["object_second_distance_check"] + variables[
@@ -264,7 +318,7 @@ def plan(variables):
                         "object_first_encoder_check"]) / 2
                     variables["init"] = True
                     variables["on_object"] = 0
-                print("1 off")
+                print("first")
             elif diff > 0.20 and object_count == 1 and on_object == 0:
                 variables["second_object_first_distance"] = variables["fmir"]  # + robot.AXIS_LENGTH / 2
                 variables["second_object_first_encoder"] = variables["left_enc"]
@@ -272,8 +326,9 @@ def plan(variables):
                 variables["on_object"] = 1
                 print("2 <--------------------------------------------")
             elif (diff < -0.20 or variables["fmir"] > variables["second_object_first_distance"] + 0.05) and object_count == 2 and on_object == 1:
-                variables["second_object_second_encoder"] = variables["left_enc"]
-                variables["on_object"] = 0
+                if variables["turning"] == 0:
+                    variables["second_object_second_encoder"] = variables["left_enc"]
+                    variables["left_speed"], variables["right_speed"] = 0, 0
                 variables = check_object(variables)
                 if variables["has_checked"] == 1:
                     variables["second_object_distance"] = (variables["object_second_distance_check"] + variables[
@@ -290,7 +345,10 @@ def plan(variables):
                 variables["on_object"] = 1
                 print("3 <-------------------------------------------")
             elif (diff < -0.20 or variables["fmir"] > variables["third_object_first_distance"] + 0.05) and object_count == 3 and on_object == 1:
-                variables["third_object_second_encoder"] = variables["left_enc"]
+                if variables["turning"] == 0:
+                    variables["third_object_second_encoder"] = variables["left_enc"]
+
+                    variables["left_speed"], variables["right_speed"] = 0, 0
                 variables = check_object(variables)
                 if variables["has_checked"] == 1:
                     variables["third_object_distance"] = (variables["object_second_distance_check"] + variables[
@@ -405,6 +463,10 @@ def main():
     variables["first_object_first_distance"] = float("inf")
     variables["second_object_first_distance"] = float("inf")
     variables["third_object_first_distance"] = float("inf")
+    variables["first_object_second_encoder"] = float("inf")
+    variables["second_object_second_encoder"] = float("inf")
+    variables["third_object_second_encoder"] = float("inf")
+
     while True:
         variables = sense(variables)
         variables = plan(variables)
