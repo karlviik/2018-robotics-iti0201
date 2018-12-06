@@ -147,7 +147,30 @@ class Robot:
         """
         CURRENT PLAN:
         
-        phase 1: move forward until it detects a wall with any of the sensors
+        phase 1: move forward (tilted) until it detects a wall with any of the sensors
+            if side sensor is closest, go to wall following phase
+            if diagonal sensor is closest, turn bot so side sensor is closest and then go to wall follow
+            if front sensor is closest:
+                turn a bit on the spot and start the phase 1 again
+        phase 2: wall following
+            if bot has gotten too close to the wall or is starting to get closer, adjust bot wheel speed to be slower
+            if is optimal spacing, adjust speeds to be equal
+            if has gotten too far or is starting to drift away, adjust other wheel to be slower
+            
+            if has detected a wall with front sensors:
+                adjust so both front IR sensors are more or less equal
+                turn 45 degrees so front IR would be facing corner
+                back up a tiny bit
+                turn 45 + 90 degrees in the other direction
+                (potentially could do turn 90, move forward a bit, do 45)
+                start from phase 1? Or if it still is close enough to wall, from phase 2
+            
+            if has lost wall with side sensor suddenly:
+                move forward a tiny bit
+                turn 45 degrees
+                move forward a tiny bit
+                turn 45 degrees
+                start from either phase 1 or phase 2 again
         """
 
         if self.state == "working":
