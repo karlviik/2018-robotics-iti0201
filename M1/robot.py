@@ -302,6 +302,8 @@ class Robot:
             self.goal = 45
             self.next_state = "blind forward"
 
+        print("I reached the end of plan")
+
     def act(self):
         # flips it so back is forward
         self.robot.set_right_wheel_speed(-self.l_speed)
