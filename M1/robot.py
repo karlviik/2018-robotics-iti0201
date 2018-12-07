@@ -223,7 +223,7 @@ class Robot:
                 self.l_speed, self.r_speed = 14, 12
             else:
                 self.p_speed(0.035, 0.025)
-                print(self.short_distance_sensors)
+                print(self.short_distance_sensors, self.rsir, self.rdir, self.rfir)
                 if self.rsir < 0.03 or self.rdir < 0.03 or self.rfir < 0.03:
                     print("I got where I shouldn't")
                     if self.rsir < 0.03:
