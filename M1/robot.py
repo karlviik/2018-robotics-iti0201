@@ -225,6 +225,7 @@ class Robot:
                 self.p_speed(0.035, 0.025)
                 print(self.short_distance_sensors)
                 if self.rsir < 0.03 or self.rdir < 0.03 or self.rfir < 0.03:
+                    print("I got where I shouldn't")
                     if self.rsir < 0.03:
                         self.init = True
                         self.state = "wall follow"
@@ -302,7 +303,7 @@ class Robot:
             self.goal = 45
             self.next_state = "blind forward"
 
-        print("I reached the end of plan")
+        print("I reached the end of plan", self.state)
 
     def act(self):
         # flips it so back is forward
@@ -314,7 +315,7 @@ class Robot:
         self.robot.close_grabber(100)
         self.robot.set_grabber_height(100)
         self.state = "blind forward"
-        print("I should have started")
+        print("I should have started", self.state)
         # main loop
         while not self.problem_solved:
             self.sense()
