@@ -46,6 +46,7 @@ class Robot:
         self.l_speed = 0
         self.r_speed = 0
         self.p_ignore = False  # used to bypass p-controller
+        self.init = True
 
         self.state = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah"
 
@@ -142,8 +143,6 @@ class Robot:
         self.l_speed = self.l_speed + round(self.gain * l_error)
 
     def plan(self):
-        print("Planning...")
-
         """
         CURRENT PLAN:
         
@@ -172,11 +171,95 @@ class Robot:
                 turn 45 degrees
                 start from either phase 1 or phase 2 again
         """
+        if self.state == "turn":
+            # initialisation
+            if self.init:
+                self.init = False
+                # zero the turn amount
+                self.turn_progress = 0
+                # if goal is positive aka clockwise
+                if self.goal > 0:
+                    # set speeds as so
+                    self.l_speed, self.r_speed = 12, -12
 
-        if self.state == "working":
-            print("Working...")
-            self.l_speed = 15
-            self.r_speed = 15
+                # if goal is negative aka counterclockwise
+                if self.goal < 0:
+                    # set speeds and p controller as so
+                    self.l_speed, self.r_speed = -12, 12
+
+            # if not initialisation
+            else:
+                # do p controlling and update how much bot has turned
+                self.p_speed(0.025)
+                self.turn_progress += self.turn_amount
+
+                # if has turned enough, stop bot and go to next phase
+                if abs(self.goal) - abs(self.turn_progress) < 0:
+                    self.l_speed, self.r_speed = 0, 0
+                    self.state = self.next_state
+                    self.init = True
+
+        elif self.state == "blind forward":
+            self.p_speed(0.035, 0.025)
+            if self.init:
+                self.init = False
+                self.l_speed, self.r_speed = 14, 12
+            else:
+                if self.rsir < 0.03 or self.rdir < 0.03 or self.rfir < 0.03:
+                    if self.rsir < 0.03:
+                        self.init = True
+                        self.state = "wall follow"
+                    elif self.rdir < 0.03:
+                        self.init = True
+                        self.state = "rota for side"
+                    elif self.rfir < 0.03:
+                        self.init = True
+                        self.state = "turn"
+                        self.goal = -30
+                        self.next_state = "blind forward"
+
+        elif self.state == "rota for side":
+            if self.init:
+                self.init = False
+                self.l_speed, self.r_speed = -12, 12
+            else:
+                self.p_speed(0.025)
+                if self.rsir + 0.01 < self.rdir:
+                    self.init = True
+                    self.l_speed, self.r_speed = 0, 0
+                    self.state = "wall follow"
+
+        elif self.state == "wall follow":
+            if self.init:
+                self.init = False
+                self.l_speed, self.r_speed = 12, 12
+            else:
+                if self.lsir < 0.025:
+                    self.p_speed(0.025, 0.035)
+                elif self.lsir > 0.035:
+                    self.p_speed(0.035, 0.025)
+
+                if self.lfir < 0.02 and self.rfir < 0.02:
+                    self.l_speed, self.r_speed = 0, 0
+                    self.init = True
+                    self.state = "turn"
+                    self.goal = 45
+                    self.next_state = "back up"
+
+        elif self.state == "back up":
+            if self.init:
+                self.init = False
+                self.goal = - 0.03
+                self.l_speed, self.r_speed = -12, -12
+            else:
+                self.p_speed(-0.025)
+                self.goal -= self.dist
+                if self.goal > 0:
+                    self.l_speed, self.r_speed = 0, 0
+                    self.state = "turn"
+                    self.next_state = "blind forward"
+                    self.goal = - (90 + 45)
+                    self.init = True
 
     def act(self):
         # flips it so back is forward
