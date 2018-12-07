@@ -254,6 +254,7 @@ class Robot:
                 self.init = False
                 self.l_speed, self.r_speed = 12, 12
             else:
+                print(self.rfir, self.rdir, self.rsir)
                 if self.rsir < 0.0275:
                     self.p_speed(0.025, 0.035)
                     if self.rsir < 0.02:
