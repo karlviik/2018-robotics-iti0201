@@ -310,7 +310,7 @@ class Robot:
         # just in case robot doesn't have claw properly put away
         self.robot.close_grabber(100)
         self.robot.set_grabber_height(100)
-
+        self.state = "move forward"
         # main loop
         while not self.problem_solved:
             self.sense()
