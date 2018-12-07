@@ -262,7 +262,12 @@ class Robot:
                         self.next_state = "wall follow"
                         self.goal = - 15
                 elif self.rsir > 0.035:
-                    self.p_speed(0.035, 0.025)
+                    self.p_speed(0.05, 0.025)
+                    if self.rsir > 0.045:
+                        self.init = True
+                        self.state = "turn"
+                        self.next_state = "wall follow"
+                        self.goal = 15
 
                 if self.lfir < 0.02 and self.rfir < 0.02:
                     self.l_speed, self.r_speed = 0, 0

@@ -193,12 +193,14 @@ def decide(variables, median_list):
 def turn_to_object(variables, median_list):
     """For second turning."""
     # TODO: make this part compatible with turn_new I guess
-    print("turn_to_object")
     variables["target_turn"] = median_list[1]
-    print(variables["target_turn"])
     variables["distance_to_mid"] = median_list[0] / 3
-    print(variables["distance_to_mid"])
     variables["phase"] = "turn"
+
+    print("turn_to_object")
+    print(variables["target_turn"])
+    print(variables["distance_to_mid"])
+
     return variables
 
 
