@@ -73,6 +73,8 @@ class Robot:
             # if within error, sensor value goes as current
             if average * 0.85 < readings[i] < average * 1.15:
                 self.short_distance_sensors[i] = readings[i]
+        self.rfir, self.rdir, self.rsir, self.lfir, self.ldir, self.lsir = self.short_distance_sensors
+
 
     def sense(self):
         # put last encoder values into respective dict keys
