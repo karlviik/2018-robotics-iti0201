@@ -218,11 +218,11 @@ class Robot:
                     self.init = True
 
         elif self.state == "blind forward":
-            self.p_speed(0.035, 0.025)
             if self.init:
                 self.init = False
                 self.l_speed, self.r_speed = 14, 12
             else:
+                self.p_speed(0.035, 0.025)
                 if self.rsir < 0.03 or self.rdir < 0.03 or self.rfir < 0.03:
                     if self.rsir < 0.03:
                         self.init = True
@@ -310,7 +310,8 @@ class Robot:
         # just in case robot doesn't have claw properly put away
         self.robot.close_grabber(100)
         self.robot.set_grabber_height(100)
-        self.state = "move forward"
+        self.state = "blind forward"
+        print("I should have started")
         # main loop
         while not self.problem_solved:
             self.sense()
