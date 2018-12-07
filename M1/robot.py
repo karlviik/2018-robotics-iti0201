@@ -199,6 +199,24 @@ class Robot:
                     self.state = self.next_state
                     self.init = True
 
+        elif self.state == "move":
+            if self.init:
+                self.init = False
+                self.move_progress = 0
+                if self.goal < 0:
+                    self.l_speed, self.r_speed = -12, -12
+                else:
+                    self.l_speed, self.r_speed = 12, 12
+            else:
+                self.p_speed(0.025)
+                self.move_progress += self.dist
+
+                # if has turned enough, stop bot and go to next phase
+                if abs(self.goal) - abs(self.move_progress) < 0:
+                    self.l_speed, self.r_speed = 0, 0
+                    self.state = self.next_state
+                    self.init = True
+
         elif self.state == "blind forward":
             self.p_speed(0.035, 0.025)
             if self.init:
@@ -246,6 +264,13 @@ class Robot:
                     self.goal = 45
                     self.next_state = "back up"
 
+                elif self.lsir > 0.045:
+                    self.l_speed, self.r_speed = 0, 0
+                    self.init = True
+                    self.state = "move"
+                    self.goal = 0.03
+                    self.next_state = "turn_wait"
+
         elif self.state == "back up":
             if self.init:
                 self.init = False
@@ -260,6 +285,21 @@ class Robot:
                     self.next_state = "blind forward"
                     self.goal = - (90 + 45)
                     self.init = True
+
+        elif self.state == "turn_wait":
+            self.state = "turn"
+            self.goal = 45
+            self.next_state = "move_wait"
+
+        elif self.state == "move_wait":
+            self.state = "move"
+            self.goal = 0.03
+            self.next_state = "turn_wait_part_2"
+
+        elif self.state == "turn_wait_part_2":
+            self.state = "turn"
+            self.goal = 45
+            self.next_state = "blind forward"
 
     def act(self):
         # flips it so back is forward
