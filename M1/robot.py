@@ -256,7 +256,7 @@ class Robot:
             else:
                 if self.rsir < 0.025:
                     self.p_speed(0.025, 0.035)
-                    if self.rsir < 0.01:
+                    if self.rsir < 0.0175:
                         self.init = True
                         self.state = "turn"
                         self.next_state = "wall follow"
