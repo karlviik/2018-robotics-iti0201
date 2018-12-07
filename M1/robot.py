@@ -225,7 +225,7 @@ class Robot:
             else:
                 self.p_speed(0.05, 0.025)
                 print(self.rsir, self.rdir, self.rfir)
-                if self.rsir < 0.03 or self.rdir < 0.03 or self.rfir < 0.02:
+                if self.rsir < 0.03 or self.rdir < 0.03 or self.rfir < 0.035:
                     if self.rsir < 0.03:
                         self.init = True
                         self.state = "wall follow"
@@ -270,7 +270,7 @@ class Robot:
                         self.next_state = "wall follow"
                         self.goal = 15
 
-                if self.lfir < 0.025 and self.rfir < 0.025:
+                if self.lfir < 0.035 and self.rfir < 0.035:
                     self.l_speed, self.r_speed = 0, 0
                     self.init = True
                     self.state = "turn"
