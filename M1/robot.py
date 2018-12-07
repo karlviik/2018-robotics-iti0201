@@ -75,7 +75,6 @@ class Robot:
                 self.short_distance_sensors[i] = readings[i]
         self.rfir, self.rdir, self.rsir, self.lfir, self.ldir, self.lsir = self.short_distance_sensors
 
-
     def sense(self):
         # put last encoder values into respective dict keys
         self.last_left_enc = self.left_enc
@@ -224,7 +223,7 @@ class Robot:
                 self.init = False
                 self.l_speed, self.r_speed = 14, 12
             else:
-                self.p_speed(0.035, 0.025)
+                self.p_speed(0.04, 0.025)
                 print(self.short_distance_sensors, self.rsir, self.rdir, self.rfir)
                 if self.rsir < 0.03 or self.rdir < 0.03 or self.rfir < 0.03:
                     print("I got where I shouldn't")
@@ -234,7 +233,7 @@ class Robot:
                     elif self.rdir < 0.03:
                         self.init = True
                         self.state = "rota for side"
-                    elif self.rfir < 0.03:
+                    elif self.rfir < 0.02:
                         self.init = True
                         self.state = "turn"
                         self.goal = -30
