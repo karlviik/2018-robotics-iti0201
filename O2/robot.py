@@ -362,6 +362,7 @@ def plan(variables):
             if angle_between_second_and_first > 180:
                 median_list = [second_obj, first_obj]
             variables = decide(variables, median_list)
+            variables["at_median"] = 0
         elif variables["obj_count"] == 3:
             angle_between_third_and_second = abs(variables["second_obj_deg"] - variables["third_obj_deg"])
             third_obj = [variables["third_obj_distance"], variables["third_obj_deg"]]
