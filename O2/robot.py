@@ -363,6 +363,9 @@ def plan(variables):
                 median_list = [second_obj, first_obj]
             variables = decide(variables, median_list)
             variables["at_median"] = 0
+            variables["badscancount"] += 1
+            if variables["badscancount"] > 4:
+                variables["at_median"] = 1
         elif variables["obj_count"] == 3:
             angle_between_third_and_second = abs(variables["second_obj_deg"] - variables["third_obj_deg"])
             third_obj = [variables["third_obj_distance"], variables["third_obj_deg"]]
@@ -432,6 +435,7 @@ def main():
     variables["init1"] = True
     variables["flag"] = False
     variables["abs_rota"] = 0
+    variables["badscancount"] = 0
     variables["wheel circumference"] = robot.WHEEL_DIAMETER * pi
     variables["turn_back"] = 0  # if it should turn back after it has checked
     variables["has_checked"] = 0  # if it has checked the object
