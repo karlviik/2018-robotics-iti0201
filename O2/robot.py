@@ -214,7 +214,7 @@ def plan(variables):
                 variables["phase"] = "decide"
             # if diff is more than 20cm, then it most likely has detected an object
             elif on_object == 0:
-                if diff > 0.20:
+                if diff > 0.25:
                     variables["counter"] = 0
                     variables["flag"] = True
                     variables["obj_distance"] = variables["fmir"]
@@ -360,14 +360,14 @@ def plan(variables):
             print(angle_between_second_and_first)
             print(angle_between_third_and_second)
 
-            if angle_between_second_and_first > 180:  # second left, third middle, first right
+            if angle_between_second_and_first > 150:  # second left, third middle, first right
                 if variables["at_median"] == 0:
                     median_list = [second_obj, third_obj, first_obj]
                     variables = decide(variables, median_list)
                 else:
                     variables = turn_to_object(variables, third_obj)
 
-            elif angle_between_third_and_second > 180:  # third left, first middle, second right
+            elif angle_between_third_and_second > 150:  # third left, first middle, second right
                 if variables["at_median"] == 0:
                     median_list = [third_obj, first_obj, second_obj]
                     variables = decide(variables, median_list)
