@@ -206,6 +206,8 @@ def plan(variables):
         else:
             # last and current fmir sensor reading difference, used for object detection
             diff = variables["last_fmir"] - variables["fmir"]
+            print(diff)
+            print(variables["fmir_buffer"])
             if variables["abs_rota"] - variables["scan_start"] > 360:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["init"] = True
