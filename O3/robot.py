@@ -218,7 +218,8 @@ def plan(variables):
                 variables["phase"] = "decide"
             # if diff is more than 20cm, then it most likely has detected an object
             elif on_object == 0:
-                if diff + variables["prev_diff"] + variables["preprev_diff"] > 0.20:
+                ndiff = diff + variables["prev_diff"] + variables["preprev_diff"]
+                if ndiff > 0.20 or ndiff > 10 and variables["fmir"] < 0.6:
                     variables["counter"] = 0
                     variables["flag"] = True
                     variables["obj_distance"] = variables["fmir"]
