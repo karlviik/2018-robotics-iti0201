@@ -201,6 +201,8 @@ def plan(variables):
             variables["init"] = False
             variables["left_speed"], variables["right_speed"] = 12, -12
             variables["scan_start"] = variables["abs_rota"]
+            variables["prev_diff"] = 0
+            variables["preprev_diff"] = 0
 
         # if already in progress
         else:
@@ -214,7 +216,7 @@ def plan(variables):
                 variables["phase"] = "decide"
             # if diff is more than 20cm, then it most likely has detected an object
             elif on_object == 0:
-                if diff > 0.20:
+                if diff + variables["prev_diff"] + variables["preprev_diff"] > 0.25:
                     variables["counter"] = 0
                     variables["flag"] = True
                     variables["obj_distance"] = variables["fmir"]
@@ -227,8 +229,12 @@ def plan(variables):
                             variables["phase"] = "zero_to_obj"
                             variables["next_phase"] = "scanning"
                             variables["init1"] = True
+                            variables["prev_diff"] = 0
+                            variables["preprev_diff"] = 0
                     else:
                         variables["flag"] = False
+                    variables["prev_diff"] = diff
+                    variables["preprev_diff"] = variables["prev_diff"]
             else:  # elif on_object == 1:
                 variables["on_obj"] = 0
                 if object_count == 1:
