@@ -32,6 +32,8 @@ def fmir_buffering(variables):
     """
     buffer = variables["fmir_buffer"]  # read buffer into var for easier writing, could remove this though
     fmir = robot.get_front_middle_ir()  # read fmir into var
+    if fmir > 1:
+        fmir = 1
     variables["last_fmir"] = variables["fmir"]  # put last allowed fmir value into "last_fmir" dict key
 
     # remove oldest and add new fmir reading
@@ -42,7 +44,7 @@ def fmir_buffering(variables):
     average = (buffer[0] + buffer[1] + buffer[2]) / 3
 
     # if new fmir reading is within the allowed deviation of average buffer value
-    if average * 0.85 < fmir < average * 1.15:
+    if average * 0.9 < fmir < average * 1.1:
         variables["fmir"] = fmir
     else:
         variables["fmir"] = variables["last_fmir"]
