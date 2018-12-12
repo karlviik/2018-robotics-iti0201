@@ -1,7 +1,7 @@
 """O2."""
 from PiBot import PiBot
 import rospy
-from math import cos, sin, sqrt, asin, pi
+from math import cos, sin, sqrt, asin, pi, degrees, radians
 import math
 GAIN = 50
 robot = PiBot()
@@ -147,19 +147,19 @@ def p_speed(variables, l_target_speed, r_target_speed=None):  # target speed sho
 # TODO Kui leiab kaks objekti siis läheb nende kahe vahele
 def decide(variables, median_list):
     # leave 2 closest object into the list
+    print(median_list)
     if len(median_list) == 3:
         median_list.remove(sorted(median_list, key=lambda x: x[0])[-1])
-
+    print(median_list)
     # angle between 2 objects
-    angle_between_two_closest_objects = (median_list[1][1] - median_list[0][1]) % 360
-
+    angle_between_two_closest_objects = (median_list[1][1] - median_list[0][1]) % 360  # kraadides
     distance_between_two_closest_objects = sqrt(
         median_list[0][0] ** 2 + median_list[1][0] ** 2 - 2 * median_list[0][0] * median_list[1][0] * cos(
-            angle_between_two_closest_objects))
+            radians(angle_between_two_closest_objects)))  # meetrites
     beta = asin((median_list[0][0] * sin(
-        angle_between_two_closest_objects)) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks
+        radians(angle_between_two_closest_objects))) / distance_between_two_closest_objects)  # nurk mida vaja d arvutamiseks, radiaanides
     d = sqrt((distance_between_two_closest_objects / 2) ** 2 + median_list[1][0] ** 2 - 2 * (
-            distance_between_two_closest_objects / 2) * median_list[1][0] * cos(beta))  # palju sõitma peab mediaanini
+            distance_between_two_closest_objects / 2) * median_list[1][0] * cos(beta))  # palju sõitma peab mediaanini meetrites
 
     # if robot can't fit through the 2 closest objects
     if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:
@@ -167,47 +167,32 @@ def decide(variables, median_list):
         return variables
 
     else:
-        # TODO: make so this part is compatible with the turn_new thing
-        # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan radiaanides
-        gamma = asin(((distance_between_two_closest_objects / 2) * sin(beta)) / d)
-        gamma = (180 * gamma / pi) % 360
-        distance = (pi * robot.AXIS_LENGTH) * (gamma / 360)
-        degrees_to_spin = (360 * distance / variables["wheel circumference"])
-        target = median_list[1][1] - degrees_to_spin
-
-        variables["target_turn"] = target
+        # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan
+        gamma = degrees(asin(((distance_between_two_closest_objects / 2) * sin(beta)) / d))
+        print("gamma", gamma)
         variables["distance_to_mid"] = d
-        variables["phase"] = "turn"
-
-        print(distance_between_two_closest_objects)
-        print(beta)
-        print(d)
-        print(gamma)
-        print(distance)
-        print(degrees_to_spin)
-        print(target)
+        abs_goal = median_list[1][1] - gamma
+        variables["goal"] = abs_goal - variables["abs_rota"]
+        variables["phase"] = "turn_new"
+        variables["next_phase"] = "drive"
 
         return variables
 
 
 def turn_to_object(variables, median_list):
     """For second turning."""
-    # TODO: make this part compatible with turn_new I guess
-    variables["target_turn"] = median_list[1]
+    # median_list = [distance, degrees]
     variables["distance_to_mid"] = median_list[0] / 3
-    variables["phase"] = "turn"
-
-    print("turn_to_object")
-    print(variables["target_turn"])
-    print(variables["distance_to_mid"])
-
+    variables["goal"] = median_list[1] - variables["abs_rota"]
+    variables["phase"] = "turn_new"
+    variables["next_phase"] = "drive"
     return variables
 
 
 def plan(variables):
     """Do all the planning in variable dict and then return it. Because Python."""
-    object_count = variables["object_count"]
-    on_object = variables["on_object"]
+    object_count = variables["obj_count"]  # ?
+    on_object = variables["on_obj"]
     # scanning phase
     if variables["phase"] == "scanning":
 
@@ -216,13 +201,11 @@ def plan(variables):
             variables["init"] = False
             variables["left_speed"], variables["right_speed"] = 12, -12
             variables["scan_start"] = variables["abs_rota"]
-            print("speed 12 -12 (init scanning)")
 
         # if already in progress
         else:
             # last and current fmir sensor reading difference, used for object detection
             diff = variables["last_fmir"] - variables["fmir"]
-
             if variables["abs_rota"] - variables["scan_start"] > 360:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["init"] = True
@@ -237,33 +220,35 @@ def plan(variables):
                     variables["counter"] += 1
                     if variables["counter"] >= 4:
                         if variables["obj_distance"] + 0.1 > variables["fmir"]:
-                            variables["on_object"] = 1
-                            variables["object_count"] += 1
+                            variables["on_obj"] = 1
+                            variables["obj_count"] += 1
                             variables["phase"] = "zero_to_obj"
                             variables["next_phase"] = "scanning"
                             variables["init1"] = True
                         else:
                             variables["flag"] = False
             else:  # elif on_object == 1:
-                variables["on_object"] = 0
-                if variables["obj_count"] == 1:
+                variables["on_obj"] = 0
+                if object_count == 1:
                     variables["first_obj_encoder"] = variables["left_enc"]
                     variables["first_obj_deg"] = variables["abs_rota"]
                     variables["first_obj_distance"] = variables["zero_distance"]
                     variables["left_speed"], variables["right_speed"] = 12, -12
-                elif variables["obj_count"] == 2:
+                    print("1")
+                elif object_count == 2:
                     variables["second_obj_encoder"] = variables["left_enc"]
                     variables["second_obj_deg"] = variables["abs_rota"]
                     variables["second_obj_distance"] = variables["zero_distance"]
                     variables["left_speed"], variables["right_speed"] = 12, -12
-                elif variables["obj_count"] == 3:
+                    print("2")
+                elif object_count == 3:
                     variables["third_obj_encoder"] = variables["left_enc"]
                     variables["third_obj_deg"] = variables["abs_rota"]
                     variables["third_obj_distance"] = variables["zero_distance"]
                     variables["left_speed"], variables["right_speed"] = 0, 0
                     variables["phase"] = "decide"
+                    print("3")
 
-    # TODO: implement usage
     # turns bot in desired direction desired amount. Wants "goal" in deg and "init1" and "next_phase"
     elif variables["phase"] == "turn_new":
         # initialisation
@@ -354,20 +339,24 @@ def plan(variables):
                 variables["phase"] = variables["next_phase"]
                 variables["zero_distance"] = variables["fmir"]
                 variables["init1"] = True
+                variables["flag"] = False    # Oli puudu
 
     # decide, which object is which and what to do
     elif variables["phase"] == "decide":
         angle_between_second_and_first = abs(variables["first_obj_deg"] - variables["second_obj_deg"])
-        first_obj = [variables["first_object_distance"], variables["first_object_deg"]]
-        second_obj = [variables["second_object_distance"], variables["second_object_deg"]]
+        first_obj = [variables["first_obj_distance"], variables["first_obj_deg"]]
+        second_obj = [variables["second_obj_distance"], variables["second_obj_deg"]]
         if variables["obj_count"] == 2:
+            print(angle_between_second_and_first)
             median_list = [first_obj, second_obj]
             if angle_between_second_and_first > 180:
                 median_list = [second_obj, first_obj]
             variables = decide(variables, median_list)
         elif variables["obj_count"] == 3:
             angle_between_third_and_second = abs(variables["second_obj_deg"] - variables["third_obj_deg"])
-            third_obj = [variables["third_object_distance"], variables["third_object_deg"]]
+            third_obj = [variables["third_obj_distance"], variables["third_obj_deg"]]
+            print(angle_between_second_and_first)
+            print(angle_between_third_and_second)
 
             if angle_between_second_and_first > 180:  # second left, third middle, first right
                 if variables["at_median"] == 0:
@@ -390,16 +379,6 @@ def plan(variables):
                 else:
                     variables = turn_to_object(variables, second_obj)
 
-    # turn to median, between the two closest objects
-    elif variables["phase"] == "turn":
-        if variables["turning"] == 0:
-            variables["left_speed"], variables["right_speed"] = -12, 12
-            variables["turning"] = 1
-        else:
-            if variables["left_enc"] < variables["target_turn"]:
-                variables["left_speed"], variables["right_speed"] = 0, 0
-                variables["phase"] = "drive"
-
     # drive to median, between the two closest objects
     elif variables["phase"] == "drive":
         if variables["driving"] == 0:
@@ -408,15 +387,13 @@ def plan(variables):
             variables["left_speed"], variables["right_speed"] = 12, 12
             variables["driving"] = 1
         else:
-            print(variables["left_enc"], variables["target_drive"])
             if variables["left_enc"] > variables["target_drive"]:
-                print("Goes here! Noice!")
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 if variables["at_median"] == 0:
-                    variables["turning"] = 0
                     variables["driving"] = 0
                     variables["at_median"] = 1
                     variables["init"] = True
+                    variables["obj_count"] = 0
                     variables["phase"] = "scanning"
                 else:
                     variables["phase"] = "end"
@@ -447,11 +424,10 @@ def main():
     variables["wheel circumference"] = robot.WHEEL_DIAMETER * pi
     variables["turn_back"] = 0  # if it should turn back after it has checked
     variables["has_checked"] = 0  # if it has checked the object
-    variables["on_object_check"] = 0  # for checking, if it is on object or not
+    variables["on_obj_check"] = 0  # for checking, if it is on object or not
     variables["at_median"] = 0  # if it is at median or not, and if it should start the second turn
-    variables["object_count"] = 0  # counts how many objects has it seen
-    variables["on_object"] = 0  # if it is on object
-    variables["turning"] = 0  # if it is turning already
+    variables["obj_count"] = 0  # counts how many objects has it seen
+    variables["on_obj"] = 0  # if it is on object
     variables["driving"] = 0  # if it is driving
     variables["left_speed"] = 0  # for act, setting left wheel speed
     variables["right_speed"] = 0  # for act, setting right wheel speed
@@ -464,12 +440,6 @@ def main():
     variables["last_time"] = 0
     variables["counter"] = 0
     variables["max_fmir"] = float("inf")
-    variables["first_object_first_distance"] = float("inf")
-    variables["second_object_first_distance"] = float("inf")
-    variables["third_object_first_distance"] = float("inf")
-    variables["first_object_second_encoder"] = float("inf")
-    variables["second_object_second_encoder"] = float("inf")
-    variables["third_object_second_encoder"] = float("inf")
 
     while True:
         variables = sense(variables)
