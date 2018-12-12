@@ -218,13 +218,13 @@ def plan(variables):
                 variables["phase"] = "decide"
             # if diff is more than 20cm, then it most likely has detected an object
             elif on_object == 0:
-                if diff + variables["prev_diff"] + variables["preprev_diff"] > 0.25:
+                if diff + variables["prev_diff"] + variables["preprev_diff"] > 0.20:
                     variables["counter"] = 0
                     variables["flag"] = True
                     variables["obj_distance"] = variables["fmir"]
                 elif variables["flag"]:
                     variables["counter"] += 1
-                    if variables["obj_distance"] + 0.13 > variables["fmir"]:
+                    if variables["obj_distance"] + 0.07 > variables["fmir"]:
                         if variables["counter"] >= 5:
                             variables["on_obj"] = 1
                             variables["obj_count"] += 1
@@ -359,7 +359,7 @@ def plan(variables):
         if variables["obj_count"] == 2:
             print(angle_between_second_and_first)
             median_list = [first_obj, second_obj]
-            if angle_between_second_and_first > 180:
+            if angle_between_second_and_first > 150:
                 median_list = [second_obj, first_obj]
             variables = decide(variables, median_list)
             variables["at_median"] = 0
