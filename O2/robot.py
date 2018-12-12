@@ -224,7 +224,7 @@ def plan(variables):
                     variables["obj_distance"] = variables["fmir"]
                 elif variables["flag"]:
                     variables["counter"] += 1
-                    if variables["obj_distance"] + 0.1 > variables["fmir"]:
+                    if variables["obj_distance"] + 0.13 > variables["fmir"]:
                         if variables["counter"] >= 5:
                             variables["on_obj"] = 1
                             variables["obj_count"] += 1
