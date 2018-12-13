@@ -393,7 +393,8 @@ def plan(variables):
                 # start turning clockwise towards object middle.
                 variables["left_speed"], variables["right_speed"] = 12, -12
 
-                if variables["obj_distance"] * sqrt(2 - cos(degrees(abs(variables["l_edge"] - variables["r_edge"]) - 30))) > 0.25:
+                if variables["obj_distance"] * sqrt(2 - cos(degrees(abs(variables["l_edge"] - variables["r_edge"]) - 40))) > 0.25:
+                    print("AAAAAAAAH I detected a wide object!, its width:", variables["obj_distance"] * sqrt(2 - cos(degrees(abs(variables["l_edge"] - variables["r_edge"]) - 40))))
                     if variables["obj_count"] == 1:
                         variables["obj_count"] = 2
                     elif variables["obj_count"] == 2:
