@@ -177,9 +177,9 @@ def decide(variables, median_list):
         print(distance_from_perpendicular, sin(beta), median_list[1][0], sin(1.5708))
 
         # multiplier on suhe mida korrutada sisemise ratta speedi sellega (p-controlleri target speed)
-        variables["multiplier"] = (distance_from_perpendicular + 0.2) / (distance_from_perpendicular + 0.2 + robot.AXIS_LENGTH)
+        variables["multiplier"] = (distance_from_perpendicular + 0.17) / (distance_from_perpendicular + 0.17 + robot.AXIS_LENGTH)
         print("and multiplier is: ", variables["multiplier"])
-        variables["dgoal"] = 135  # 135 kraadi see kaare asi
+        variables["dgoal"] = 120  # 120 kraadi see kaare asi
 
         abs_goal = median_list[1][1] - (180-(90 + degrees(beta))) + 90  # ?
         variables["goal"] = abs_goal - variables["abs_rota"]
@@ -372,7 +372,7 @@ def plan(variables):
         if variables["counter"] == 0:
 
             # if it has exited the object, save the degrees and +1 counter to go to next subphase
-            if variables["fmir"] - 0.10 > variables["obj_distance"]:
+            if variables["fmir"] - 0.10 > variables["obj_distance"] or variables["fmir"] + 0.10 < variables["obj_distance"]:
                 variables["r_edge"] = variables["rota_progress"]
                 variables["r_absolute"] = variables["abs_rota"]
                 variables["counter"] = 1
