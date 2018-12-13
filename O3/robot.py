@@ -5,7 +5,6 @@ from math import cos, sin, sqrt, asin, pi, degrees, radians
 import math
 GAIN = 50
 robot = PiBot()
-# TODO kontrollib kas on ikka objet ja saab täpsemad äärte encoderid
 
 
 def fmir_buffer_init():
@@ -638,9 +637,10 @@ def plan(variables):
     elif variables["phase"] == "smalldecide":
         if object_count == 3:
             variables["second_obj_deg"] = variables["third_object_deg"]
-            variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"], variables["third_obj_distance"]) + 14
+            variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"], variables["third_obj_distance"]) + 0.14
         else:
-            variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"]) + 14
+            variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"]) + 0.14
+        print(variables["yolotravel"])
         variables["goal"] = (variables["first_obj_deg"] + variables["second_obj_deg"]) / 2 - variables["abs_rota"]
         print("I calculated the goal, yo")
         variables["phase"] = "turn_new"
@@ -650,6 +650,7 @@ def plan(variables):
     elif variables["phase"] == "preyolodrive":
         variables["goal"] = variables["yolotravel"]
         variables["phase"] = "drive_straight"
+        variables["init1"] = True
         variables["next_phase"] = "oof"
 
     else:
