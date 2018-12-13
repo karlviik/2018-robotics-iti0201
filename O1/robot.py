@@ -192,8 +192,7 @@ def blind(variables):
         variables["other_counter"] += 1
         if variables["other_counter"] != 10:
             variables["counter"] = 0
-        avg = (variables["fmir_buffer"][0] + variables["fmir_buffer"][1] + variables["fmir_buffer"][2] +
-               variables["fmir_buffer"][3]) / 4
+        avg = (variables["fmir_buffer"][0] + variables["fmir_buffer"][1] + variables["fmir_buffer"][2] + variables["fmir_buffer"][3]) / 4
         if avg > variables["avg"]:
             variables["avg"] = avg
         print("avg and buffer:", avg, variables["fmir_buffer"])
