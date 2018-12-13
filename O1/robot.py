@@ -152,37 +152,43 @@ def move_to_obj(variables):
     return variables
 
 
+def scan(variables):
+    """Do scanning."""
+    # if condition that is filled every time scanning is started, starts the turning
+    if variables["scan_progress"] == 0:
+        variables["left_speed"], variables["right_speed"] = 10, -10
+        variables["scan_progress"] = 1
+
+    # if scanning is already in progress
+    else:
+        # last and current fmir sensor reading difference, used for object detection
+        diff = variables["last_fmir"] - variables["fmir"]
+
+        # output for checking the difference, wheel speeds and the buffer
+        print("Differnece is: " + str(diff))
+        print(variables["left_speed"], variables["right_speed"])
+        print(variables["fmir_buffer"])
+        print("------------------------------------------------------")
+
+        # if diff is more than 20cm, then it most likely has detected an object
+        if abs(diff) > 0.30:
+            # stops turning and scanning and changes phase to "move to obj"
+            variables["left_speed"], variables["right_speed"] = 0, 0
+            variables["scan_progress"] = 0
+            variables["phase"] = "move to obj"
+
+        # if it has not detected an object and it's still scanning
+        else:
+            # run the p controller function to adjust right and left wheel speeds
+            variables = p_speed(variables, 1, 0.015)
+    return variables
+
+
 def plan(variables):
     """Do all the planning in variable dict and then return it. Because Python."""
     # scanning phase
     if variables["phase"] == "scanning":
-        # if condition that is filled every time scanning is started, starts the turning
-        if variables["scan_progress"] == 0:
-            variables["left_speed"], variables["right_speed"] = 10, -10
-            variables["scan_progress"] = 1
-
-        # if scanning is already in progress
-        else:
-            # last and current fmir sensor reading difference, used for object detection
-            diff = variables["last_fmir"] - variables["fmir"]
-
-            # output for checking the difference, wheel speeds and the buffer
-            print("Differnece is: " + str(diff))
-            print(variables["left_speed"], variables["right_speed"])
-            print(variables["fmir_buffer"])
-            print("------------------------------------------------------")
-
-            # if diff is more than 20cm, then it most likely has detected an object
-            if abs(diff) > 0.30:
-                # stops turning and scanning and changes phase to "move to obj"
-                variables["left_speed"], variables["right_speed"] = 0, 0
-                variables["scan_progress"] = 0
-                variables["phase"] = "move to obj"
-
-            # if it has not detected an object and it's still scanning
-            else:
-                # run the p controller function to adjust right and left wheel speeds
-                variables = p_speed(variables, 1, 0.015)
+        variables = scan(variables)
 
     # moving to object phase
     elif variables["phase"] == "move to obj":
@@ -211,7 +217,6 @@ def plan(variables):
             print("deg to target:", degrees_to_target, "average dist:", avg)
             variables["l_target_drive"] = variables["left_enc"] + degrees_to_target
             variables["r_target_drive"] = variables["right_enc"] + degrees_to_target
-
 
             # and start moving forward
             variables["left_speed"], variables["right_speed"] = 10, 10
@@ -259,7 +264,7 @@ def main():
         variables = sense(variables)
         variables = plan(variables)
         act(variables)
-        rospy.sleep(0.05) # was 0.02
+        rospy.sleep(0.05)  # was 0.02
 
 
 if __name__ == "__main__":
