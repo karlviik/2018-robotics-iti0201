@@ -149,6 +149,7 @@ def p_speed(variables, l_target_speed, r_target_speed=None):  # target speed sho
 
 
 def decide(variables, median_list):
+    """Decide what to do."""
     # leave 2 closest object into the list
     print(median_list)
     if len(median_list) == 3:
@@ -187,14 +188,30 @@ def decide(variables, median_list):
         variables["phase"] = "turn_new"
         variables["next_phase"] = "moving_forw_arc"
         return variables
-    elif distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.2: # kas 20cm ok ?
-        # palju peab sõitma, et mediaaniga risti
-        a_jooniselt = sqrt(median_list[0][0]**2 + median_list[1][0]**2 - 2 * median_list[0][0] * median_list[1][0] * cos(radians(angle_between_two_closest_objects)))
-        beta_jooniselt = asin(sin(radians(angle_between_two_closest_objects)) * median_list[1][0] / a_jooniselt)
-        phi_jooniselt = 180 - beta_jooniselt
-        pikkus_mediaani_lahedale = sin(phi_jooniselt) * median_list[0][0] - 0.2
-        comp = a_jooniselt / 2 + cos(phi_jooniselt) * median_list[1][0]
-        return variables  # just in case
+    else:
+        # median list esimene on vist vasakpoolne ja teine parempoolne? jah
+        # median_list = [distance, degrees]
+        if median_list[0][0] < median_list[1][0]:
+            variables["isitmirrored"] = True
+        else:
+            variables["isitmirrored"] = False
+        obj1, obj2 = sorted(median_list, key=lambda x: x[0])  # obj1 peaks olema lähem nii, obj2 kaugem
+        degdiff = abs(obj1[1] - obj2[1])
+        objconnector = sqrt(obj1[0] ** 2 + obj2[0] ** 2 - 2 * obj1[0] * obj2[0] * cos(radians(degdiff)))
+        botobj1obj2angle = degrees(asin(sin(radians(degdiff)) * obj2[0] / objconnector))
+        otherangle = 180 - botobj1obj2angle
+        variables["secondstraightmove"] = sin(radians(otherangle)) * obj1[0] - 0.2
+        variables["firststraightmove"] = objconnector / 2 + cos(radians(otherangle)) * obj1[0]
+        if not variables["isitmirrored"]:
+            absgoal = obj1[1] + otherangle
+        else:
+            absgoal = obj1[1] - otherangle
+        variables["goal"] = absgoal - variables["abs_rota"]
+        variables["init1"] = True
+        variables["phase"] = "turn_new"
+        variables["next_phase"] = "pre-drive"
+
+
     else:
         # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan
         gamma = degrees(asin(((distance_between_two_closest_objects / 2) * sin(beta)) / d))
@@ -203,7 +220,7 @@ def decide(variables, median_list):
         abs_goal = median_list[1][1] - gamma
         variables["goal"] = abs_goal - variables["abs_rota"]
         variables["phase"] = "turn_new"
-        variables["next_phase"] = "drive"
+        variables["next_phase"] = "drive"  # see koht vist oleks problemaatiline, kui see kunagi peaks juhtuma. Või. Peaks esimeses maailmas tegema ju
         return variables
 
 
@@ -213,7 +230,7 @@ def turn_to_object(variables, median_list):
     variables["distance_to_mid"] = median_list[0] / 3
     variables["goal"] = median_list[1] - variables["abs_rota"]
     variables["phase"] = "turn_new"
-    variables["next_phase"] = "drive"
+    variables["next_phase"] = "drive"  # eee ma mõtlesin seda kohta
     return variables
 
 
@@ -494,6 +511,51 @@ def plan(variables):
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["init"] = True
                 variables["phase"] = "scanning"
+                variables["obj_count"] = 0
+
+    elif variables["phase"] == "pre-drive":
+        variables["goal"] = variables["firststraightmove"]
+        variables["phase"] = "drive_straight"
+        variables["next_phase"] = "pre-90deg"
+
+    elif variables["phase"] == "pre-90deg":
+        goal = -90
+        if variables["isitmirrored"]:
+            goal = 90
+        variables["goal"] = goal
+        variables["phase"] = "turn_new"
+        variables["next_phase"] = "pre-closedrive"
+
+    elif variables["phase"] == "pre-closedrive":
+        variables["goal"] = variables["secondstraightmove"]
+        variables["phase"] = "drive_straight"
+        variables["next_phase"] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+
+    elif variables["phase"] == "drive_straight":
+        # initialisation
+        if variables["init1"]:
+            variables["init1"] = False
+
+            # reset how much it has to move straight and give it speeds to move straight
+            variables["left_speed"], variables["right_speed"] = 15, 15
+
+        # if not initialisation
+        else:
+            # substract traveled distance from goal
+            variables["goal"] -= variables["distance"]
+
+            # if goal has been reached or wall or some object is within 60 cm
+            if variables["goal"] < 0:
+                # stop bot and start scanning
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["phase"] = variables["next_phase"]
+                variables["init1"] = True
+
+
+
+
+
+
 
     # do p controller
     variables = p_speed(variables, 0.03)
