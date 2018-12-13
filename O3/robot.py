@@ -540,6 +540,7 @@ def main():
     variables["counter"] = 0
     variables["max_fmir"] = float("inf")
     variables["lastissame"] = False
+    variables["r_absolute"] = 0
     variables["past_fmirs"] = [variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"]]
 
     while True:
