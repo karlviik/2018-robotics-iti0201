@@ -35,6 +35,8 @@ def fmir_buffering(variables):
     if fmir > 1:
         fmir = 1
     variables["last_fmir"] = variables["fmir"]  # put last allowed fmir value into "last_fmir" dict key
+    variables["past_fmirs"].pop(0)
+    variables["past_fmirs"].append(variables["last_fmir"])
 
     # remove oldest and add new fmir reading
     buffer.pop(0)
@@ -146,7 +148,6 @@ def p_speed(variables, l_target_speed, r_target_speed=None):  # target speed sho
     return variables
 
 
-# TODO Kui leiab kaks objekti siis läheb nende kahe vahele
 def decide(variables, median_list):
     # leave 2 closest object into the list
     print(median_list)
@@ -165,9 +166,30 @@ def decide(variables, median_list):
 
     # if robot can't fit through the 2 closest objects
     if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:
-        # TODO "phase" = drive to other side of triangle
-        return variables
+        # palju robot peab pöörama, et oleks 90 kraadise nurga all esimese kahe objektiga
+        # distance_from_perpendicular on kaugus ristumise punktist
+        distance_from_perpendicular = (sin(beta) * median_list[1][0]) / sin(1.5708)
 
+        # length of the arc what robot needs to drive, outside wheel, 55 degrees to new point
+        distance_to_other_side = 2.35 * distance_from_perpendicular
+
+        # multiplier on suhe mida korrutada sisemise ratta speedi sellega (p-controlleri target speed)
+        variables["multiplier"] = (distance_from_perpendicular + 0.05) / (distance_from_perpendicular + 0.05 + robot.AXIS.LENGTH)
+        variables["dgoal"] = 135  # 135 kraadi see kaare asi
+
+        abs_goal = median_list[1][1] - (180-(90 + degrees(beta))) + 90  # ?
+        variables["goal"] = abs_goal - variables["abs_rota"]
+        variables["distance_to_new_side"] = distance_to_other_side
+        variables["phase"] = "turn_new"
+        variables["next_phase"] = "moving_forw_arc"
+        return variables
+    elif distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.2: # kas 20cm ok ?
+        # palju peab sõitma, et mediaaniga risti
+        a_jooniselt = sqrt(median_list[0][0]**2 + median_list[1][0]**2 - 2 * median_list[0][0] * median_list[1][0] * cos(radians(angle_between_two_closest_objects)))
+        beta_jooniselt = asin(sin(radians(angle_between_two_closest_objects)) * median_list[1][0] / a_jooniselt)
+        phi_jooniselt = 180 - beta_jooniselt
+        pikkus_mediaani_lahedale = sin(phi_jooniselt) * median_list[0][0] - 0.2
+        comp =a_jooniselt / 2 + cos(phi_jooniselt) * median_list[1][0]
     else:
         # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan
         gamma = degrees(asin(((distance_between_two_closest_objects / 2) * sin(beta)) / d))
@@ -177,7 +199,6 @@ def decide(variables, median_list):
         variables["goal"] = abs_goal - variables["abs_rota"]
         variables["phase"] = "turn_new"
         variables["next_phase"] = "drive"
-
         return variables
 
 
@@ -192,7 +213,7 @@ def turn_to_object(variables, median_list):
 
 
 def plan(variables):
-    """Do all the planning in variable dict and then return it. Because Python."""
+    """Do all the planning in variable dict and then return it."""
     object_count = variables["obj_count"]  # ?
     on_object = variables["on_obj"]
     # scanning phase
@@ -218,15 +239,10 @@ def plan(variables):
                 variables["phase"] = "decide"
             # if diff is more than 20cm, then it most likely has detected an object
             elif on_object == 0:
-                ndiff = diff + variables["prev_diff"] + variables["preprev_diff"]
-                if ndiff > 0.20 or ndiff > 10 and variables["fmir"] < 0.6:
-                    variables["counter"] = 0
-                    variables["flag"] = True
-                    variables["obj_distance"] = variables["fmir"]
-                elif variables["flag"]:
+                if variables["flag"]:
                     variables["counter"] += 1
-                    if variables["obj_distance"] + 0.07 > variables["fmir"]:
-                        if variables["counter"] >= 5:
+                    if variables["obj_distance"] + 0.10 > variables["fmir"] or variables["side"]:
+                        if variables["counter"] >= 5 or variables["side"]:
                             variables["on_obj"] = 1
                             variables["obj_count"] += 1
                             variables["phase"] = "zero_to_obj"
@@ -238,26 +254,50 @@ def plan(variables):
                         variables["flag"] = False
                     variables["prev_diff"] = diff
                     variables["preprev_diff"] = variables["prev_diff"]
+
+                elif diff + variables["prev_diff"] + variables["preprev_diff"] > 0.25:
+                    variables["side"] = False  # ehk detectis vasakult poolt peale minnes
+                    variables["counter"] = 0
+                    variables["flag"] = True
+                    variables["obj_distance"] = variables["fmir"]
+                elif diff + variables["prev_diff"] + variables["preprev_diff"] < -0.25:
+                    if variables["abs_rota"] + 4 > variables["r_absolute"]:
+                        variables["side"] = True
+                        variables["flag"] = True
+                        variables["obj_distance"] = variables["past_fmirs"][-4]
+                        for i in range(6):
+                            if variables["past_fmirs"][i] > variables["obj_distance"] + 0.1 or variables["past_fmirs"][i] < variables["obj_distance"] - 0.1:
+                                variables["flag"] = False
+                                variables["side"] = False
+
             else:  # elif on_object == 1:
                 variables["on_obj"] = 0
                 if object_count == 1:
-                    variables["first_obj_encoder"] = variables["left_enc"]
                     variables["first_obj_deg"] = variables["abs_rota"]
                     variables["first_obj_distance"] = variables["zero_distance"]
                     variables["left_speed"], variables["right_speed"] = 12, -12
                     print("1")
                 elif object_count == 2:
-                    variables["second_obj_encoder"] = variables["left_enc"]
                     variables["second_obj_deg"] = variables["abs_rota"]
                     variables["second_obj_distance"] = variables["zero_distance"]
                     variables["left_speed"], variables["right_speed"] = 12, -12
+                    if variables["lastissame"]:
+                        variables["lastissame"] = False
+                        variables["first_obj_deg"] = variables["second_obj_deg"] - variables["degsforsame"]
+                        variables["first_obj_distance"] = variables["zero_distance"]
+                        variables["second_obj_deg"] += variables["degsforsame"]
+
                     print("2")
                 elif object_count == 3:
-                    variables["third_obj_encoder"] = variables["left_enc"]
                     variables["third_obj_deg"] = variables["abs_rota"]
                     variables["third_obj_distance"] = variables["zero_distance"]
                     variables["left_speed"], variables["right_speed"] = 0, 0
                     variables["phase"] = "decide"
+                    if variables["lastissame"]:
+                        variables["lastissame"] = False
+                        variables["second_obj_deg"] = variables["third_obj_deg"] - variables["degsforsame"]
+                        variables["second_obj_distance"] = variables["zero_distance"]
+                        variables["third_obj_deg"] += variables["degsforsame"]
                     print("3")
 
     # turns bot in desired direction desired amount. Wants "goal" in deg and "init1" and "next_phase"
@@ -300,14 +340,22 @@ def plan(variables):
             # put flag to false
             variables["flag"] = False
 
-            # takes obj distance as fmir if it's shorter
-            if variables["obj_distance"] > variables["fmir"]:
-                variables["obj_distance"] = variables["fmir"]
-
-            # restart counter and start turning clockwise until obj is lost. Also zero rota progress. Force exit
-            variables["counter"] = 0
-            variables["left_speed"], variables["right_speed"] = 12, -12
             variables["rota_progress"] = 0
+
+            if not variables["side"]:  # takes obj distance as fmir if it's shorter
+                if variables["obj_distance"] > variables["fmir"]:
+                    variables["obj_distance"] = variables["fmir"]
+
+                # restart counter and start turning clockwise until obj is lost. Also zero rota progress. Force exit
+                variables["counter"] = 0
+                variables["left_speed"], variables["right_speed"] = 12, -12
+            else:
+                variables["r_edge"] = 0
+                variables["r_absolute"] = variables["abs_rota"]
+                variables["counter"] = 1
+                variables["left_speed"], variables["right_speed"] = -12, 12
+
+
             return variables
 
         # update rota progress
@@ -317,8 +365,9 @@ def plan(variables):
         if variables["counter"] == 0:
 
             # if it has exited the object, save the degrees and +1 counter to go to next subphase
-            if variables["fmir"] - 0.15 > variables["obj_distance"]:
+            if variables["fmir"] - 0.10 > variables["obj_distance"]:
                 variables["r_edge"] = variables["rota_progress"]
+                variables["r_absolute"] = variables["abs_rota"]
                 variables["counter"] = 1
                 variables["left_speed"], variables["right_speed"] = -12, 12
 
@@ -327,18 +376,26 @@ def plan(variables):
 
             # if flag is not true, turn it true if it has gone back to object from passing it.
             if not variables["flag"]:
-                if variables["fmir"] - 0.15 < variables["obj_distance"]:
+                if variables["fmir"] - 0.10 < variables["obj_distance"]:
                     variables["flag"] = True
 
             # if it has gone back to obj, start detecting for left edge
             # if has detected that it's off object again, save edge degrees and activate next subphase. Calculate goal
-            elif variables["fmir"] - 0.15 > variables["obj_distance"]:
+            elif variables["fmir"] - 0.10 > variables["obj_distance"] or variables["fmir"] + 0.10 < variables["obj_distance"]:
                 variables["l_edge"] = variables["rota_progress"]
                 variables["counter"] = 2
                 variables["goal"] = (variables["l_edge"] + variables["r_edge"]) / 2
 
                 # start turning clockwise towards object middle.
                 variables["left_speed"], variables["right_speed"] = 12, -12
+
+                if variables["obj_distance"] * sqrt(2 - cos(degrees(abs(variables["l_edge"] - variables["r_edge"]) - 30))) > 0.1:
+                    if variables["obj_count"] == 1:
+                        variables["obj_count"] = 2
+                    elif variables["obj_count"] == 2:
+                        variables["obj_count"] = 3
+                    variables["lastissame"] = True
+                    variables["degsforsame"] = abs(variables["goal"]) - 20  # diff between the 2 objects or something
 
         # if rotating towards middle of object
         elif variables["counter"] == 2:
@@ -394,6 +451,7 @@ def plan(variables):
                 else:
                     variables = turn_to_object(variables, second_obj)
 
+    # TODO muuta see, et töötaks ka kui ei mahu läbi esimese punkti, korrutada multiplieriga vasaku ratta kiirus, muidu 1 ?
     # drive to median, between the two closest objects
     elif variables["phase"] == "drive":
         if variables["driving"] == 0:
@@ -412,6 +470,21 @@ def plan(variables):
                     variables["phase"] = "scanning"
                 else:
                     variables["phase"] = "end"
+
+    # universal driving
+    elif variables["phase"] == "moving_forw_arc":
+        if variables["init"]:
+            variables["init"] = False
+            variables["move_progress"] = 0
+            variables["left_speed"], variables["right_speed"] = 15 * variables["multiplier"], 15
+        else:
+            variables = p_speed(variables, 0.04 * variables["multiplier"], 0.04)
+            variables["p_ignore"] = True
+            variables["move_progress"] += variables["turn_amount"]
+            if variables["move_progress"] > variables["dgoal"]:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["init"] = True
+                variables["phase"] = "scanning"
 
     # do p controller
     variables = p_speed(variables, 0.03)
@@ -456,6 +529,8 @@ def main():
     variables["last_time"] = 0
     variables["counter"] = 0
     variables["max_fmir"] = float("inf")
+    variables["lastissame"] = False
+    variables["past_fmirs"] = [variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"], variables["fmir"]]
 
     while True:
         variables = sense(variables)
