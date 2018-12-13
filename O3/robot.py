@@ -212,17 +212,6 @@ def decide(variables, median_list):
         variables["next_phase"] = "pre-drive"
 
 
-    else:
-        # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan
-        gamma = degrees(asin(((distance_between_two_closest_objects / 2) * sin(beta)) / d))
-        print("gamma", gamma)
-        variables["distance_to_mid"] = d
-        abs_goal = median_list[1][1] - gamma
-        variables["goal"] = abs_goal - variables["abs_rota"]
-        variables["phase"] = "turn_new"
-        variables["next_phase"] = "drive"  # see koht vist oleks problemaatiline, kui see kunagi peaks juhtuma. Või. Peaks esimeses maailmas tegema ju
-        return variables
-
 
 def turn_to_object(variables, median_list):
     """For second turning."""
