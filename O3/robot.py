@@ -191,7 +191,7 @@ def decide(variables, median_list):
     else:
         # median list esimene on vist vasakpoolne ja teine parempoolne? jah
         # median_list = [distance, degrees]
-        if median_list[0][0] < median_list[1][0]:
+        if median_list[0][0] > median_list[1][0]:
             variables["isitmirrored"] = True
         else:
             variables["isitmirrored"] = False
