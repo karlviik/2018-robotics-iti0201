@@ -142,8 +142,8 @@ def p_speed(variables, l_target_speed, r_target_speed=None):  # target speed sho
         r_error = r_target_speed - r_speed
 
     # calculate new right and left wheel speeds by adding rounded value of GAIN constant times wheel speed error
-    variables["right_speed"] = variables["right_speed"] + round(GAIN * r_error)
-    variables["left_speed"] = variables["left_speed"] + round(GAIN * l_error)
+    variables["right_speed"] = int(variables["right_speed"] + round(GAIN * r_error))
+    variables["left_speed"] = int(variables["left_speed"] + round(GAIN * l_error))
 
     # return dictionary with variable dictionary with new speeds
     return variables
@@ -174,7 +174,7 @@ def decide(variables, median_list):
 
         # length of the arc what robot needs to drive, outside wheel, 55 degrees to new point
         distance_to_other_side = 2.35 * distance_from_perpendicular
-
+        print(distance_from_perpendicular, sin(beta), median_list[1][0], sin(1.5708))
         # multiplier on suhe mida korrutada sisemise ratta speedi sellega (p-controlleri target speed)
         variables["multiplier"] = (distance_from_perpendicular + 0.05) / (distance_from_perpendicular + 0.05 + robot.AXIS_LENGTH)
         variables["dgoal"] = 135  # 135 kraadi see kaare asi
@@ -479,7 +479,7 @@ def plan(variables):
         if variables["init"]:
             variables["init"] = False
             variables["move_progress"] = 0
-            variables["left_speed"], variables["right_speed"] = 15 * variables["multiplier"], 15
+            variables["left_speed"], variables["right_speed"] = round(15 * variables["multiplier"]), 15
         else:
             variables = p_speed(variables, 0.04 * variables["multiplier"], 0.04)
             variables["p_ignore"] = True
