@@ -336,6 +336,7 @@ def plan(variables):
         else:
             # update how much bot has turned
             variables["turn_progress"] += variables["turn_amount"]
+            print(abs(variables["goal"]) - abs(variables["turn_progress"]))
 
             # if has turned enough, stop bot and go to next phase
             if abs(variables["goal"]) - abs(variables["turn_progress"]) <= 0:
@@ -544,10 +545,10 @@ def plan(variables):
     elif variables["phase"] == "pre-smallscan":
         variables["goal"] = -82
         variables["phase"] = "turn_new"
-        variables["next_ohase"] = "smallscan"
+        variables["next_phase"] = "smallscan"
 
     elif variables["phase"] == "smallscan":
-
+        print("doing smallscan")
         # if initialisation
         if variables["init1"]:
             variables["init1"] = False
