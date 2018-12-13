@@ -177,7 +177,7 @@ def decide(variables, median_list):
         print(distance_from_perpendicular, sin(beta), median_list[1][0], sin(1.5708))
 
         # multiplier on suhe mida korrutada sisemise ratta speedi sellega (p-controlleri target speed)
-        variables["multiplier"] = (distance_from_perpendicular + 0.05) / (distance_from_perpendicular + 0.05 + robot.AXIS_LENGTH)
+        variables["multiplier"] = (distance_from_perpendicular + 0.1) / (distance_from_perpendicular + 0.1 + robot.AXIS_LENGTH)
         variables["dgoal"] = 135  # 135 kraadi see kaare asi
 
         abs_goal = median_list[1][1] - (180-(90 + degrees(beta))) + 90  # ?
@@ -395,7 +395,7 @@ def plan(variables):
                 print("obj distance: ", variables["obj_distance"])
                 print("degrees: ", variables["l_edge"] - variables["r_edge"])
                 print("Width of the object:", variables["obj_distance"] * sqrt(2 * (1 - cos(radians(abs(variables["l_edge"] - variables["r_edge"]) - 30)))))
-                if variables["obj_distance"] * sqrt(2 * (1 - cos(radians(abs(variables["l_edge"] - variables["r_edge"]) - 30)))) > 0.10:
+                if variables["obj_distance"] * sqrt(2 * (1 - cos(radians(abs(variables["l_edge"] - variables["r_edge"]) - 30)))) > 0.15:
                     print("AAAAAAAAH I detected a wide object!")
                     if variables["obj_count"] == 1:
                         variables["obj_count"] = 2
@@ -485,7 +485,7 @@ def plan(variables):
             variables["move_progress"] = 0
             variables["left_speed"], variables["right_speed"] = round(15 * variables["multiplier"]), 15
         else:
-            variables = p_speed(variables, 0.04 * variables["multiplier"], 0.04)
+            variables = p_speed(variables, 0.04 * variables["multiplier"], 0.08)
             variables["p_ignore"] = True
             variables["move_progress"] += variables["turn_amount"]
             if variables["move_progress"] > variables["dgoal"]:
