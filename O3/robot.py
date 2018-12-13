@@ -637,9 +637,9 @@ def plan(variables):
     elif variables["phase"] == "smalldecide":
         if object_count == 3:
             variables["second_obj_deg"] = variables["third_object_deg"]
-            variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"], variables["third_obj_distance"]) + 0.14
+            variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"], variables["third_obj_distance"]) + 0.10
         else:
-            variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"]) + 0.14
+            variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"]) + 0.10
         print(variables["yolotravel"])
         variables["goal"] = (variables["first_obj_deg"] + variables["second_obj_deg"]) / 2 - variables["abs_rota"]
         print("I calculated the goal, yo")
