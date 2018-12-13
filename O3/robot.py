@@ -176,7 +176,7 @@ def decide(variables, median_list):
         distance_to_other_side = 2.35 * distance_from_perpendicular
 
         # multiplier on suhe mida korrutada sisemise ratta speedi sellega (p-controlleri target speed)
-        variables["multiplier"] = (distance_from_perpendicular + 0.05) / (distance_from_perpendicular + 0.05 + robot.AXIS.LENGTH)
+        variables["multiplier"] = (distance_from_perpendicular + 0.05) / (distance_from_perpendicular + 0.05 + robot.AXIS_LENGTH)
         variables["dgoal"] = 135  # 135 kraadi see kaare asi
 
         abs_goal = median_list[1][1] - (180-(90 + degrees(beta))) + 90  # ?
