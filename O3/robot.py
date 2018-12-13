@@ -267,12 +267,12 @@ def plan(variables):
                     variables["prev_diff"] = diff
                     variables["preprev_diff"] = variables["prev_diff"]
 
-                elif diff + variables["prev_diff"] + variables["preprev_diff"] > 0.25 and variables["fmir"] < 0.85:
+                elif diff + variables["prev_diff"] + variables["preprev_diff"] > 0.25 and variables["fmir"] < 0.80:
                     variables["side"] = False  # ehk detectis vasakult poolt peale minnes
                     variables["counter"] = 0
                     variables["flag"] = True
                     variables["obj_distance"] = variables["fmir"]
-                elif diff + variables["prev_diff"] + variables["preprev_diff"] < -0.25 and variables["past_fmirs"][-4] < 0.85:
+                elif diff + variables["prev_diff"] + variables["preprev_diff"] < -0.25 and variables["past_fmirs"][-4] < 0.80:
                     print(variables["abs_rota"] + 6, variables["r_absolute"])
                     if variables["abs_rota"] - 6 > variables["r_absolute"]:
                         variables["side"] = True
