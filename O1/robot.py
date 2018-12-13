@@ -38,8 +38,6 @@ def fmir_buffering(variables):
     """
     buffer = variables["fmir_buffer"]  # read buffer into var for easier writing, could remove this though
     fmir = robot.get_front_middle_ir()  # read fmir into var
-    if fmir > 1.2:
-        fmir = 1.2
     variables["last_fmir"] = variables["fmir"]  # put last allowed fmir value into "last_fmir" dict key
 
     # remove oldest and add new fmir reading
@@ -123,11 +121,10 @@ def move_to_obj(variables):
     # if moving to object has not started, based on wheel speed, could do same with scanning though...
     if variables["left_speed"] == 0:
         # start moving
-        variables["left_speed"], variables["right_speed"] = 10, 10
+        variables["left_speed"], variables["right_speed"] = 12, 12
 
     # if it is moving
     else:
-        print("Moving to obj, max fmir and fmir: ", variables["max_fmir"], variables["fmir"], variables["fmir_buffer"])
         # if current fmir value is more than 10 cm shorter than maximum allowed fmir value
         # NOTE: max_fmir does not reset when it does "move to obj" to "scanning" to "move to obj"
         if variables["max_fmir"] > variables["fmir"] + 0.1:
@@ -143,7 +140,7 @@ def move_to_obj(variables):
         # for when it still has object
         else:
             # do p controller for adjusting speed of wheels so it'd move as straight as possible
-            p_speed(variables, 2, 0.015)
+            p_speed(variables, 2, 0.1)
 
             # if bot has gotten to withing 20 cm of the object
             if variables["fmir"] < 0.20:
@@ -159,7 +156,7 @@ def plan(variables):
     if variables["phase"] == "scanning":
         # if condition that is filled every time scanning is started, starts the turning
         if variables["scan_progress"] == 0:
-            variables["left_speed"], variables["right_speed"] = 10, -10
+            variables["left_speed"], variables["right_speed"] = 12, -12
             variables["scan_progress"] = 1
 
         # if scanning is already in progress
@@ -174,7 +171,7 @@ def plan(variables):
             print("------------------------------------------------------")
 
             # if diff is more than 20cm, then it most likely has detected an object
-            if abs(diff) > 0.30:
+            if abs(diff) > 0.20:
                 # stops turning and scanning and changes phase to "move to obj"
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["scan_progress"] = 0
@@ -183,7 +180,7 @@ def plan(variables):
             # if it has not detected an object and it's still scanning
             else:
                 # run the p controller function to adjust right and left wheel speeds
-                variables = p_speed(variables, 1, 0.015)
+                variables = p_speed(variables, 1, 0.05)
 
     # moving to object phase
     elif variables["phase"] == "move to obj":
@@ -193,36 +190,24 @@ def plan(variables):
     elif variables["phase"] == "blind to obj":
         # add 1 to counter, this is to get fmir buffer to be as correct as possible
         variables["counter"] = variables["counter"] + 1
-        if variables["counter"] == 4 and variables["other_counter"] <= 10:
-            variables["other_counter"] += 1
-            if variables["other_counter"] != 10:
-                variables["counter"] = 0
-            avg = (variables["fmir_buffer"][0] + variables["fmir_buffer"][1] + variables["fmir_buffer"][2] +
-                   variables["fmir_buffer"][3]) / 4
-            if avg > variables["avg"]:
-                variables["avg"] = avg
-            print("avg and buffer:", avg, variables["fmir_buffer"])
 
         # if it has reached 4 new readings for the fmir buffer
-        if variables["counter"] == 5 and variables["other_counter"] >= 10:
+        if variables["counter"] == 4:
             # calculate the time goal of how long should bot move forward with said speed
             # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
-            avg = variables["avg"]
-            degrees_to_target = 360 * avg / (math.pi * robot.WHEEL_DIAMETER)
-            print("deg to target:", degrees_to_target, "average dist:", avg)
-            variables["l_target_drive"] = variables["left_enc"] + degrees_to_target
-            variables["r_target_drive"] = variables["right_enc"] + degrees_to_target
-
+            variables["timegoal"] = rospy.get_time() + (variables["fmir"] - 0.07) / 0.07
 
             # and start moving forward
-            variables["left_speed"], variables["right_speed"] = 10, 10
-            rospy.sleep(3)
+            variables["left_speed"], variables["right_speed"] = 12, 12
 
         # for when counter is above 4, meaning timegoal has been set and movement has been started
-        elif variables["counter"] > 5 and variables["other_counter"] >= 10:
-            print("left_enc", variables["left_enc"], "target_drive", variables["l_target_drive"], variables["left_speed"], variables["right_speed"])
-            variables = p_speed(variables, 2, 0.02)
-            if variables["left_enc"] > variables["l_target_drive"] and variables["right_enc"] > variables["r_target_drive"]:
+        elif variables["counter"] > 4:
+            # run the p-controller to kinda try to be at the 0.07 meters / second speed used in timegoal calculation
+            variables = p_speed(variables, 2, 0.07)
+
+            # if bot has moved more than the timegoal said
+            if variables["current_time"] > variables["timegoal"]:
+                # stop moving and start end phase
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = "end"
 
@@ -253,14 +238,12 @@ def main():
     variables["current_time"] = 0
     variables["last_time"] = 0
     variables["counter"] = 0
-    variables["other_counter"] = 0
-    variables["avg"] = 0
     variables["max_fmir"] = float("inf")
     while True:
         variables = sense(variables)
         variables = plan(variables)
         act(variables)
-        rospy.sleep(0.05) # was 0.02
+        rospy.sleep(0.02)
 
 
 if __name__ == "__main__":
