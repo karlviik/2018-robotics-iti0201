@@ -549,7 +549,6 @@ def plan(variables):
         variables["init1"] = True  # just in case
         variables["initsscan"] = True
 
-
     elif variables["phase"] == "smallscan":
         print("doing smallscan")
         # if initialisation
@@ -628,7 +627,7 @@ def plan(variables):
                     variables["third_obj_deg"] = variables["abs_rota"]
                     variables["third_obj_distance"] = variables["zero_distance"]
                     variables["left_speed"], variables["right_speed"] = 0, 0
-                    variables["phase"] = "decide"
+                    variables["phase"] = "smalldecide"
                     if variables["lastissame"]:
                         variables["lastissame"] = False
                         variables["second_obj_deg"] = variables["third_obj_deg"] - variables["degsforsame"]
@@ -643,8 +642,18 @@ def plan(variables):
         else:
             variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"])
         variables["goal"] = (variables["first_obj_deg"] + variables["second_obj_deg"]) / 2 - variables["abs_rota"]
+        print("I calculated the goal, yo")
+        variables["phase"] = "turn_new"
+        variables["next_phase"] = "preyolodrive"
+        variables["init1"] = True
+
+    elif variables["phase"] == "preyolodrive":
+        variables["goal"] = variables["yolotravel"]
         variables["phase"] = "drive_straight"
-        variables["next_phase"] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        variables["next_phase"] = "oof"
+
+    else:
+        print("tomato")
 
 
     # do p controller
