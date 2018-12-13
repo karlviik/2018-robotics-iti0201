@@ -519,7 +519,7 @@ def plan(variables):
     elif variables["phase"] == "pre-closedrive":
         variables["goal"] = variables["secondstraightmove"]
         variables["phase"] = "drive_straight"
-        variables["next_phase"] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        variables["next_phase"] = "pre-smallscan"
 
     elif variables["phase"] == "drive_straight":
         # initialisation
@@ -541,10 +541,105 @@ def plan(variables):
                 variables["phase"] = variables["next_phase"]
                 variables["init1"] = True
 
+    elif variables["phase"] == "pre-smallscan":
+        variables["goal"] = -82
+        variables["phase"] = "turn_new"
+        variables["next_ohase"] = "smallscan"
 
+    elif variables["phase"] == "smallscan":
 
+        # if initialisation
+        if variables["init1"]:
+            variables["init1"] = False
+            variables["left_speed"], variables["right_speed"] = 12, -12
+            variables["scan_start"] = variables["abs_rota"]
+            variables["prev_diff"] = 0
+            variables["preprev_diff"] = 0
+            variables["obj_count"] = 0
 
+            # if already in progress
+        else:
+            # last and current fmir sensor reading difference, used for object detection
+            diff = variables["last_fmir"] - variables["fmir"]
+            print(diff)
+            print(variables["fmir_buffer"])
+            if variables["abs_rota"] - variables["scan_start"] > 180:
+                variables["left_speed"], variables["right_speed"] = 0, 0
+                variables["init"] = True
+                variables["phase"] = "smalldecide"
+            # if diff is more than 20cm, then it most likely has detected an object
+            elif on_object == 0:
+                if variables["flag"]:
+                    variables["counter"] += 1
+                    if variables["obj_distance"] + 0.10 > variables["fmir"] or variables["side"]:
+                        if variables["counter"] >= 5 or variables["side"]:
+                            variables["on_obj"] = 1
+                            variables["obj_count"] += 1
+                            variables["phase"] = "zero_to_obj"
+                            variables["next_phase"] = "smallscan"
+                            variables["init1"] = True
+                            variables["prev_diff"] = 0
+                            variables["preprev_diff"] = 0
+                    else:
+                        variables["flag"] = False
+                    variables["prev_diff"] = diff
+                    variables["preprev_diff"] = variables["prev_diff"]
 
+                elif diff + variables["prev_diff"] + variables["preprev_diff"] > 0.25 and variables["fmir"] < 0.85:
+                    variables["side"] = False  # ehk detectis vasakult poolt peale minnes
+                    variables["counter"] = 0
+                    variables["flag"] = True
+                    variables["obj_distance"] = variables["fmir"]
+                elif diff + variables["prev_diff"] + variables["preprev_diff"] < -0.25 and variables["past_fmirs"][-4] < 0.85:
+                    print(variables["abs_rota"] + 6, variables["r_absolute"])
+                    if variables["abs_rota"] - 6 > variables["r_absolute"]:
+                        variables["side"] = True
+                        variables["flag"] = True
+                        variables["obj_distance"] = variables["past_fmirs"][-4]
+                        for i in range(6):
+                            if variables["past_fmirs"][i] > variables["obj_distance"] + 0.1 or variables["past_fmirs"][i] < variables["obj_distance"] - 0.1:
+                                variables["flag"] = False
+                                variables["side"] = False
+
+            else:  # elif on_object == 1:
+                variables["on_obj"] = 0
+                if object_count == 1:
+                    variables["first_obj_deg"] = variables["abs_rota"]
+                    variables["first_obj_distance"] = variables["zero_distance"]
+                    variables["left_speed"], variables["right_speed"] = 12, -12
+                    print("1")
+                elif object_count == 2:
+                    variables["second_obj_deg"] = variables["abs_rota"]
+                    variables["second_obj_distance"] = variables["zero_distance"]
+                    variables["left_speed"], variables["right_speed"] = 12, -12
+                    if variables["lastissame"]:
+                        variables["lastissame"] = False
+                        variables["first_obj_deg"] = variables["second_obj_deg"] - variables["degsforsame"]
+                        variables["first_obj_distance"] = variables["zero_distance"]
+                        variables["second_obj_deg"] += variables["degsforsame"]
+
+                    print("2")
+                elif object_count == 3:
+                    variables["third_obj_deg"] = variables["abs_rota"]
+                    variables["third_obj_distance"] = variables["zero_distance"]
+                    variables["left_speed"], variables["right_speed"] = 0, 0
+                    variables["phase"] = "decide"
+                    if variables["lastissame"]:
+                        variables["lastissame"] = False
+                        variables["second_obj_deg"] = variables["third_obj_deg"] - variables["degsforsame"]
+                        variables["second_obj_distance"] = variables["zero_distance"]
+                        variables["third_obj_deg"] += variables["degsforsame"]
+                    print("3")
+
+    elif variables["phase"] == "smalldecide":
+        if object_count == 3:
+            variables["second_obj_deg"] = variables["third_object_deg"]
+            variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"], variables["third_obj_distance"]) + 14
+        else:
+            variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"])
+        variables["goal"] = (variables["first_obj_deg"] + variables["second_obj_deg"]) / 2 - variables["abs_rota"]
+        variables["phase"] = "drive_straight"
+        variables["next_phase"] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 
 
     # do p controller
