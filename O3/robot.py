@@ -509,9 +509,9 @@ def plan(variables):
         variables["next_phase"] = "pre-90deg"
 
     elif variables["phase"] == "pre-90deg":
-        goal = -90
+        goal = -82
         if variables["isitmirrored"]:
-            goal = 90
+            goal = 82
         variables["goal"] = goal
         variables["phase"] = "turn_new"
         variables["next_phase"] = "pre-closedrive"
