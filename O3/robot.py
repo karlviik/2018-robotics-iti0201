@@ -263,7 +263,8 @@ def plan(variables):
                     variables["flag"] = True
                     variables["obj_distance"] = variables["fmir"]
                 elif diff + variables["prev_diff"] + variables["preprev_diff"] < -0.25:
-                    if variables["abs_rota"] + 4 > variables["r_absolute"]:
+                    print(variables["abs_rota"] + 6, variables["r_absolute"])
+                    if variables["abs_rota"] + 6 > variables["r_absolute"]:
                         variables["side"] = True
                         variables["flag"] = True
                         variables["obj_distance"] = variables["past_fmirs"][-4]
