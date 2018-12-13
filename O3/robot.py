@@ -166,6 +166,7 @@ def decide(variables, median_list):
 
     # if robot can't fit through the 2 closest objects
     if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:
+        print(distance_between_two_closest_objects, robot.AXIS_LENGTH)
         # palju robot peab pöörama, et oleks 90 kraadise nurga all esimese kahe objektiga
         # distance_from_perpendicular on kaugus ristumise punktist
         distance_from_perpendicular = (sin(beta) * median_list[1][0]) / sin(1.5708)
@@ -510,6 +511,7 @@ def main():
     variables["flag"] = False
     variables["abs_rota"] = 0
     variables["badscancount"] = 0
+    variables["multiplier"] = 1
     variables["wheel circumference"] = robot.WHEEL_DIAMETER * pi
     variables["turn_back"] = 0  # if it should turn back after it has checked
     variables["has_checked"] = 0  # if it has checked the object
