@@ -361,7 +361,6 @@ def plan(variables):
                 variables["counter"] = 1
                 variables["left_speed"], variables["right_speed"] = -12, 12
 
-
             return variables
 
         # update rota progress
@@ -462,7 +461,6 @@ def plan(variables):
                 else:
                     variables = turn_to_object(variables, second_obj)
 
-    # TODO muuta see, et töötaks ka kui ei mahu läbi esimese punkti, korrutada multiplieriga vasaku ratta kiirus, muidu 1 ?
     # drive to median, between the two closest objects
     elif variables["phase"] == "drive":
         if variables["driving"] == 0:
