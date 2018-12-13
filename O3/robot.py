@@ -546,6 +546,7 @@ def plan(variables):
         variables["goal"] = -82
         variables["phase"] = "turn_new"
         variables["next_phase"] = "smallscan"
+        variables["init1"] = True  # just in case
 
     elif variables["phase"] == "smallscan":
         print("doing smallscan")
@@ -564,6 +565,7 @@ def plan(variables):
             diff = variables["last_fmir"] - variables["fmir"]
             print(diff)
             print(variables["fmir_buffer"])
+            print(variables["abs_rota"] - variables["scan_start"])
             if variables["abs_rota"] - variables["scan_start"] > 180:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["init"] = True
