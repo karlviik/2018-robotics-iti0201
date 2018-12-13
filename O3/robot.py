@@ -166,7 +166,7 @@ def decide(variables, median_list):
             distance_between_two_closest_objects / 2) * median_list[1][0] * cos(beta))  # palju sõitma peab mediaanini meetrites
 
     # if robot can't fit through the 2 closest objects
-    if distance_between_two_closest_objects < robot.AXIS_LENGTH + 0.05:
+    if distance_between_two_closest_objects < robot.AXIS_LENGTH:
         print(distance_between_two_closest_objects, robot.AXIS_LENGTH)
         # palju robot peab pöörama, et oleks 90 kraadise nurga all esimese kahe objektiga
         # distance_from_perpendicular on kaugus ristumise punktist
