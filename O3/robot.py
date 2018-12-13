@@ -364,6 +364,7 @@ def plan(variables):
 
         # update rota progress
         variables["rota_progress"] += variables["turn_amount"]
+        print(variables["fmir"])
 
         # if is moving clockwise to detect edge(lord)
         if variables["counter"] == 0:
