@@ -177,7 +177,7 @@ def decide(variables, median_list):
         print(distance_from_perpendicular, sin(beta), median_list[1][0], sin(1.5708))
 
         # multiplier on suhe mida korrutada sisemise ratta speedi sellega (p-controlleri target speed)
-        variables["multiplier"] = (distance_from_perpendicular + 0.3) / (distance_from_perpendicular + 0.3 + robot.AXIS_LENGTH)
+        variables["multiplier"] = (distance_from_perpendicular + 0.1) / (distance_from_perpendicular + 0.1 + robot.AXIS_LENGTH)
         print("and multiplier is: ", variables["multiplier"])
         variables["dgoal"] = 135  # 135 kraadi see kaare asi
 
