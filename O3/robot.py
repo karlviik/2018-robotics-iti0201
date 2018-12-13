@@ -547,12 +547,14 @@ def plan(variables):
         variables["phase"] = "turn_new"
         variables["next_phase"] = "smallscan"
         variables["init1"] = True  # just in case
+        variables["initsscan"] = True
+
 
     elif variables["phase"] == "smallscan":
         print("doing smallscan")
         # if initialisation
-        if variables["init1"]:
-            variables["init1"] = False
+        if variables["initsscan"]:
+            variables["initsscan"] = False
             variables["left_speed"], variables["right_speed"] = 12, -12
             variables["scan_start"] = variables["abs_rota"]
             variables["prev_diff"] = 0
