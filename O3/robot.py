@@ -102,7 +102,6 @@ def p_speed(variables, l_target_speed, r_target_speed=None):  # target speed sho
     :return: dictionary with new left and right wheel speeds
     """
     # just a check to not do anything if speed is 0 or last speed was 0
-    print(type(variables["right_speed"]), type(variables["left_speed"]), type(variables["p_ignore"]))
     if (variables["right_speed"] == 0 and variables["left_speed"] == 0) or variables["p_ignore"]:
         variables["p_ignore"] = False
         return variables
@@ -177,7 +176,7 @@ def decide(variables, median_list):
         print(distance_from_perpendicular, sin(beta), median_list[1][0], sin(1.5708))
 
         # multiplier on suhe mida korrutada sisemise ratta speedi sellega (p-controlleri target speed)
-        variables["multiplier"] = (distance_from_perpendicular + 0.1) / (distance_from_perpendicular + 0.1 + robot.AXIS_LENGTH)
+        variables["multiplier"] = (distance_from_perpendicular + 0.3) / (distance_from_perpendicular + 0.3 + robot.AXIS_LENGTH)
         variables["dgoal"] = 135  # 135 kraadi see kaare asi
 
         abs_goal = median_list[1][1] - (180-(90 + degrees(beta))) + 90  # ?
@@ -192,7 +191,7 @@ def decide(variables, median_list):
         beta_jooniselt = asin(sin(radians(angle_between_two_closest_objects)) * median_list[1][0] / a_jooniselt)
         phi_jooniselt = 180 - beta_jooniselt
         pikkus_mediaani_lahedale = sin(phi_jooniselt) * median_list[0][0] - 0.2
-        comp =a_jooniselt / 2 + cos(phi_jooniselt) * median_list[1][0]
+        comp = a_jooniselt / 2 + cos(phi_jooniselt) * median_list[1][0]
         return variables  # just in case
     else:
         # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan
@@ -398,7 +397,7 @@ def plan(variables):
                 print("obj distance: ", variables["obj_distance"])
                 print("degrees: ", variables["l_edge"] - variables["r_edge"])
                 print("Width of the object:", variables["obj_distance"] * sqrt(2 * (1 - cos(radians(abs(variables["l_edge"] - variables["r_edge"]) - 30)))))
-                if variables["obj_distance"] * sqrt(2 * (1 - cos(radians(abs(variables["l_edge"] - variables["r_edge"]) - 30)))) > 0.15:
+                if variables["obj_distance"] * sqrt(2 * (1 - cos(radians(abs(variables["l_edge"] - variables["r_edge"]) - 30)))) > 0.125:
                     print("AAAAAAAAH I detected a wide object!")
                     if variables["obj_count"] == 1:
                         variables["obj_count"] = 2
