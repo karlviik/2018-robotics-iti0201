@@ -175,6 +175,7 @@ def decide(variables, median_list):
         # length of the arc what robot needs to drive, outside wheel, 55 degrees to new point
         distance_to_other_side = 2.35 * distance_from_perpendicular
         print(distance_from_perpendicular, sin(beta), median_list[1][0], sin(1.5708))
+
         # multiplier on suhe mida korrutada sisemise ratta speedi sellega (p-controlleri target speed)
         variables["multiplier"] = (distance_from_perpendicular + 0.05) / (distance_from_perpendicular + 0.05 + robot.AXIS_LENGTH)
         variables["dgoal"] = 135  # 135 kraadi see kaare asi
@@ -264,7 +265,7 @@ def plan(variables):
                     variables["obj_distance"] = variables["fmir"]
                 elif diff + variables["prev_diff"] + variables["preprev_diff"] < -0.25:
                     print(variables["abs_rota"] + 6, variables["r_absolute"])
-                    if variables["abs_rota"] + 6 > variables["r_absolute"]:
+                    if variables["abs_rota"] - 6 > variables["r_absolute"]:
                         variables["side"] = True
                         variables["flag"] = True
                         variables["obj_distance"] = variables["past_fmirs"][-4]
@@ -479,7 +480,7 @@ def plan(variables):
         if variables["init"]:
             variables["init"] = False
             variables["move_progress"] = 0
-            variables["left_speed"], variables["right_speed"] = round(15 * variables["multiplier"]), 15
+            variables["left_speed"], variables["right_speed"] = 15 * variables["multiplier"], 15
         else:
             variables = p_speed(variables, 0.04 * variables["multiplier"], 0.04)
             variables["p_ignore"] = True
