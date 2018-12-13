@@ -210,6 +210,7 @@ def decide(variables, median_list):
         variables["init1"] = True
         variables["phase"] = "turn_new"
         variables["next_phase"] = "pre-drive"
+        return variables
 
 
 
