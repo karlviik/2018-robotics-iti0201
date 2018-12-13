@@ -393,13 +393,13 @@ def plan(variables):
                 # start turning clockwise towards object middle.
                 variables["left_speed"], variables["right_speed"] = 12, -12
 
-                if variables["obj_distance"] * sqrt(2 - cos(degrees(abs(variables["l_edge"] - variables["r_edge"]) - 30))) > 0.1:
+                if variables["obj_distance"] * sqrt(2 - cos(degrees(abs(variables["l_edge"] - variables["r_edge"]) - 30))) > 0.25:
                     if variables["obj_count"] == 1:
                         variables["obj_count"] = 2
                     elif variables["obj_count"] == 2:
                         variables["obj_count"] = 3
                     variables["lastissame"] = True
-                    variables["degsforsame"] = abs(variables["goal"]) - 20  # diff between the 2 objects or something
+                    variables["degsforsame"] = abs(abs(variables["goal"]) - 20)  # diff between the 2 objects or something
 
         # if rotating towards middle of object
         elif variables["counter"] == 2:
