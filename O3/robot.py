@@ -193,6 +193,7 @@ def decide(variables, median_list):
         phi_jooniselt = 180 - beta_jooniselt
         pikkus_mediaani_lahedale = sin(phi_jooniselt) * median_list[0][0] - 0.2
         comp =a_jooniselt / 2 + cos(phi_jooniselt) * median_list[1][0]
+        return variables  # just in case
     else:
         # palju robot peab kõige parempoolsest pöörama et suund oleks mediaan
         gamma = degrees(asin(((distance_between_two_closest_objects / 2) * sin(beta)) / d))
@@ -203,6 +204,7 @@ def decide(variables, median_list):
         variables["phase"] = "turn_new"
         variables["next_phase"] = "drive"
         return variables
+    return variables
 
 
 def turn_to_object(variables, median_list):
@@ -427,7 +429,9 @@ def plan(variables):
             median_list = [first_obj, second_obj]
             if angle_between_second_and_first > 150:
                 median_list = [second_obj, first_obj]
+            print(type(variables["at_median"]))
             variables = decide(variables, median_list)
+            print(type(variables["at_median"]))
             variables["at_median"] = 0
             variables["badscancount"] += 1
             if variables["badscancount"] > 4:
