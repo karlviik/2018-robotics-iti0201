@@ -177,7 +177,7 @@ def decide(variables, median_list):
         print(distance_from_perpendicular, sin(beta), median_list[1][0], sin(1.5708))
 
         # multiplier on suhe mida korrutada sisemise ratta speedi sellega (p-controlleri target speed)
-        variables["multiplier"] = (distance_from_perpendicular + 0.1) / (distance_from_perpendicular + 0.1 + robot.AXIS_LENGTH)
+        variables["multiplier"] = (distance_from_perpendicular + 0.2) / (distance_from_perpendicular + 0.2 + robot.AXIS_LENGTH)
         print("and multiplier is: ", variables["multiplier"])
         variables["dgoal"] = 135  # 135 kraadi see kaare asi
 
@@ -492,7 +492,7 @@ def plan(variables):
             variables = p_speed(variables, 0.08 * variables["multiplier"], 0.08)
             variables["p_ignore"] = True
             variables["move_progress"] += variables["turn_amount"]
-            if variables["move_progress"] > variables["dgoal"]:
+            if abs(variables["move_progress"]) > variables["dgoal"]:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["init"] = True
                 variables["phase"] = "scanning"
