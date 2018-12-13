@@ -480,7 +480,7 @@ def plan(variables):
         if variables["init"]:
             variables["init"] = False
             variables["move_progress"] = 0
-            variables["left_speed"], variables["right_speed"] = 15 * variables["multiplier"], 15
+            variables["left_speed"], variables["right_speed"] = round(15 * variables["multiplier"]), 15
         else:
             variables = p_speed(variables, 0.04 * variables["multiplier"], 0.04)
             variables["p_ignore"] = True
