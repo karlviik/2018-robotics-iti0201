@@ -331,7 +331,7 @@ def plan(variables):
             variables["turn_progress"] += variables["turn_amount"]
 
             # if has turned enough, stop bot and go to next phase
-            if abs(variables["goal"]) - abs(variables["turn_progress"]) < 0:
+            if abs(variables["goal"]) - abs(variables["turn_progress"]) <= 0:
                 variables["left_speed"], variables["right_speed"] = 0, 0
                 variables["phase"] = variables["next_phase"]
                 variables["init1"] = True
