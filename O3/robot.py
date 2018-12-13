@@ -166,7 +166,8 @@ def decide(variables, median_list):
 
     # if robot can't fit through the 2 closest objects
     if distance_between_two_closest_objects < robot.AXIS_LENGTH:
-        print(distance_between_two_closest_objects, robot.AXIS_LENGTH)
+        print("AAAAAAAAAAAAAH PAY ATTENTION KID AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        print("distance between closest and robo axis", distance_between_two_closest_objects, robot.AXIS_LENGTH)
         # palju robot peab pöörama, et oleks 90 kraadise nurga all esimese kahe objektiga
         # distance_from_perpendicular on kaugus ristumise punktist
         distance_from_perpendicular = (sin(beta) * median_list[1][0]) / sin(1.5708)
@@ -177,6 +178,7 @@ def decide(variables, median_list):
 
         # multiplier on suhe mida korrutada sisemise ratta speedi sellega (p-controlleri target speed)
         variables["multiplier"] = (distance_from_perpendicular + 0.3) / (distance_from_perpendicular + 0.3 + robot.AXIS_LENGTH)
+        print("and multiplier is: ", variables["multiplier"])
         variables["dgoal"] = 135  # 135 kraadi see kaare asi
 
         abs_goal = median_list[1][1] - (180-(90 + degrees(beta))) + 90  # ?
@@ -203,7 +205,6 @@ def decide(variables, median_list):
         variables["phase"] = "turn_new"
         variables["next_phase"] = "drive"
         return variables
-    return variables
 
 
 def turn_to_object(variables, median_list):
@@ -428,7 +429,6 @@ def plan(variables):
             median_list = [first_obj, second_obj]
             if angle_between_second_and_first > 150:
                 median_list = [second_obj, first_obj]
-            print(type(variables["at_median"]))
             variables = decide(variables, median_list)
             print(type(variables["at_median"]))
             variables["at_median"] = 0
@@ -487,9 +487,9 @@ def plan(variables):
         if variables["init"]:
             variables["init"] = False
             variables["move_progress"] = 0
-            variables["left_speed"], variables["right_speed"] = round(15 * variables["multiplier"]), 15
+            variables["left_speed"], variables["right_speed"] = round(12 + 5 * variables["multiplier"]), 18
         else:
-            variables = p_speed(variables, 0.04 * variables["multiplier"], 0.08)
+            variables = p_speed(variables, 0.08 * variables["multiplier"], 0.08)
             variables["p_ignore"] = True
             variables["move_progress"] += variables["turn_amount"]
             if variables["move_progress"] > variables["dgoal"]:
