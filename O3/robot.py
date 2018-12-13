@@ -102,6 +102,7 @@ def p_speed(variables, l_target_speed, r_target_speed=None):  # target speed sho
     :return: dictionary with new left and right wheel speeds
     """
     # just a check to not do anything if speed is 0 or last speed was 0
+    print(variables["right_speed"], variables["left_speed"], variables["p_ignore"])
     if (variables["right_speed"] == 0 and variables["left_speed"] == 0) or variables["p_ignore"]:
         variables["p_ignore"] = False
         return variables
