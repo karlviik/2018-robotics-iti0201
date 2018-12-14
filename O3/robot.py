@@ -739,7 +739,7 @@ def small_scan(variables):
 def small_decide(variables):
     """Decide where to go for yolotravel."""
     if variables["obj_count"] == 3:
-        variables["second_obj_deg"] = variables["third_object_deg"]
+        variables["second_obj_deg"] = variables["third_obj_deg"]
         variables["yolotravel"] = min(variables["first_obj_distance"], variables["second_obj_distance"],
                                       variables["third_obj_distance"]) + 0.10
     else:
