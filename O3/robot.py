@@ -289,9 +289,6 @@ def plan2(variables):
         variables["init1"] = True
         variables["next_phase"] = "oof"
 
-    else:
-        print("tomato")
-
     # do p controller
     variables = p_speed(variables, 0.03)
 

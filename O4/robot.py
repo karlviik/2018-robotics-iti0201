@@ -299,7 +299,7 @@ def scanning_non_limit(variables):
                 (variables["fmir_buffer_avg"] + variables["fmir"] + variables["last_fmir"]) / 3):
             # save the new closest wall
             variables["closest_wall"] = (
-                (variables["s"] + variables["fmir"] + variables["last_fmir"]) / 3)
+                (variables["fmir_buffer_avg"] + variables["fmir"] + variables["last_fmir"]) / 3)
 
             # save the bot aiming direction in degrees into a variables used for roam direction selection
             variables["closest_wall_deg"] = variables["scan_progress"]
