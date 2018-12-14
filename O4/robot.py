@@ -165,6 +165,7 @@ def plan(variables):
 
 
 def plan2(variables):
+    """Do plan."""
     # zero to wall?
     if variables["phase"] == "zero_to_wall":
         variables = zero_to_wall(variables)
