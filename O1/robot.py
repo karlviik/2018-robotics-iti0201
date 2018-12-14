@@ -3,7 +3,6 @@ import rospy
 from PiBot import PiBot
 import math
 GAIN = 50
-
 # problems:
 #           a)  (--noise --cone) it may detect objects when there is none, making it not suitable for silver and gold
 #               as it means it would register probably more than 3 objects with a full turn due to noise
@@ -153,37 +152,81 @@ def move_to_obj(variables):
     return variables
 
 
+def scan(variables):
+    """Do scanning."""
+    # if condition that is filled every time scanning is started, starts the turning
+    if variables["scan_progress"] == 0:
+        variables["left_speed"], variables["right_speed"] = 10, -10
+        variables["scan_progress"] = 1
+
+    # if scanning is already in progress
+    else:
+        # last and current fmir sensor reading difference, used for object detection
+        diff = variables["last_fmir"] - variables["fmir"]
+
+        # output for checking the difference, wheel speeds and the buffer
+        print("Differnece is: " + str(diff))
+        print(variables["left_speed"], variables["right_speed"])
+        print(variables["fmir_buffer"])
+        print("------------------------------------------------------")
+
+        # if diff is more than 20cm, then it most likely has detected an object
+        if abs(diff) > 0.30:
+            # stops turning and scanning and changes phase to "move to obj"
+            variables["left_speed"], variables["right_speed"] = 0, 0
+            variables["scan_progress"] = 0
+            variables["phase"] = "move to obj"
+
+        # if it has not detected an object and it's still scanning
+        else:
+            # run the p controller function to adjust right and left wheel speeds
+            variables = p_speed(variables, 1, 0.015)
+    return variables
+
+
+def blind(variables):
+    """Do blindy stuff."""
+    # add 1 to counter, this is to get fmir buffer to be as correct as possible
+    variables["counter"] = variables["counter"] + 1
+    if variables["counter"] == 4 and variables["other_counter"] <= 10:
+        variables["other_counter"] += 1
+        if variables["other_counter"] != 10:
+            variables["counter"] = 0
+        avg = (variables["fmir_buffer"][0] + variables["fmir_buffer"][1] + variables["fmir_buffer"][2] + variables["fmir_buffer"][3]) / 4
+        if avg > variables["avg"]:
+            variables["avg"] = avg
+        print("avg and buffer:", avg, variables["fmir_buffer"])
+
+    # if it has reached 4 new readings for the fmir buffer
+    if variables["counter"] == 5 and variables["other_counter"] >= 10:
+        # calculate the time goal of how long should bot move forward with said speed
+        # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
+        avg = variables["avg"]
+        degrees_to_target = 360 * avg / (math.pi * robot.WHEEL_DIAMETER)
+        print("deg to target:", degrees_to_target, "average dist:", avg)
+        variables["l_target_drive"] = variables["left_enc"] + degrees_to_target
+        variables["r_target_drive"] = variables["right_enc"] + degrees_to_target
+
+        # and start moving forward
+        variables["left_speed"], variables["right_speed"] = 10, 10
+        rospy.sleep(3)
+
+    # for when counter is above 4, meaning timegoal has been set and movement has been started
+    elif variables["counter"] > 5 and variables["other_counter"] >= 10:
+        print("left_enc", variables["left_enc"], "target_drive", variables["l_target_drive"], variables["left_speed"],
+              variables["right_speed"])
+        variables = p_speed(variables, 2, 0.02)
+        if variables["left_enc"] > variables["l_target_drive"] and variables["right_enc"] > variables["r_target_drive"]:
+            variables["left_speed"], variables["right_speed"] = 0, 0
+            variables["phase"] = "end"
+    return variables
+
+
 def plan(variables):
     """Do all the planning in variable dict and then return it. Because Python."""
     # scanning phase
     if variables["phase"] == "scanning":
-        # if condition that is filled every time scanning is started, starts the turning
-        if variables["scan_progress"] == 0:
-            variables["left_speed"], variables["right_speed"] = 10, -10
-            variables["scan_progress"] = 1
-
-        # if scanning is already in progress
-        else:
-            # last and current fmir sensor reading difference, used for object detection
-            diff = variables["last_fmir"] - variables["fmir"]
-
-            # output for checking the difference, wheel speeds and the buffer
-            print("Differnece is: " + str(diff))
-            print(variables["left_speed"], variables["right_speed"])
-            print(variables["fmir_buffer"])
-            print("------------------------------------------------------")
-
-            # if diff is more than 20cm, then it most likely has detected an object
-            if abs(diff) > 0.30:
-                # stops turning and scanning and changes phase to "move to obj"
-                variables["left_speed"], variables["right_speed"] = 0, 0
-                variables["scan_progress"] = 0
-                variables["phase"] = "move to obj"
-
-            # if it has not detected an object and it's still scanning
-            else:
-                # run the p controller function to adjust right and left wheel speeds
-                variables = p_speed(variables, 1, 0.015)
+        variables = scan(variables)
 
     # moving to object phase
     elif variables["phase"] == "move to obj":
@@ -191,40 +234,7 @@ def plan(variables):
 
     # blindly moving towards object phase
     elif variables["phase"] == "blind to obj":
-        # add 1 to counter, this is to get fmir buffer to be as correct as possible
-        variables["counter"] = variables["counter"] + 1
-        if variables["counter"] == 4 and variables["other_counter"] <= 10:
-            variables["other_counter"] += 1
-            if variables["other_counter"] != 10:
-                variables["counter"] = 0
-            avg = (variables["fmir_buffer"][0] + variables["fmir_buffer"][1] + variables["fmir_buffer"][2] +
-                   variables["fmir_buffer"][3]) / 4
-            if avg > variables["avg"]:
-                variables["avg"] = avg
-            print("avg and buffer:", avg, variables["fmir_buffer"])
-
-        # if it has reached 4 new readings for the fmir buffer
-        if variables["counter"] == 5 and variables["other_counter"] >= 10:
-            # calculate the time goal of how long should bot move forward with said speed
-            # fmir minus 0.07 means it tries to get at distance of 7 cm from the object
-            avg = variables["avg"]
-            degrees_to_target = 360 * avg / (math.pi * robot.WHEEL_DIAMETER)
-            print("deg to target:", degrees_to_target, "average dist:", avg)
-            variables["l_target_drive"] = variables["left_enc"] + degrees_to_target
-            variables["r_target_drive"] = variables["right_enc"] + degrees_to_target
-
-
-            # and start moving forward
-            variables["left_speed"], variables["right_speed"] = 10, 10
-            rospy.sleep(3)
-
-        # for when counter is above 4, meaning timegoal has been set and movement has been started
-        elif variables["counter"] > 5 and variables["other_counter"] >= 10:
-            print("left_enc", variables["left_enc"], "target_drive", variables["l_target_drive"], variables["left_speed"], variables["right_speed"])
-            variables = p_speed(variables, 2, 0.02)
-            if variables["left_enc"] > variables["l_target_drive"] and variables["right_enc"] > variables["r_target_drive"]:
-                variables["left_speed"], variables["right_speed"] = 0, 0
-                variables["phase"] = "end"
+        variables = blind(variables)
 
     # end phase, literally does nothing
     elif variables["phase"] == "end":
@@ -260,7 +270,7 @@ def main():
         variables = sense(variables)
         variables = plan(variables)
         act(variables)
-        rospy.sleep(0.05) # was 0.02
+        rospy.sleep(0.05)  # was 0.02
 
 
 if __name__ == "__main__":
