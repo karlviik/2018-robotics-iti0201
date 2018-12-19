@@ -12,18 +12,19 @@ class Robot:
         # read robot into class var
         self.robot = PiBot()
 
+        # different speeds for sim for not falling asleep
         if self.robot.is_simulation():
             self.is_simulation = True
             self.speed = 15
         else:
             self.is_simulation = False
             self.speed = 13
-        self.speed_r = self.speed
-        self.speed_l = self.speed
 
+        # initialise phase and set problem solved as false
         self.problem_solved = False
         self.state = "working"
 
+        # initialise adjusters to zero
         self.adjust_left = 0
         self.adjust_right = 0
 
@@ -60,7 +61,7 @@ class Robot:
         self.robot.set_grabber_height(95)
 
     def sense(self):
-        """sensing."""
+        """Read in some sensors."""
         self.left_straight = self.robot.get_rear_left_straight_ir()
         self.left_diagonal = self.robot.get_rear_left_diagonal_ir()
         self.left_side = self.robot.get_rear_left_side_ir()
@@ -100,7 +101,7 @@ class Robot:
         self.set_speed(0)
 
     def plan(self):
-        """follow the wall on the left."""
+        """Follow wall on the left."""
         self.reset_adjust()
 
         if self.left_straight < 0.043 or self.left_diagonal < 0.043 or self.left_side < 0.043:
@@ -138,11 +139,6 @@ class Robot:
             if self.adjust_left > 0 and self.adjust_right > 0:
                 self.adjust_left -= 1
                 self.adjust_right -= 1
-
-            print(
-                "diff: " + str(diff_encoders) + ", left enc " + str(self.robot.get_left_wheel_encoder()) + " adj: " + str(
-                    self.adjust_left) + ", right enc: " + str(self.robot.get_right_wheel_encoder()) + " adj: " + str(
-                    self.adjust_right))
 
             self.set_speed_l(rotation * sign * (self.speed + self.adjust_left))
             self.set_speed_r(sign * (self.speed + self.adjust_right))
