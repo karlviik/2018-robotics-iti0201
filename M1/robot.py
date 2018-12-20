@@ -86,12 +86,14 @@ class Robot:
 
         If degree > 0 --> pivot to the right.
         If degree < 0 --> pivot to the left.
+
+        :param degrees: int: power of pivot.
         """
         # Math part.
         print("ROTATING FOR " + str(degrees))
-        distance = self.robot.AXIS_LENGTH * degrees
-        wheel_circumference = self.robot.WHEEL_DIAMETER
-        degrees_to_spin = (360 * distance / wheel_circumference)
+        distance = (3.141592 * 2 * self.robot.AXIS_LENGTH) * (degrees / 360)
+        wheel_circumference = self.robot.WHEEL_DIAMETER * 3.141592
+        degrees_to_spin = (360 * distance / wheel_circumference) / 2
         sign = (abs(degrees) // degrees)
 
         left_start = self.robot.get_left_wheel_encoder()
@@ -109,7 +111,7 @@ class Robot:
         """follow the wall on the left."""
         self.reset_adjust()
 
-        if self.left_straight < 0.04 or self.left_diagonal < 0.04 or self.left_side < 0.04:
+        if self.left_straight < 0.043 or self.left_diagonal < 0.043 or self.left_side < 0.043:
             self.state = "rotating"
         else:
             self.state = "moving forward"
