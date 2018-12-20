@@ -8,7 +8,7 @@ class Robot:
     """Do robot."""
 
     def __init__(self):
-        """Initialisation"""
+        """Initialisation."""
         self.robot = PiBot()
 
         if self.robot.is_simulation():
