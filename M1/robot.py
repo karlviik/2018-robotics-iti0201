@@ -5,19 +5,10 @@ import rospy
 
 
 class Robot:
-    """
-    The three primitives robotic paradigm: sense, plan, act [1].
-
-    Sense - gather information using the sensors
-    Plan - create a world model using all the information and plan the next move
-    Act - carry out the next step of the plan using actuators
-
-    [1] https://en.wikipedia.org/wiki/Robotic_paradigm
-    """
+    """Do robot."""
 
     def __init__(self):
-        """initialisation method."""
-        print("Initializing...")
+        """Initialisation"""
         self.robot = PiBot()
 
         if self.robot.is_simulation():
@@ -117,7 +108,8 @@ class Robot:
             self.state = "moving forward"
 
         if self.right_straight >= 0.049 and self.right_diagonal >= 0.049 and self.right_side >= 0.049 and self.robot.get_front_middle_ir() >= 0.99 and self.robot.get_front_right_ir() >= 0.99:
-            self.problem_solved = False
+            self.problem_solved = True
+            self.robot.set_grabber_height(50)
 
     def act(self):
         """acting."""
@@ -147,21 +139,16 @@ class Robot:
                 self.adjust_left -= 1
                 self.adjust_right -= 1
 
-            print(
-                "diff: " + str(diff_encoders) + ", left enc " + str(self.robot.get_left_wheel_encoder()) + " adj: " + str(
-                    self.adjust_left) + ", right enc: " + str(self.robot.get_right_wheel_encoder()) + " adj: " + str(
-                    self.adjust_right))
-
             self.set_speed_l(rotation * sign * (self.speed + self.adjust_left))
             self.set_speed_r(sign * (self.speed + self.adjust_right))
 
     def reset_adjust(self):
-        """reset wheel speed adjusts."""
+        """Reset wheel adjustments."""
         self.adjust_left = 0
         self.adjust_right = 0
 
     def main(self):
-        """main funcition."""
+        """Main loop function."""
         self.close_and_lift_grabber()
 
         while not self.problem_solved:
