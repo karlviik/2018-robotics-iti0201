@@ -149,6 +149,7 @@ class Robot:
             self.plan()
             self.act()
             rospy.sleep(0.05)
+        self.set_speed(0)
 
 
 if __name__ == "__main__":
