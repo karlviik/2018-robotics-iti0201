@@ -14,8 +14,10 @@ class Robot:
 
         # different speeds for sim for not falling asleep
         if self.robot.is_simulation():
+            self.is_simulation = True
             self.speed = 15
-        else:
+        else
+            self.is_simulation = False
             self.speed = 13
 
         # initialise phase and set problem solved as false
@@ -107,7 +109,7 @@ class Robot:
         # if on the non-wall side all close range sensors have no wall and back (AKA front) middle and non-wall sensors
         # detect no walls (meaning outside of maze), set problem solved key to True, stopping the robot.
         if self.right_straight >= 0.049 and self.right_diagonal >= 0.049 and self.right_side >= 0.049 and self.robot.front_middle >= 0.99 and self.robot.front_right >= 0.99:
-            self.problem_solved = True
+            self.problem_solved = False
 
     def act(self):
         """Act based on phase."""
