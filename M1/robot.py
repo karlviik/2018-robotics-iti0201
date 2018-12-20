@@ -89,7 +89,7 @@ class Robot:
         """
         # Math part.
         print("ROTATING FOR " + str(degrees))
-        distance = (self.robot.AXIS_LENGTH) * (degrees / 360)
+        distance = self.robot.AXIS_LENGTH * degrees
         wheel_circumference = self.robot.WHEEL_DIAMETER
         degrees_to_spin = (360 * distance / wheel_circumference)
         sign = (abs(degrees) // degrees)
@@ -109,7 +109,7 @@ class Robot:
         """follow the wall on the left."""
         self.reset_adjust()
 
-        if self.left_straight < 0.043 or self.left_diagonal < 0.043 or self.left_side < 0.043:
+        if self.left_straight < 0.04 or self.left_diagonal < 0.04 or self.left_side < 0.04:
             self.state = "rotating"
         else:
             self.state = "moving forward"
