@@ -14,10 +14,8 @@ class Robot:
 
         # different speeds for sim for not falling asleep
         if self.robot.is_simulation():
-            self.is_simulation = True
             self.speed = 15
         else:
-            self.is_simulation = False
             self.speed = 13
 
         # initialise phase and set problem solved as false
@@ -28,31 +26,26 @@ class Robot:
         self.adjust_left = 0
         self.adjust_right = 0
 
-    def set_speed(self, percentage):
-        """
-        Set wheel speeds, but treats backwards as forwards and vice versa. Mostly for shorter typing.
+        # initialise IR variables because good coding practises
+        self.left_straight = 0
+        self.left_diagonal = 0
+        self.left_side = 0
+        self.right_straight = 0
+        self.right_diagonal = 0
+        self.right_side = 0
+        self.front_middle = 0
+        self.front_right = 0
 
-        :param percentage: percentage
-        :return: None
-        """
+    def set_speed(self, percentage):
+        """Set wheel speeds, but treats backwards as forwards and vice versa."""
         self.robot.set_wheels_speed(-percentage)
 
-    def set_speed_r(self, percentage):
-        """
-        Set right wheel speed as negative of perc(entage) because treating back as front.
-
-        :param percentage: percentage
-        :return: None
-        """
+    def set_speed_l(self, percentage):
+        """Set right wheel speed as negative of percentage because treating back as front."""
         self.robot.set_right_wheel_speed(-percentage)
 
-    def set_speed_l(self, percentage):
-        """
-        Set left wheel speed as negative of perc(entage) because treating back as front.
-
-        :param percentage: percentage
-        :return: None
-        """
+    def set_speed_r(self, percentage):
+        """Set left wheel speed as negative of percentage because treating back as front."""
         self.robot.set_left_wheel_speed(-percentage)
 
     def close_and_lift_grabber(self):
@@ -73,75 +66,95 @@ class Robot:
         self.front_middle = self.robot.get_front_middle_ir()
         self.front_right = self.robot.get_front_right_ir()
 
-    def rotate_x_degrees(self, degrees):
+    def rotate(self, degrees):
         """
-        Robot does a turn to the chosen direction.
+        Turn given amount of degrees in required direction.
 
-        If degree > 0 --> turn to the right.
-        If degree < 0 --> turn to the left.
-
-        :param degrees: int: power of pivot.
+        If degree > 0: turn right.
+        If degree < 0: turn left.
         """
-        # Math part.
-        print("ROTATING FOR " + str(degrees))
-        distance = (3.141592 * 2 * self.robot.AXIS_LENGTH) * (degrees / 360)
-        wheel_circumference = self.robot.WHEEL_DIAMETER * 3.141592
-        degrees_to_spin = (360 * distance / wheel_circumference) / 2
+        # calculate amount of degrees the wheel has to spin for required degrees (simplified)
+        degrees_to_spin = self.robot.AXIS_LENGTH * degrees / self.robot.WHEEL_DIAMETER
+
+        # 1 if deg is pos, -1 if deg is neg
         sign = (abs(degrees) // degrees)
 
+        # save starting encoders for wheels
         left_start = self.robot.get_left_wheel_encoder()
         right_start = self.robot.get_right_wheel_encoder()
 
-        self.reset_adjust()
-
-        while abs(self.robot.get_left_wheel_encoder() - left_start) < abs(degrees_to_spin) and abs(
-                self.robot.get_right_wheel_encoder() - right_start) < abs(degrees_to_spin):
+        # keep rotating until encoders have both reached required difference, adjusting wheel speeds meanwhile
+        while abs(self.robot.get_left_wheel_encoder() - left_start) < abs(degrees_to_spin) and abs(self.robot.get_right_wheel_encoder() - right_start) < abs(degrees_to_spin):
             self.adjust_speed(right_start, left_start, sign, -1)
+
+            # sleep for a while to not react to data it has already reacted to
+            rospy.sleep(0.01)
+
+        # reset made adjustments and stop the robot
         self.reset_adjust()
         self.set_speed(0)
 
     def plan(self):
-        """Follow wall on the left."""
-        self.reset_adjust()
-
+        """Follow wall on the left (AKA right of moving direction)."""
+        # if any of the sensors of the wall side detect a wall within 4.3cm, do rotating
         if self.left_straight < 0.043 or self.left_diagonal < 0.043 or self.left_side < 0.043:
-            self.state = "rotating"
-        else:
-            self.state = "moving forward"
+            self.state = "rotate"
 
-        if self.right_straight >= 0.049 and self.right_diagonal >= 0.049 and self.right_side >= 0.049 and self.robot.get_front_middle_ir() >= 0.99 and self.robot.get_front_right_ir() >= 0.99:
-            self.problem_solved = False
+        # otherwise just move forward
+        else:
+            self.state = "move forward"
+
+        # if on the non-wall side all close range sensors have no wall and back (AKA front) middle and non-wall sensors
+        # detect no walls (meaning outside of maze), set problem solved key to True, stopping the robot.
+        if self.right_straight >= 0.049 and self.right_diagonal >= 0.049 and self.right_side >= 0.049 and self.robot.front_middle >= 0.99 and self.robot.front_right >= 0.99:
+            self.problem_solved = True
 
     def act(self):
-        """acting."""
-        print("Acting...")
-        if self.state == "rotating":
-            self.rotate_x_degrees(-15)
+        """Act based on phase."""
+        # if key got put as rotate, do that
+        if self.state == "rotate":
+            self.rotate(-15)
+
+        # otherwise just move in an arc tilting right towards the wall
         else:
-            self.set_speed_l(15)
-            self.set_speed_r(27)
+            self.set_speed_r(15)
+            self.set_speed_l(27)
 
     def adjust_speed(self, right_start, left_start, sign, rotation=1):
-            """adjust motors' speed."""
-            diff_encoders = abs(self.robot.get_right_wheel_encoder() - right_start) - abs(
-                self.robot.get_left_wheel_encoder() - left_start)
+            """Adjust wheel speeds dynamically."""
+            # get the difference of encoder differences against (rotation) start encoder values
+            diff_encoders = abs(self.robot.get_right_wheel_encoder() - right_start) - abs(self.robot.get_left_wheel_encoder() - left_start)
 
+            # if the difference is above 5 degrees (so it wouldn't react to very small differences)
             if diff_encoders > 5:
-                print('left too slow, adjust left')
+                print("Adjust left.")
+
+                # only adjust if current adjustment is below 7 to not go to infinity and beyond
                 if self.adjust_left < 7:
                     self.adjust_left += 1
+
+                # and erase right adjustment
                 self.adjust_right = 0
+
+            # if difference below -5 deg
             elif diff_encoders < -5:
-                print('right too slow, adjust right')
+                print("Adjust right.")
+
+                # only adjust if adjustment is below 7 absolute percents
                 if self.adjust_right < 7:
                     self.adjust_right += 1
+
+                # and erase left adjustment
                 self.adjust_left = 0
+
+            # unused in current version as at least one is always 0
             if self.adjust_left > 0 and self.adjust_right > 0:
                 self.adjust_left -= 1
                 self.adjust_right -= 1
 
-            self.set_speed_l(rotation * sign * (self.speed + self.adjust_left))
-            self.set_speed_r(sign * (self.speed + self.adjust_right))
+            # set speeds to wheels, if rotation is -1, right (left if front is front) turns opposite to other wheel
+            self.set_speed_r(rotation * sign * (self.speed + self.adjust_left))
+            self.set_speed_l(sign * (self.speed + self.adjust_right))
 
     def reset_adjust(self):
         """Reset wheel speed adjust variables used in speed adjusting."""
