@@ -73,18 +73,13 @@ class Robot:
 
     def rotate_x_degrees(self, degrees):
         """
-        Robot does a pivot [degree] to the chosen direction.
+        Robot does a turn to the chosen direction.
 
         If degree > 0 --> pivot to the right.
         If degree < 0 --> pivot to the left.
-
-        :param degrees: int: power of pivot.
         """
-        # Math part.
-        print("ROTATING FOR " + str(degrees))
-        distance = (3.141592 * 2 * self.robot.AXIS_LENGTH) * (degrees / 360)
-        wheel_circumference = self.robot.WHEEL_DIAMETER * 3.141592
-        degrees_to_spin = (360 * distance / wheel_circumference) / 2
+        # calculate amount of degrees encoders have to turn
+        degrees_to_spin = (self.robot.AXIS_LENGTH * degrees) / self.robot.WHEEL_DIAMETER
         sign = (abs(degrees) // degrees)
 
         left_start = self.robot.get_left_wheel_encoder()
@@ -107,7 +102,7 @@ class Robot:
         else:
             self.state = "moving forward"
 
-        if self.right_straight >= 0.049 and self.right_diagonal >= 0.049 and self.right_side >= 0.049 and self.robot.get_front_middle_ir() >= 0.99 and self.robot.get_front_right_ir() >= 0.99:
+        if self.right_straight >= 0.045 and self.right_diagonal >= 0.045 and self.right_side >= 0.045 and self.robot.get_front_middle_ir() >= 0.50 and self.robot.get_front_right_ir() >= 0.50:
             self.problem_solved = True
             self.robot.set_grabber_height(50)
 
@@ -117,21 +112,19 @@ class Robot:
         if self.state == "rotating":
             self.rotate_x_degrees(-15)
         else:
-            self.set_speed_l(15)
-            self.set_speed_r(27)
+            self.set_speed_l(13)
+            self.set_speed_r(24)
 
     def adjust_speed(self, right_start, left_start, sign, rotation=1):
-            """adjust motors' speed."""
+            """Adjust wheel speeds based on encoder difference's difference."""
             diff_encoders = abs(self.robot.get_right_wheel_encoder() - right_start) - abs(
                 self.robot.get_left_wheel_encoder() - left_start)
 
             if diff_encoders > 5:
-                print('left too slow, adjust left')
                 if self.adjust_left < 7:
                     self.adjust_left += 1
                 self.adjust_right = 0
             elif diff_encoders < -5:
-                print('right too slow, adjust right')
                 if self.adjust_right < 7:
                     self.adjust_right += 1
                 self.adjust_left = 0
