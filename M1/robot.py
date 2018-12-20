@@ -102,7 +102,7 @@ class Robot:
         else:
             self.state = "moving forward"
 
-        if self.right_straight >= 0.045 and self.right_diagonal >= 0.045 and self.right_side >= 0.045 and self.robot.get_front_middle_ir() >= 0.50 and self.robot.get_front_right_ir() >= 0.50:
+        if self.right_straight >= 0.045 and self.right_diagonal >= 0.045 and self.right_side >= 0.045 and self.robot.get_front_middle_ir() >= 0.70 and self.robot.get_front_right_ir() >= 0.70:
             self.problem_solved = True
             self.robot.set_grabber_height(50)
 
